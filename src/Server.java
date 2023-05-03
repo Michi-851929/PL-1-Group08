@@ -6,7 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Server{
-	private int port; // サーバの待ち受けポート
+	private int port; // サーバの待ち受け用ポート
 	private PrintWriter out; //データ送信用オブジェクト
 	private Receiver receiver; //データ受信用オブジェクト
 
