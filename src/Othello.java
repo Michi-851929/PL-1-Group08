@@ -1,7 +1,26 @@
-import java.awt.* ;
-import java.awt.event.*;
-import javax.swing.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.Label;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Random;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.SwingConstants;
 
 public class Othello extends JFrame implements ActionListener {
 
@@ -404,6 +423,7 @@ public class Othello extends JFrame implements ActionListener {
     // 駒の反転を起こすかどうか判断
     // 起こす場合には挟む自駒の位置を
     // 起さない場合には -1 を返す
+    
     static int causeFlipQ(int move, int dir, int player, int[] theState){
         int c = move + dir;
         if(theState[c] != opponent(player))
