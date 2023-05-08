@@ -24,3 +24,4 @@
 /RoomInfoThread.class
 /Server$GameThread.class
 /Server$MatchThread.class
+/Server$RoomInfoThread.class

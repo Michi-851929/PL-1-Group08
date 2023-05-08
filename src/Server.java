@@ -8,22 +8,57 @@ import java.net.Socket;
 public class Server{
 	private int port; // サーバの待ち受け用ポート
 	private PrintWriter out; //データ送信用オブジェクト
-	private Receiver receiver; //データ受信用オブジェクト
-	
+	private Receiver receiver; //データ受信用オブジェクト	
 	static boolean[] RoomInfo = {false, false, false};
 	
-
 	//コンストラクタ
 	public Server(int port) { //待ち受けポートを引数とする
 		this.port = port; //待ち受けポートを渡す
+		RoomInfoThread rit = new RoomInfoThread();//部屋状況確認スレッドを起動
+		GameThread[] GameThread = new GameThread[128];//ゲームスレッドを起動
+		for(int i = 0; i<128; i++) {
+			GameThread[i] = new GameThread(i);
+		}
 	}
 	
+	//待ちプレイヤ確認応答スレッド
+	class RoomInfoThread extends Thread{
+		int Info_port;
+		private PrintWriter Info_out; //データ送信用オブジェクト
+		//コンストラクタ
+		RoomInfoThread(){
+			Info_port = port+1; //port+1番のポートを待ちプレイヤ確認応答スレッドに使用する
+		}
+		//run
+		public void run() {
+			while(true) {
+				try {
+					ServerSocket ri_ss = new ServerSocket(Info_port);
+					Socket ri_socket = ri_ss.accept();
+					Info_out.println(Server.GetRoomInfo()); //待ち状況を書き込む
+					Info_out.flush(); //待ち状況を送信する
+					ri_ss.close();
+					ri_socket.close();
+				} catch (IOException e) {
+					System.err.println("クライアントとの接続が切れました．");
+				}
+			}
+		}
+	}
+
 	//待ちプレイヤ情報出力
 	public static boolean[] GetRoomInfo() {
 		return RoomInfo;
 	}
 	
 	//待ちプレイヤ更新メソッド
+	public boolean[] updateRoomInfo() {
+		boolean[] retval = new boolean[3];//返り値
+		
+		//ここに更新処理を入れる//
+		
+		return retval;
+	}
 	
 	//Sample// データ受信用スレッド(内部クラス)
 	class Receiver extends Thread {
@@ -78,7 +113,7 @@ public class Server{
 			P1_name = null;
 			P2_name = null;
 			time = 0;
-			RoomID = id
+			RoomID = id;
 		}
 		
 		//待機プレイヤの有無を返す
@@ -138,33 +173,7 @@ public class Server{
 	public static void main(String[] args){
 		Server server = new Server(10000); //待ち受けポート10000番でサーバオブジェクトを準備
 		server.acceptClient(); //クライアント受け入れを開始
-		RoomInfoThread rit = new RoomInfoThread(10000);
-		
+
 	}
 }
 
-//待ちプレイヤ確認応答スレッド
-class RoomInfoThread extends Thread{
-	int Info_port;
-	private PrintWriter Info_out; //データ送信用オブジェクト
-	//コンストラクタ
-	RoomInfoThread(int port){
-		Info_port = port+1; //port+1番のポートを待ちプレイヤ確認応答スレッドに使用する
-	}
-	
-	//run
-	public void run() {
-		while(true) {
-			try {
-				ServerSocket ri_ss = new ServerSocket(Info_port);
-				Socket ri_socket = ri_ss.accept();
-				Info_out.println(Server.GetRoomInfo()); //待ち状況を書き込む
-				Info_out.flush(); //待ち状況を送信する
-				ri_ss.close();
-				ri_socket.close();
-			} catch (IOException e) {
-				System.err.println("クライアントとの接続が切れました．");
-			}
-		}
-	}
-}
