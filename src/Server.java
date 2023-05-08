@@ -8,14 +8,15 @@ import java.net.Socket;
 public class Server{
 	private int port; // サーバの待ち受け用ポート
 	private PrintWriter out; //データ送信用オブジェクト
-	private Receiver receiver; //データ受信用オブジェクト	
+	//private Receiver receiver; //データ受信用オブジェクト	
 	static boolean[] RoomInfo = {false, false, false};
+	private GameThread[] GameThread; //対局用スレッド
 	
-	//コンストラクタ
+	//Serverコンストラクタ
 	public Server(int port) { //待ち受けポートを引数とする
 		this.port = port; //待ち受けポートを渡す
-		RoomInfoThread rit = new RoomInfoThread();//部屋状況確認スレッドを起動
-		GameThread[] GameThread = new GameThread[128];//ゲームスレッドを起動
+		RoomInfoThread rit = new RoomInfoThread();//部屋状況確認スレッドを宣言
+		GameThread = new GameThread[128];//ゲームスレッドを宣言
 		for(int i = 0; i<128; i++) {
 			GameThread[i] = new GameThread(i);
 		}
@@ -35,6 +36,8 @@ public class Server{
 				try {
 					ServerSocket ri_ss = new ServerSocket(Info_port);
 					Socket ri_socket = ri_ss.accept();
+					Info_out = new PrintWriter(ri_socket.getOutputStream(), true);//データ送信オブジェクトを用意
+					updateRoomInfo();
 					Info_out.println(Server.GetRoomInfo()); //待ち状況を書き込む
 					Info_out.flush(); //待ち状況を送信する
 					ri_ss.close();
@@ -91,15 +94,89 @@ public class Server{
 			}
 		}
 	}
-	
+	//Sampleここまで
 
 	//マッチングスレッド
 	class MatchThread extends Thread{
+		int port;
+		MatchThread(int port){
+			this.port = port;
+		}
 		
+		//runメソッド
+		public void run() {
+			while(true) { //無限ループ
+				try {
+					ServerSocket ss_match = new ServerSocket(port);
+					Socket socket_match = ss_match.accept();
+					System.out.println("プレイヤーがマッチングスレッドに接続しました");
+					
+					//★データ受信をここに書く予定
+					
+					String player_name = null;
+					int player_time = 1;//希望待ち時間
+					
+					//待ち時間の一致するプレイヤーを探す
+					int room_tojoin = findWaitingRoom(player_time);
+					
+					//待機中のプレイヤがいない場合、最も番号の若い空き部屋を探す(findVacantRoom)
+					if(room_tojoin == -1) {
+						room_tojoin = findVacantRoom();
+						
+						//空き部屋が見つかったら
+						if(room_tojoin != -1) {
+							GameThread[room_tojoin].setPlayer(socket_match, player_name, true);
+						}
+						
+						//空き部屋が見つからなかったら
+						else {
+							//★部屋が見つからなかったことをクライアントに伝える処理を書く
+							ss_match.close();
+							socket_match.close();
+						}
+					}
+					
+					//待機中のプレイヤがいる部屋を見つけられた場合
+					else {
+						GameThread[room_tojoin].setPlayer(socket_match, player_name, false);//後攻なので3個目の引数はfalse
+					}
+					
+					
+				} catch (IOException e) {
+					// TODO 自動生成された catch ブロック
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		//待機中のプレイヤがいる部屋を探す
+		private int findWaitingRoom(int time) {
+			int retval = -1;
+			for(int i = 0; i<128;i++) {
+				if(GameThread[i].isWaiting() && time == GameThread[i].getTime()) {
+					retval = i;
+					break;
+				}
+			}
+			return retval;
+		}
+		
+		//最も番号が若い空き部屋を探す
+		private int findVacantRoom() {
+			int retval = -1;
+			for(int i = 0; i<128; i++) {
+				if(GameThread[i].isVacant()) {
+					retval = i;
+					break;
+				}
+			}
+			return retval;
+		}
 	}
+	//マッチングここまで
 	
 	//対局スレッド
-	class GameThread{
+	class GameThread extends Thread{
 		int RoomID;
 		String P1_name;//先攻
 		String P2_name;//後攻
@@ -118,12 +195,37 @@ public class Server{
 		
 		//待機プレイヤの有無を返す
 		public boolean isWaiting() {
-			if(P2_name != null) {
-				return false;
-			}
-			else {
+			if(P1_name != null && P2_name == null) {
 				return true;
 			}
+			else {
+				return false;
+			}
+		}
+		
+		//空のルームであるか否かを返す trueなら空
+		public boolean isVacant() {
+			if(P1_name == null && P2_name == null) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+		
+		//プレイヤ名を返す
+		public String getPlayerName(boolean isFirst) {
+			if(isFirst) {
+				return P1_name;
+			}
+			else {
+				return P2_name;
+			}
+		}
+		
+		//部屋の初期持ち時間を返す
+		public int getTime() {
+			return time;
 		}
 		
 		//プレイヤを部屋に入れる
@@ -145,15 +247,32 @@ public class Server{
 		
 		//runメソッド
 		public void run() {
-			while(P2_name == null) {
-				
+			while(P1_name == null) {
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					// TODO 自動生成された catch ブロック
+					e.printStackTrace();
+				}
 			}
-		}
+			System.out.println(P1_name+"が Room"+RoomID+"に先攻として入りました");
+			while(P2_name == null) {//後攻が来るまで無限ループ
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					// TODO 自動生成された catch ブロック
+					e.printStackTrace();
+				}
+			}
+			System.out.println(P2_name+"が Room"+RoomID+"に後攻として入りました");
+			//後攻が来たら
+			//続きは今度書きます
+		}		
 	}
+	//対局スレッドここまで
 
 	// メソッド
-
-	public void acceptClient(){ //クライアントの接続(サーバの起動)
+	/*public void acceptClient(){ //クライアントの接続(サーバの起動)
 		try {
 			System.out.println("サーバが起動しました．");
 			ServerSocket ss = new ServerSocket(port); //サーバソケットを用意
@@ -168,11 +287,12 @@ public class Server{
 			System.err.println("ソケット作成時にエラーが発生しました: " + e);
 		}
 	}
+	*/
 	
 	//mainメソッド
 	public static void main(String[] args){
 		Server server = new Server(10000); //待ち受けポート10000番でサーバオブジェクトを準備
-		server.acceptClient(); //クライアント受け入れを開始
+		//server.acceptClient(); //クライアント受け入れを開始
 
 	}
 }
