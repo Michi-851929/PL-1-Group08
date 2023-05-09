@@ -1,5 +1,3 @@
-import java.util.*;
-
 public class Othello {
     //マスの状態
     public static final int EMPTY = 0;
@@ -142,7 +140,6 @@ public class Othello {
                 board[i][j] = color;
                 
                 // 8方向について裏返せる石を探索し、裏返す
-                int[][] placeable = searchPlaceable(board);
                 for(int[] dir : directions) {
                     int x = i + dir[0];
                     int y = j + dir[1];
