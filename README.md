@@ -20,3 +20,25 @@
 
 ・void applyMove(int[] move, boolean isBlack)
 move[0]=x,move[1]=yとして指し手を判断し、オセロの手法どおりに石を裏返します。妥当な手が指されることのみ想定しています。盤面を更新したのちcurrentTurnも書き換えます。
+
+## Clientクラス
+
+・コンストラクタ:Client　玖津見
+
+・画面遷移メソッド:Void　玖津見
+
+・待ちプレイヤ問い合わせメソッド:String[]　本多
+
+・サーバに接続:String[]　本多
+
+・接続確認応答:boolean　本多
+
+・盤面更新:Void　玖津見
+
+・自分の番:Void　高田
+
+・相手の番:Void　高田
+
+・指し手を受け付ける:int[]　玖津見
+
+・対局終了:Void　高田
