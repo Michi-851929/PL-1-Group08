@@ -1,6 +1,6 @@
 # PL-1-Group08
 
-## Ohthelloクラス
+## Othelloクラス
 以下のものを実装しました。(本多)
 
 ・Othello()
