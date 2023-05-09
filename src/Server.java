@@ -73,41 +73,6 @@ public class Server{
 		return retval;
 	}
 
-	/*Sample
-	 // データ受信用スレッド(内部クラス)
-	 /
-	class Receiver extends Thread {
-		private InputStreamReader sisr; //受信データ用文字ストリーム
-		private BufferedReader br; //文字ストリーム用のバッファ
-
-		// 内部クラスReceiverのコンストラクタ
-		Receiver (Socket socket){
-			try{
-				sisr = new InputStreamReader(socket.getInputStream());
-				br = new BufferedReader(sisr);
-			} catch (IOException e) {
-				System.err.println("データ受信時にエラーが発生しました: " + e);
-			}
-		}
-
-		// 内部クラス Receiverのメソッド
-		public void run(){
-			try{
-				while(true) {// データを受信し続ける
-					String inputLine = br.readLine();//データを一行分読み込む
-					if (inputLine != null){ //データを受信したら
-						System.out.println("サーバからメッセージ " + inputLine + " が届きました．そのまま返信します．");
-						out.println(inputLine);//受信データをバッファに書き出す
-						out.flush();//受信データをそのまま返信する
-					}
-				}
-			} catch (IOException e){ // 接続が切れたとき
-				System.err.println("クライアントとの接続が切れました．");
-			}
-		}
-	}
-	//Sampleここまで*/
-
 	//マッチングスレッド
 	class MatchThread extends Thread{
 		int port;
@@ -281,6 +246,7 @@ public class Server{
 						}
 					}
 					System.out.println(P1_name+"が Room"+RoomID+"に先攻として入りました");
+					ConnectThread P1_ct = new ConnectThread(RoomID, true,);
 					while(P2_name == null) {//後攻が来るまで無限ループ
 						try {
 							Thread.sleep(100);
@@ -308,24 +274,6 @@ public class Server{
 	}
 	//対局スレッドここまで
 
-	// メソッド
-	/*public void acceptClient(){ //クライアントの接続(サーバの起動)
-		try {
-			System.out.println("サーバが起動しました．");
-			ServerSocket ss = new ServerSocket(port); //サーバソケットを用意
-			while (true) {
-				Socket socket = ss.accept(); //新規接続を受け付ける
-				System.out.println("クライアントと接続しました．"); //テスト用出力
-					out = new PrintWriter(socket.getOutputStream(), true);//データ送信オブジェクトを用意
-					receiver = new Receiver(socket);//データ受信オブジェクト(スレッド)を用意
-					receiver.start();//データ送信オブジェクト(スレッド)を起動
-			}
-		} catch (Exception e) {
-			System.err.println("ソケット作成時にエラーが発生しました: " + e);
-		}
-	}
-	*/
-
 	//接続状態確認スレッド
 	class ConnectThread extends Thread{
 		int port;
@@ -335,7 +283,7 @@ public class Server{
 		ConnectThread(int id, boolean isFirst,int p, Socket s){
 			this.id = id;
 			this.isFirst = isFirst;
-			port = p+2;
+			port = p;
 			ct_socket = s;
 		}
 		@Override
@@ -346,7 +294,7 @@ public class Server{
 			ct_socket.setSoTimeout(1000);
 			while(true) {
 				try {
-					os_ct.write(1);
+					os_ct.write(1);//★ここint型の二次元配列にする
 					if(is_ct.read() == 1) {
 						//ok
 						Thread.sleep(1000);
@@ -381,7 +329,6 @@ public class Server{
 	//mainメソッド
 	public static void main(String[] args){
 		Server server = new Server(10000); //待ち受けポート10000番でサーバオブジェクトを準備
-		//server.acceptClient(); //クライアント受け入れを開始
 	}
 }
 	//切断希望受信エラー

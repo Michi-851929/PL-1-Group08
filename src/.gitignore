@@ -27,3 +27,4 @@
 /Server$RoomInfoThread.class
 /Server$ConnectThread.class
 /Server$LeaveGameException.class
+/Player.class
