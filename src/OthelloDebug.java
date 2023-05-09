@@ -11,7 +11,7 @@ public class OthelloDebug {
     private Scanner scanner;
 
     public OthelloDebug() {
-        this.game = new Othello();
+        this.game = new Othello(new Player("aiueo", true, 800), new Player("oeuia", false, 800));
         this.scanner = new Scanner(System.in);
     }
 
@@ -23,7 +23,7 @@ public class OthelloDebug {
             boolean turn = game.getCurrentTurn();
             System.out.println((turn ? "●" : "◯") + "の手番です。");
 
-            int[][] placeable = game.searchPlaceable(game.getBoard());
+            int[][] placeable = game.searchPlaceable();
             if (placeable.length == 0) {
                 int winner = game.checkWinner();
                 System.out.println("ゲーム終了！勝者は" + (winner == 1 ? "●" : "◯") + "です。");
@@ -55,7 +55,7 @@ public class OthelloDebug {
                 continue;
             }
 
-            game.applyMove(place[0], turn);
+            game.applyMove(place[0]);
         }
     }
 
@@ -83,7 +83,7 @@ public class OthelloDebug {
     }
 
     private boolean isPlaceable(int x, int y) {
-        int[][] placeable = game.searchPlaceable(game.getBoard());
+        int[][] placeable = game.searchPlaceable();
 
             if (placeable[x][y] == 1) {
                 return true;
