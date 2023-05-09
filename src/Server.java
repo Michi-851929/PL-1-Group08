@@ -1,27 +1,35 @@
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 public class Server{
 	private int port; // サーバの待ち受け用ポート
 	private PrintWriter out; //データ送信用オブジェクト
-	//private Receiver receiver; //データ受信用オブジェクト	
+	//private Receiver receiver; //データ受信用オブジェクト
 	static boolean[] RoomInfo = {false, false, false};
 	private GameThread[] GameThread; //対局用スレッド
-	
+
 	//Serverコンストラクタ
 	public Server(int port) { //待ち受けポートを引数とする
 		this.port = port; //待ち受けポートを渡す
 		RoomInfoThread rit = new RoomInfoThread();//部屋状況確認スレッドを宣言
+		rit.start();
 		GameThread = new GameThread[128];//ゲームスレッドを宣言
 		for(int i = 0; i<128; i++) {
 			GameThread[i] = new GameThread(i);
+			GameThread[i].start();
 		}
+		MatchThread mt = new MatchThread(port);
+		mt.start();
 	}
-	
+
 	//待ちプレイヤ確認応答スレッド
 	class RoomInfoThread extends Thread{
 		int Info_port;
@@ -31,6 +39,7 @@ public class Server{
 			Info_port = port+1; //port+1番のポートを待ちプレイヤ確認応答スレッドに使用する
 		}
 		//run
+		@Override
 		public void run() {
 			while(true) {
 				try {
@@ -53,17 +62,19 @@ public class Server{
 	public static boolean[] GetRoomInfo() {
 		return RoomInfo;
 	}
-	
+
 	//待ちプレイヤ更新メソッド
 	public boolean[] updateRoomInfo() {
 		boolean[] retval = new boolean[3];//返り値
-		
+
 		//ここに更新処理を入れる//
-		
+
 		return retval;
 	}
-	
-	//Sample// データ受信用スレッド(内部クラス)
+
+	/*Sample
+	 // データ受信用スレッド(内部クラス)
+	 /
 	class Receiver extends Thread {
 		private InputStreamReader sisr; //受信データ用文字ストリーム
 		private BufferedReader br; //文字ストリーム用のバッファ
@@ -77,7 +88,7 @@ public class Server{
 				System.err.println("データ受信時にエラーが発生しました: " + e);
 			}
 		}
-		
+
 		// 内部クラス Receiverのメソッド
 		public void run(){
 			try{
@@ -94,7 +105,7 @@ public class Server{
 			}
 		}
 	}
-	//Sampleここまで
+	//Sampleここまで*/
 
 	//マッチングスレッド
 	class MatchThread extends Thread{
@@ -102,32 +113,33 @@ public class Server{
 		MatchThread(int port){
 			this.port = port;
 		}
-		
+
 		//runメソッド
+		@Override
 		public void run() {
 			while(true) { //無限ループ
 				try {
 					ServerSocket ss_match = new ServerSocket(port);
 					Socket socket_match = ss_match.accept();
 					System.out.println("プレイヤーがマッチングスレッドに接続しました");
-					
+
 					//★データ受信をここに書く予定
-					
+
 					String player_name = null;
 					int player_time = 1;//希望待ち時間
-					
+
 					//待ち時間の一致するプレイヤーを探す
 					int room_tojoin = findWaitingRoom(player_time);
-					
+
 					//待機中のプレイヤがいない場合、最も番号の若い空き部屋を探す(findVacantRoom)
 					if(room_tojoin == -1) {
 						room_tojoin = findVacantRoom();
-						
+
 						//空き部屋が見つかったら
 						if(room_tojoin != -1) {
 							GameThread[room_tojoin].setPlayer(socket_match, player_name, true);
 						}
-						
+
 						//空き部屋が見つからなかったら
 						else {
 							//★部屋が見つからなかったことをクライアントに伝える処理を書く
@@ -135,20 +147,20 @@ public class Server{
 							socket_match.close();
 						}
 					}
-					
+
 					//待機中のプレイヤがいる部屋を見つけられた場合
 					else {
 						GameThread[room_tojoin].setPlayer(socket_match, player_name, false);//後攻なので3個目の引数はfalse
 					}
-					
-					
+
+
 				} catch (IOException e) {
 					// TODO 自動生成された catch ブロック
 					e.printStackTrace();
 				}
 			}
 		}
-		
+
 		//待機中のプレイヤがいる部屋を探す
 		private int findWaitingRoom(int time) {
 			int retval = -1;
@@ -160,7 +172,7 @@ public class Server{
 			}
 			return retval;
 		}
-		
+
 		//最も番号が若い空き部屋を探す
 		private int findVacantRoom() {
 			int retval = -1;
@@ -174,7 +186,7 @@ public class Server{
 		}
 	}
 	//マッチングここまで
-	
+
 	//対局スレッド
 	class GameThread extends Thread{
 		int RoomID;
@@ -183,8 +195,8 @@ public class Server{
 		int time;//開始時の残り時間
 		Socket P1_socket;//先攻のソケット
 		Socket P2_socket;//後攻のソケット
-		
-		
+
+
 		//コンストラクタ
 		GameThread(int id){
 			P1_name = null;
@@ -192,7 +204,7 @@ public class Server{
 			time = 0;
 			RoomID = id;
 		}
-		
+
 		//待機プレイヤの有無を返す
 		public boolean isWaiting() {
 			if(P1_name != null && P2_name == null) {
@@ -202,7 +214,7 @@ public class Server{
 				return false;
 			}
 		}
-		
+
 		//空のルームであるか否かを返す trueなら空
 		public boolean isVacant() {
 			if(P1_name == null && P2_name == null) {
@@ -212,7 +224,7 @@ public class Server{
 				return false;
 			}
 		}
-		
+
 		//プレイヤ名を返す
 		public String getPlayerName(boolean isFirst) {
 			if(isFirst) {
@@ -222,12 +234,12 @@ public class Server{
 				return P2_name;
 			}
 		}
-		
+
 		//部屋の初期持ち時間を返す
 		public int getTime() {
 			return time;
 		}
-		
+
 		//プレイヤを部屋に入れる
 		public void setPlayer(Socket sc, String name, boolean isFirst) {
 			if(isFirst) {
@@ -239,14 +251,19 @@ public class Server{
 				P2_socket = sc;
 			}
 		}
-		
+
 		//ゲーム開始時の残り時間を設定する
 		public void setTime(int t) {
 			time = t;
 		}
-		
+
 		//runメソッド
+		@Override
 		public void run() {
+			try {
+
+
+
 			while(P1_name == null) {
 				try {
 					Thread.sleep(100);
@@ -267,7 +284,11 @@ public class Server{
 			System.out.println(P2_name+"が Room"+RoomID+"に後攻として入りました");
 			//後攻が来たら
 			//続きは今度書きます
-		}		
+			}
+			catch (SocketTimeoutException es){
+				//残っている側のプレイヤーに対戦相手がタイムアウトしたことを伝え試合を終了する
+			}
+		}
 	}
 	//対局スレッドここまで
 
@@ -288,12 +309,58 @@ public class Server{
 		}
 	}
 	*/
-	
+
+	//接続状態確認スレッド
+	class ConnectThread extends Thread{
+		int port;
+		int id;
+		Boolean isFirst;
+		Socket ct_socket;
+		ConnectThread(int id, boolean isFirst,int p, Socket s){
+			this.id = id;
+			this.isFirst = isFirst;
+			port = p+2;
+			ct_socket = s;
+		}
+		@Override
+		public void run() {
+			InputStream is_ct = ct_socket.getInputStream();
+			OutputStream os_ct = ct_socket.getOutputStream();
+			DataOutputStream dos_ct = new DataOutputStream(os_ct);
+			ct_socket.setSoTimeout(1000);
+			while(true) {
+				try {
+					os_ct.write(1);
+					if(is_ct.read() == 1) {
+						//ok
+						Thread.sleep(1000);
+					}
+					else {
+						//★対局終了に持っていく
+					}
+					break;
+			}
+
+
+			catch (InterruptedException e) {
+				// TODO 自動生成された catch ブロック
+				e.printStackTrace();
+			} catch(SocketTimeoutException es) {
+				if(isFirst) {
+					GameThread[id].P1_socket.close();
+				}
+				else {
+					GameThread[id].P2_socket.close();
+				}
+				ct_socket.close();
+				throw es;
+			}
+		}
+	}
+
 	//mainメソッド
 	public static void main(String[] args){
 		Server server = new Server(10000); //待ち受けポート10000番でサーバオブジェクトを準備
 		//server.acceptClient(); //クライアント受け入れを開始
-
 	}
 }
-

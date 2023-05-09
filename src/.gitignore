@@ -25,3 +25,4 @@
 /Server$GameThread.class
 /Server$MatchThread.class
 /Server$RoomInfoThread.class
+/Server$ConnectThread.class
