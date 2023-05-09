@@ -1,6 +1,7 @@
-import   java.util.*;
+import java.util.*;
 
 public class Othello {
+    private Player[] players = new Player[2];
     private boolean currentTurn; // 現在の手番（true: 黒番、false: 白番）なんかひっくり返すの混同しそうだし
     private int[][] board; // 盤面情報（0: 石が置かれていない、1: 黒の石が置かれている、-1: 白の石が置かれている）
 
