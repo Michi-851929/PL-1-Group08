@@ -1,7 +1,7 @@
 import   java.util.*;
 
 public class Othello {
-    private boolean currentTurn; // 現在の手番（true: 黒番、false: 白番）なんかひっくり返すの混同しそうだし
+    private boolean currentTurn; // 現在の手番（true: 黒番、false: 白番）turnは手番として扱う
     private int[][] board; // 盤面情報（0: 石が置かれていない、1: 黒の石が置かれている、-1: 白の石が置かれている）
 
     int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {1, 1}, {-1, 1}, {1, -1}};//八方向探索用の配列
