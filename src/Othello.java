@@ -1,19 +1,43 @@
 import java.util.*;
 
 public class Othello {
+    //マスの状態
+    public static final int EMPTY = 0;
+    public static final int BLACK = 1;
+    public static final int WHITE = -1;
+    int[][] directions = {
+        {-1,  0},
+        { 1,  0},
+        { 0, -1},
+        { 0,  1},
+        {-1, -1},
+        { 1,  1},
+        {-1,  1},
+        { 1, -1}
+    };//八方向探索用の配列
+    
     private Player[] players = new Player[2];
     private boolean currentTurn; // 現在の手番（true: 黒番、false: 白番）なんかひっくり返すの混同しそうだし
-    private int[][] board; // 盤面情報（0: 石が置かれていない、1: 黒の石が置かれている、-1: 白の石が置かれている）
+    private int[][] board = new int[8][8]; // 盤面情報（0: 石が置かれていない、1: 黒の石が置かれている、-1: 白の石が置かれている）
 
-    int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {1, 1}, {-1, 1}, {1, -1}};//八方向探索用の配列
+    
 
-    public Othello() {
-        // 盤面を初期化する
-        board = new int[8][8];
-        board[3][3] = 1;
-        board[4][4] = 1;
-        board[3][4] = -1;
-        board[4][3] = -1;
+    public Othello(Player me, Player you) {
+        //盤面の初期化
+        for(int i = 0; i < 8; i++) {
+            for(int j = 0; j < 8; j++) {
+                board[i][j] = EMPTY;
+            }
+        }
+        board[3][3] = BLACK;
+        board[4][4] = BLACK;
+        board[3][4] = WHITE;
+        board[4][3] = WHITE;
+        
+        //プレイヤ情報の初期化
+        players[0] = me;
+        players[1] = you;
+        
         currentTurn = true; // 黒からスタートする
     }
 
@@ -36,12 +60,12 @@ public class Othello {
 
     */
 
-    public int[][] searchPlaceable(int[][] board) {
+    public int[][] searchPlaceable() {
         int[][] placeable = new int[8][8];
 
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (board[i][j] != 0) {
+        for(int i = 0; i < 8; i++) {
+            for(int j = 0; j < 8; j++) {
+                if(board[i][j] != EMPTY) {
                     continue; // 空白マスでない場合はスキップ
                 }
                 for (int[] dir : directions) {
@@ -74,24 +98,29 @@ public class Othello {
         int blackCount = 0;
         int whiteCount = 0;
         int emptyCount = 0;
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (board[i][j] == 1) {
+        
+        for(int i = 0; i < 8; i++) {
+            for(int j = 0; j < 8; j++) {
+                if(board[i][j] == BLACK) {
                     blackCount++;
-                } else if (board[i][j] == -1) {
+                }
+                else if(board[i][j] == WHITE) {
                     whiteCount++;
-                } else {
+                }
+                else{
                     emptyCount++;
                 }
             }
         }
-        if (emptyCount == 0 || blackCount == 0 || whiteCount == 0) {
+        if(emptyCount == 0 || blackCount == 0 || whiteCount == 0) {
             // 全てのマスが埋まっている、または黒の石か白の石しかない場合、どちらかが勝利
-            if (blackCount > whiteCount) {
+            if(blackCount > whiteCount) {
                 return 1;
-            } else if (blackCount < whiteCount) {
+            }
+            else if(blackCount < whiteCount) {
                 return -1;
-            } else {
+            }
+            else{
                 return 0; // 引き分け
             }
         } else {
@@ -99,49 +128,60 @@ public class Othello {
         }
     }
 
-    public void applyMove(int[] move, boolean isBlack) {
+    public void applyMove(int[] move) {
         // 指し手の座標を取得
         int i = move[0];
         int j = move[1];
 
         // 石の色を設定
-        int color = isBlack ? 1 : -1;
+        int color = (currentTurn ? BLACK : WHITE);
 
         // 盤面に石を置く
-        board[i][j] = color;
-
-        // 8方向について裏返せる石を探索し、裏返す
-        int[][] placeable = searchPlaceable(board);
-        for (int[] dir : directions) {
-            int x = i + dir[0];
-            int y = j + dir[1];
-            int count = 0;
-            while (x >= 0 && x < 8 && y >= 0 && y < 8) {
-                if (board[x][y] == 0) {
-                    break; // 空白マスに到達した場合は終了
-                }
-                if (board[x][y] == color) {
-                    if (count > 0) {
-                        // 裏返す
-                        x = i + dir[0];
-                        y = j + dir[1];
-                        for (int k = 0; k < count; k++) {
-                            board[x][y] = color;
-                            x += dir[0];
-                            y += dir[1];
+        try {
+            if(board[i][j] == EMPTY) {
+                board[i][j] = color;
+                
+                // 8方向について裏返せる石を探索し、裏返す
+                int[][] placeable = searchPlaceable(board);
+                for(int[] dir : directions) {
+                    int x = i + dir[0];
+                    int y = j + dir[1];
+                    int count = 0;
+                    while(x >= 0 && x < 8 && y >= 0 && y < 8) {
+                        if(board[x][y] == 0) {
+                            break; // 空白マスに到達した場合は終了
                         }
+                        if(board[x][y] == color) {
+                            if(count > 0) {
+                                // 裏返す
+                                x = i + dir[0];
+                                y = j + dir[1];
+                                for (int k = 0; k < count; k++) {
+                                    board[x][y] = color;
+                                    x += dir[0];
+                                    y += dir[1];
+                                }
+                            }
+                            break; // 自分の石がある場合は終了
+                        }
+                        else {
+                            count++;
+                        }
+                        x += dir[0];
+                        y += dir[1];
                     }
-                    break; // 自分の石がある場合は終了
-                } else {
-                    count++;
                 }
-                x += dir[0];
-                y += dir[1];
             }
+            else {
+                throw new Exception("The place has already had a stone.");
+            }
+        }
+        catch(Exception ex) {
+            ex.printStackTrace();
+            System.exit(0);
         }
 
         // 現在の手番を更新する
         currentTurn = !currentTurn;
     }
-
 }
