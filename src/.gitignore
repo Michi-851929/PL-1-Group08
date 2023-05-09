@@ -26,3 +26,4 @@
 /Server$MatchThread.class
 /Server$RoomInfoThread.class
 /Server$ConnectThread.class
+/Server$LeaveGameException.class
