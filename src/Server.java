@@ -28,6 +28,7 @@ public class Server{
 		}
 		MatchThread mt = new MatchThread(port);
 		mt.start();
+
 	}
 
 	//待ちプレイヤ確認応答スレッド
@@ -72,41 +73,6 @@ public class Server{
 		return retval;
 	}
 
-	/*Sample
-	 // データ受信用スレッド(内部クラス)
-	 /
-	class Receiver extends Thread {
-		private InputStreamReader sisr; //受信データ用文字ストリーム
-		private BufferedReader br; //文字ストリーム用のバッファ
-
-		// 内部クラスReceiverのコンストラクタ
-		Receiver (Socket socket){
-			try{
-				sisr = new InputStreamReader(socket.getInputStream());
-				br = new BufferedReader(sisr);
-			} catch (IOException e) {
-				System.err.println("データ受信時にエラーが発生しました: " + e);
-			}
-		}
-
-		// 内部クラス Receiverのメソッド
-		public void run(){
-			try{
-				while(true) {// データを受信し続ける
-					String inputLine = br.readLine();//データを一行分読み込む
-					if (inputLine != null){ //データを受信したら
-						System.out.println("サーバからメッセージ " + inputLine + " が届きました．そのまま返信します．");
-						out.println(inputLine);//受信データをバッファに書き出す
-						out.flush();//受信データをそのまま返信する
-					}
-				}
-			} catch (IOException e){ // 接続が切れたとき
-				System.err.println("クライアントとの接続が切れました．");
-			}
-		}
-	}
-	//Sampleここまで*/
-
 	//マッチングスレッド
 	class MatchThread extends Thread{
 		int port;
@@ -123,10 +89,10 @@ public class Server{
 					Socket socket_match = ss_match.accept();
 					System.out.println("プレイヤーがマッチングスレッドに接続しました");
 
-					//★データ受信をここに書く予定
+					//★データ受信
 
 					String player_name = null;
-					int player_time = 1;//希望待ち時間
+					int player_time = 0;//希望待ち時間　1:3min 2:5min 3:7min
 
 					//待ち時間の一致するプレイヤーを探す
 					int room_tojoin = findWaitingRoom(player_time);
@@ -140,9 +106,8 @@ public class Server{
 							GameThread[room_tojoin].setPlayer(socket_match, player_name, true);
 						}
 
-						//空き部屋が見つからなかったら
+						//空き部屋が見つからないとき、クライアントを切断
 						else {
-							//★部屋が見つからなかったことをクライアントに伝える処理を書く
 							ss_match.close();
 							socket_match.close();
 						}
@@ -203,6 +168,7 @@ public class Server{
 			P2_name = null;
 			time = 0;
 			RoomID = id;
+			System.out.println("Room"+id+"の試合を終了しました");
 		}
 
 		//待機プレイヤの有無を返す
@@ -256,59 +222,57 @@ public class Server{
 		public void setTime(int t) {
 			time = t;
 		}
+		
+		//試合終了メソッド
+		public void closeGame() {
+			P1_name = null;
+			P2_name = null;
+			P1_socket.close();
+			P2_socket.close();
+			int time = 0;
+		}
 
 		//runメソッド
 		@Override
 		public void run() {
-			try {
-
-
-
-			while(P1_name == null) {
+			while(true) {
 				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					// TODO 自動生成された catch ブロック
-					e.printStackTrace();
+					while(P1_name == null) {
+						try {
+							Thread.sleep(100);
+						} catch (InterruptedException e) {
+							// TODO 自動生成された catch ブロック
+							e.printStackTrace();
+						}
+					}
+					System.out.println(P1_name+"が Room"+RoomID+"に先攻として入りました");
+					ConnectThread P1_ct = new ConnectThread(RoomID, true,);
+					while(P2_name == null) {//後攻が来るまで無限ループ
+						try {
+							Thread.sleep(100);
+						} catch (InterruptedException e) {
+							// TODO 自動生成された catch ブロック
+							e.printStackTrace();
+						}
+					}
+					System.out.println(P2_name+"が Room"+RoomID+"に後攻として入りました");
+					//後攻が来たら
+					
+					//★続き(対局部分)はここに今度書きます
+				
 				}
-			}
-			System.out.println(P1_name+"が Room"+RoomID+"に先攻として入りました");
-			while(P2_name == null) {//後攻が来るまで無限ループ
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					// TODO 自動生成された catch ブロック
-					e.printStackTrace();
+				catch (SocketTimeoutException es){
+					//★残っている側のプレイヤーに対戦相手がタイムアウトしたことを伝え試合を終了する
 				}
-			}
-			System.out.println(P2_name+"が Room"+RoomID+"に後攻として入りました");
-			//後攻が来たら
-			//続きは今度書きます
-			}
-			catch (SocketTimeoutException es){
-				//残っている側のプレイヤーに対戦相手がタイムアウトしたことを伝え試合を終了する
+				catch (LeaveGameException el) {
+					//★切断希望が出たことをプレイヤーに伝える
+				}
+				closeGame();
+				//ここでGameThread[i]は初期状態に戻る→274行目へ(無限ループ)
 			}
 		}
 	}
 	//対局スレッドここまで
-
-	// メソッド
-	/*public void acceptClient(){ //クライアントの接続(サーバの起動)
-		try {
-			System.out.println("サーバが起動しました．");
-			ServerSocket ss = new ServerSocket(port); //サーバソケットを用意
-			while (true) {
-				Socket socket = ss.accept(); //新規接続を受け付ける
-				System.out.println("クライアントと接続しました．"); //テスト用出力
-					out = new PrintWriter(socket.getOutputStream(), true);//データ送信オブジェクトを用意
-					receiver = new Receiver(socket);//データ受信オブジェクト(スレッド)を用意
-					receiver.start();//データ送信オブジェクト(スレッド)を起動
-			}
-		} catch (Exception e) {
-			System.err.println("ソケット作成時にエラーが発生しました: " + e);
-		}
-	}
-	*/
 
 	//接続状態確認スレッド
 	class ConnectThread extends Thread{
@@ -319,7 +283,7 @@ public class Server{
 		ConnectThread(int id, boolean isFirst,int p, Socket s){
 			this.id = id;
 			this.isFirst = isFirst;
-			port = p+2;
+			port = p;
 			ct_socket = s;
 		}
 		@Override
@@ -330,17 +294,21 @@ public class Server{
 			ct_socket.setSoTimeout(1000);
 			while(true) {
 				try {
-					os_ct.write(1);
+					os_ct.write(1);//★ここint型の二次元配列にする
 					if(is_ct.read() == 1) {
 						//ok
 						Thread.sleep(1000);
 					}
 					else {
-						//★対局終了に持っていく
+						if(isFirst) {
+							throw new LeaveGameException("先攻がゲーム退出希望");
+						}
+						else {
+							throw new LeaveGameException("後攻がゲーム退出希望");
+						}
 					}
 					break;
 			}
-
 
 			catch (InterruptedException e) {
 				// TODO 自動生成された catch ブロック
@@ -361,6 +329,11 @@ public class Server{
 	//mainメソッド
 	public static void main(String[] args){
 		Server server = new Server(10000); //待ち受けポート10000番でサーバオブジェクトを準備
-		//server.acceptClient(); //クライアント受け入れを開始
+	}
+}
+	//切断希望受信エラー
+public class LeaveGameException extends Exception{
+	LeaveGameException(String msg){
+		super(msg);
 	}
 }
