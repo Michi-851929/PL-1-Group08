@@ -136,7 +136,7 @@ public class Othello {
 
         // 盤面に石を置く
         try {
-            if(board[i][j] == EMPTY) {
+            if(i >= 0 && i < 8 && j >= 0 && j < 8 && board[i][j] == EMPTY) {
                 board[i][j] = color;
                 
                 // 8方向について裏返せる石を探索し、裏返す
