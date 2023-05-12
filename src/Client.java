@@ -6,6 +6,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -203,11 +204,12 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			battle.add(p09, "East");
 			
 			JPanel p10 = new JPanel();
-			p10.setLayout(new GridLayout(8, 8, -13, -8));
+			p10.setLayout(new GridLayout(8, 8, -6, -6));
 			for(int i = 0; i < 8; i++) {
 				for(int j = 0; j < 8; j++) {
 					ui_jb_field[i][j] = new JButton();//Integer.toString(i) + Integer.toString(j));
 					ui_jb_field[i][j].setIcon(getStoneIcon());
+					ui_jb_field[i][j].setMargin(new Insets(-4, -4, -4, -4));
 					p10.add(ui_jb_field[i][j]);
 				}
 			}
@@ -233,8 +235,9 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		for(int i = 0; i < 50; i++) {
 			g.drawLine(i, 0, i, 50 - 1);
 		}
-		g.setColor(Color.GRAY);
+		g.setColor(Color.BLACK);
 		g.drawRect(0, 0, 50 - 1, 50 - 1);
+		g.drawRect(1, 1, 50 - 3, 50 - 3);
 		
 		ImageIcon icon = new ImageIcon(img);
 		return icon;
