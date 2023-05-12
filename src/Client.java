@@ -200,6 +200,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			JPanel p09 = new JPanel();
 			p09.setLayout(new BorderLayout());
 			ui_jb_giveup = new JButton("投了");
+			ui_jb_giveup.setPreferredSize(new Dimension(100, 50));
 			p09.add(ui_jb_giveup, "South");
 			battle.add(p09, "East");
 			
