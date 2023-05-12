@@ -5,14 +5,19 @@ import javax.swing.*;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import javax.swing.JFrame;
-
+import java.util.*;
 
 public class Client extends JFrame implements ActionListener{
 
 	private static final int SERVER_PORT_1 = 10000;//接続確認に使うほうはこちら
+	private static final int SERVER_PORT_2 = 10001;//部屋確認に使うほうはこちら
 	private static final int COMMAND_CHECK_INTERVAL = 101; // 0.1秒ごとにgetCommandメソッドを監視する
 	private static final int HEARTBEAT_INTERVAL = 1000; // 1秒ごとにサーバーにハートビートを送信する
 	private static final int TIMEOUT_INTERVAL = 5000; // 5秒サーバーからのレスポンスがなかったらタイムアウトする
+
+	String hostName = "localhost"; // 接続するサーバのホスト名
+
+	private int[] vacantRoom;
 	Client()
 	{
 		
@@ -44,8 +49,33 @@ public class Client extends JFrame implements ActionListener{
 	}
 	public void connectToServer() {
 		try {
+
 			// サーバーに接続する
-			Socket socket = new Socket("localhost", SERVER_PORT_1);
+			Socket socket = new Socket("hostName", SERVER_PORT_1);
+
+			// 仮のtextFieldと仮のアクションイベント
+			// エラーが表示されているのが気になるので追加しただけ
+			//TODO：後で消す
+			JTextField textField = new JTextField("Player1");
+			ActionEvent f = new ActionEvent(new JButton("Button 1"), ActionEvent.ACTION_PERFORMED, null);
+
+
+			// 名前とルーム番号をサーバーに送信する
+			String name = getPlayerName(textField);
+			int roomNumber = getRoomNumber(f);
+			sendPlayerInfo(socket, name, roomNumber);
+
+
+			//プレイヤ名を受け取る
+			new Thread(() -> {
+				try {
+					// プレイヤ名とルーム番号を受信する
+					BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+					String opponentName = br.readLine();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}).start();
 
 			// getCommandメソッドを監視するスレッド起動する
 			// マッチング中にもこれを走らせ、接続中断のボタンが押された時も対応可能にする。
@@ -80,6 +110,7 @@ public class Client extends JFrame implements ActionListener{
 					}
 				}
 			}).start();
+
 
 			// ハートビートを送信するスレッドを起動する
 			new Thread(() -> {
@@ -168,6 +199,16 @@ public class Client extends JFrame implements ActionListener{
 		return roomNumber;
 	}
 
+	private static String getPlayerName(JTextField textField) {
+		return textField.getText();
+	}
+	private static void sendPlayerInfo(Socket socket, String name, int roomNumber) throws IOException {
+		// 名前とルーム番号をサーバーに送信する
+		DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+		out.writeUTF(name);
+		out.writeInt(roomNumber);
+		out.flush();
+	}
 	/**
 	 int[2]のコマンドをサーバーに送信する。
 	 配列の送信方法は
@@ -199,11 +240,6 @@ public class Client extends JFrame implements ActionListener{
 		return dis.readInt();
 	}
 
-	private static String getPlayerName(JTextField textField) {
-		return textField.getText();
-	}
-
-
 	/**
 	 int[2]を取得する仮実装。最後に押されたボタンを所得する関数をお願いします。
 	 **/
@@ -212,7 +248,41 @@ public class Client extends JFrame implements ActionListener{
 		return play;
 	}
 
-	
+
+	public void checkVacantRoom() {
+
+		try (
+				Socket socket = new Socket(hostName, SERVER_PORT_2);
+				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		) {
+			int heartbeat = 1; // ハートビートメッセージ
+			String responseMsg; // サーバからのレスポンスメッセージ
+
+			while (true) {
+				out.println(heartbeat); // ハートビートメッセージを送信
+				responseMsg = in.readLine(); // サーバからのレスポンスを受信
+
+				if (responseMsg != null) {
+					// サーバからのレスポンスをパースしてint配列に格納
+					String[] responseArray = responseMsg.split(",");
+					vacantRoom[0] = Integer.parseInt(responseArray[0]);
+					vacantRoom[1] = Integer.parseInt(responseArray[1]);
+					vacantRoom[2] = Integer.parseInt(responseArray[2]);
+				}
+
+				Thread.sleep(500); // 0.5秒待機
+			}
+		} catch (IOException e) {
+			System.err.println("Error connecting to server: " + e.getMessage());
+		} catch (InterruptedException e) {
+			System.err.println("Heartbeat interrupted: " + e.getMessage());
+		}
+	}
+
+
+
+
 	public void endBattle()
 	{
 		
