@@ -8,7 +8,7 @@ import javax.swing.JFrame;
 public class Client extends JFrame implements ActionListener{
 
 	private static final int SERVER_PORT_1 = 10000;//接続確認に使うほうはこちら
-	private static final int COMMAND_CHECK_INTERVAL = 500; // 0.5秒ごとにgetCommandメソッドを監視する
+	private static final int COMMAND_CHECK_INTERVAL = 100; // 0.5秒ごとにgetCommandメソッドを監視する
 	private static final int HEARTBEAT_INTERVAL = 1000; // 1秒ごとにサーバーにハートビートを送信する
 	private static final int TIMEOUT_INTERVAL = 5000; // 5秒サーバーからのレスポンスがなかったらタイムアウトする
 	Client()
@@ -63,7 +63,7 @@ public class Client extends JFrame implements ActionListener{
 				int[] prevCommand = new int[2];
 				while (true) {
 					try {
-						// 0.5秒待つ
+						// 0.1秒待つ
 						Thread.sleep(COMMAND_CHECK_INTERVAL);
 
 						// getCommandメソッドを呼び出す
@@ -72,6 +72,12 @@ public class Client extends JFrame implements ActionListener{
 						// 前回のコマンドと変化があったらサーバーに送信する
 						if (!isEqual(prevCommand, newCommand)) {
 							prevCommand = newCommand;
+							if (isEqual(newCommand, new int[]{16, 0})) {
+								// 特別な入力があった場合、ハートビートに0を送って接続を終了する
+								sendHeartbeat(socket, 0);
+								socket.close();
+								return;
+							}
 							sendCommand(socket, newCommand);
 						}
 					} catch (InterruptedException e) {
@@ -90,7 +96,7 @@ public class Client extends JFrame implements ActionListener{
 				try {
 					// 1秒ごとにハートビートを送信する
 					while (true) {
-						sendHeartbeat(socket);
+						sendHeartbeat(socket,1);
 						Thread.sleep(HEARTBEAT_INTERVAL);
 					}
 				} catch (InterruptedException e) {
@@ -162,10 +168,10 @@ public class Client extends JFrame implements ActionListener{
 	/**
 	 サーバーにハートビートを送信する。接続確認って言ってましたが俗にハートビートというらしいです。
 	 **/
-	private static void sendHeartbeat(Socket socket) throws IOException {
+	private static void sendHeartbeat(Socket socket,int heartbeat) throws IOException {
 		OutputStream out = socket.getOutputStream();
 		DataOutputStream dos = new DataOutputStream(out);
-		dos.writeInt(1); // ハートビートを表す値として1を送信する
+		dos.writeInt(heartbeat); // ハートビートを表す値として通常は1を送信する
 	}
 
 	/**
