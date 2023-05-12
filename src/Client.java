@@ -1,14 +1,16 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import javax.swing.*;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import javax.swing.JFrame;
 
+
 public class Client extends JFrame implements ActionListener{
 
 	private static final int SERVER_PORT_1 = 10000;//接続確認に使うほうはこちら
-	private static final int COMMAND_CHECK_INTERVAL = 100; // 0.5秒ごとにgetCommandメソッドを監視する
+	private static final int COMMAND_CHECK_INTERVAL = 101; // 0.1秒ごとにgetCommandメソッドを監視する
 	private static final int HEARTBEAT_INTERVAL = 1000; // 1秒ごとにサーバーにハートビートを送信する
 	private static final int TIMEOUT_INTERVAL = 5000; // 5秒サーバーからのレスポンスがなかったらタイムアウトする
 	Client()
@@ -31,19 +33,6 @@ public class Client extends JFrame implements ActionListener{
 		
 	}
 
-	public String[] accessServer()
-	{
-
-	}
-
-	public boolean reactConnection()
-	{
-		
-	}
-
-
-
-
 	public void doMyTurn()
 	{
 		
@@ -58,7 +47,8 @@ public class Client extends JFrame implements ActionListener{
 			// サーバーに接続する
 			Socket socket = new Socket("localhost", SERVER_PORT_1);
 
-			// getCommandメソッドを監視するスレッドを起動する
+			// getCommandメソッドを監視するスレッド起動する
+			// マッチング中にもこれを走らせ、接続中断のボタンが押された時も対応可能にする。
 			new Thread(() -> {
 				int[] prevCommand = new int[2];
 				while (true) {
@@ -152,7 +142,31 @@ public class Client extends JFrame implements ActionListener{
 		}
 		return true;
 	}
+	public int getRoomNumber(ActionEvent e) {
+		int roomNumber = 0;
+		Object source = e.getSource();
 
+		if (source instanceof JButton) {
+			JButton button = (JButton) source;
+			String buttonText = button.getText();
+
+			switch (buttonText) {
+				case "Button 1":
+					roomNumber = 1;
+					break;
+				case "Button 2":
+					roomNumber = 2;
+					break;
+				case "Button 3":
+					roomNumber = 3;
+					break;
+				default:
+					break;
+			}
+		}
+
+		return roomNumber;
+	}
 
 	/**
 	 int[2]のコマンドをサーバーに送信する。
@@ -183,6 +197,10 @@ public class Client extends JFrame implements ActionListener{
 		DataInputStream dis = new DataInputStream(in);
 		socket.setSoTimeout(TIMEOUT_INTERVAL); // タイムアウト時間を設定する
 		return dis.readInt();
+	}
+
+	private static String getPlayerName(JTextField textField) {
+		return textField.getText();
 	}
 
 
