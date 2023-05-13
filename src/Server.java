@@ -246,7 +246,7 @@ public class Server{
 						}
 					}
 					System.out.println(P1_name+"が Room"+RoomID+"に先攻として入りました");
-					ConnectThread P1_ct = new ConnectThread(RoomID, true,);
+					ConnectThread P1_ct = new ConnectThread(RoomID, true, P1_socket);
 					while(P2_name == null) {//後攻が来るまで無限ループ
 						try {
 							Thread.sleep(100);
@@ -256,6 +256,8 @@ public class Server{
 						}
 					}
 					System.out.println(P2_name+"が Room"+RoomID+"に後攻として入りました");
+					ConnectThread P2_ct = new ConnectThread(RoomID, false, P2_socket);
+
 					//後攻が来たら
 					
 					//★続き(対局部分)はここに今度書きます
@@ -276,14 +278,12 @@ public class Server{
 
 	//接続状態確認スレッド
 	class ConnectThread extends Thread{
-		int port;
 		int id;
 		Boolean isFirst;
 		Socket ct_socket;
-		ConnectThread(int id, boolean isFirst,int p, Socket s){
+		ConnectThread(int id, boolean isFirst, Socket s){
 			this.id = id;
 			this.isFirst = isFirst;
-			port = p;
 			ct_socket = s;
 		}
 		@Override
