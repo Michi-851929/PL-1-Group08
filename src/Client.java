@@ -214,10 +214,17 @@ public class Client extends JFrame implements ActionListener{
 	 配列の送信方法は
 	 **/
 	private static void sendCommand(Socket socket, int[] command) throws IOException {
+		command[2] = getTimeLimit();
 		OutputStream out = socket.getOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(out);
 		oos.writeObject(command);
-
+	}
+	/**
+	 TODO:現在の制限時間を参照できるようにする
+	 **/
+	public static int getTimeLimit() {
+		int timeLimit = 0;
+		return timeLimit;
 	}
 
 	/**
