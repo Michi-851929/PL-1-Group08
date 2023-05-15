@@ -37,6 +37,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	private static final int PHASE_TITLE = 0; //changePhase()の引数でタイトル画面への遷移を表す
 	private static final int PHASE_BATTLE = 1; //changePhase()の引数で対局画面への遷移を表す
 	private static final int PHASE_RESULT = 2; //changePhase()の引数で結果画面への遷移を表す
+	private static final Color BACKGROUND_COLOR = new Color(207, 207, 207);
 	
 	Othello othello;
 	
@@ -61,10 +62,18 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	JLabel ui_jl_nstones2;
 	JButton ui_jb_giveup;
 	JButton[][] ui_jb_field = new JButton[8][8];
+	boolean command_pressed = false;
+	int[] command_value = {-1, -1};
+	
+	//結果画面のオブジェクト
+	JButton ui_jb_totitle;
+	JButton ui_jb_exit;
 	
 	Client(String title)
 	{
 		super(title);
+		//RepaintManager currentManager = RepaintManager.currentManager(this);
+		//currentManager.setDoubleBufferingEnabled(false);
 		setLayout(new FlowLayout());
 		
 		//スタート画面
@@ -82,6 +91,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		//changePhase(PHASE_TITLE);
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBackground(BACKGROUND_COLOR);
 		setSize(800, 600);
 		setVisible(true);
 	}
@@ -120,12 +130,18 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			ui_jl_waittime.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 16));
 			ui_jb_5min = new JButton("5分");
 			ui_jb_5min.addActionListener(this);
+			ui_jb_5min.setForeground(Color.BLACK);
+			//ui_jb_5min.setBackground(Color.WHITE);
 			ui_jb_5min.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
 			ui_jb_10min = new JButton("10分");
 			ui_jb_10min.addActionListener(this);
+			ui_jb_10min.setForeground(Color.GREEN);
+			//ui_jb_10min.setBackground(Color.GREEN);
 			ui_jb_10min.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
 			ui_jb_20min = new JButton("20分");
 			ui_jb_20min.addActionListener(this);
+			ui_jb_20min.setForeground(Color.BLACK);
+			//ui_jb_20min.setBackground(Color.WHITE);
 			ui_jb_20min.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
 			ui_jl_5min = new JLabel("×", SwingConstants.CENTER);
 			ui_jl_5min.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
@@ -168,49 +184,69 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			display.removeAll();
 			JPanel battle = new JPanel();
 			battle.setLayout(new BorderLayout(10, 10));
+			battle.setBackground(BACKGROUND_COLOR);
 			
 			JPanel p06 = new JPanel();
-			p06.setLayout(new FlowLayout(FlowLayout.RIGHT, 20, 0));
+			p06.setLayout(new FlowLayout(FlowLayout.RIGHT, 40, 0));
+			p06.setBackground(BACKGROUND_COLOR);
 			ui_jl_name1 = new JLabel(othello.getPlayers()[0].getPlayerName());
 			ui_jl_name1.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
-			ui_jl_time1 = new JLabel("5:00");
+			ui_jl_time1 = new JLabel("00:00");
 			ui_jl_time1.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
+			JLabel ui_jl_turn1 = new JLabel(getStoneIcon((othello.getPlayers()[0].isFirstMover() ? Othello.BLACK : Othello.WHITE), -1));
+			p06.add(ui_jl_turn1);
 			p06.add(ui_jl_name1);
 			p06.add(ui_jl_time1);
 			battle.add(p06, "South");
 			
 			JPanel p07 = new JPanel();
-			p07.setLayout(new FlowLayout(FlowLayout.LEFT, 20, 0));
+			p07.setLayout(new FlowLayout(FlowLayout.LEFT, 40, 0));
+			p07.setBackground(BACKGROUND_COLOR);
 			ui_jl_name2 = new JLabel(othello.getPlayers()[1].getPlayerName());
 			ui_jl_name2.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
-			ui_jl_time2 = new JLabel("5:00");
+			ui_jl_time2 = new JLabel("00:00");
 			ui_jl_time2.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
+			JLabel ui_jl_turn2 = new JLabel(getStoneIcon((othello.getPlayers()[1].isFirstMover() ? Othello.BLACK : Othello.WHITE), -1));
 			p07.add(ui_jl_time2);
 			p07.add(ui_jl_name2);
+			p07.add(ui_jl_turn2);
 			battle.add(p07, "North");
 			
 			JPanel p08 = new JPanel();
 			p08.setLayout(new GridLayout(2, 1));
-			ui_jl_nstones1 = new JLabel("3");
-			ui_jl_nstones2 = new JLabel("3");
+			p08.setBackground(BACKGROUND_COLOR);
+			ui_jl_nstones1 = new JLabel("×  2 ");
+			ui_jl_nstones1.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
+			ui_jl_nstones1.setIcon(getStoneIcon(Othello.BLACK, -1));
+			ui_jl_nstones2 = new JLabel("×  2 ");
+			ui_jl_nstones2.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
+			ui_jl_nstones2.setIcon(getStoneIcon(Othello.WHITE, -1));
 			p08.add(ui_jl_nstones1, "A");
 			p08.add(ui_jl_nstones2, "B");
 			battle.add(p08, "West");
 			
 			JPanel p09 = new JPanel();
+			p09.setBackground(BACKGROUND_COLOR);
 			p09.setLayout(new BorderLayout());
 			ui_jb_giveup = new JButton("投了");
-			ui_jb_giveup.setPreferredSize(new Dimension(100, 50));
+			ui_jb_giveup.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
+			ui_jb_giveup.addActionListener(this);
+			ui_jb_giveup.setPreferredSize(new Dimension(110, 50));
 			p09.add(ui_jb_giveup, "South");
 			battle.add(p09, "East");
 			
 			JPanel p10 = new JPanel();
 			p10.setLayout(new GridLayout(8, 8, -6, -6));
+			p10.setBackground(BACKGROUND_COLOR);
+			int[][] board_state = othello.getBoard();
 			for(int i = 0; i < 8; i++) {
 				for(int j = 0; j < 8; j++) {
-					ui_jb_field[i][j] = new JButton();//Integer.toString(i) + Integer.toString(j));
-					ui_jb_field[i][j].setIcon(getStoneIcon());
-					ui_jb_field[i][j].setMargin(new Insets(-4, -4, -4, -4));
+					ui_jb_field[i][j] = new JButton(Integer.toString(i) + Integer.toString(j));
+					ui_jb_field[i][j].setIcon(getStoneIcon(board_state[i][j], 0));
+					ui_jb_field[i][j].setDisabledIcon(getStoneIcon(board_state[i][j], 0));
+					ui_jb_field[i][j].setMargin(new Insets(-4, -4, -4, -24));
+					ui_jb_field[i][j].addActionListener(this);
+					ui_jb_field[i][j].setEnabled(board_state[i][j] == Othello.EMPTY);
 					p10.add(ui_jb_field[i][j]);
 				}
 			}
@@ -220,53 +256,115 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			setVisible(true);
 			repaint();
 			break;
-		case PHASE_RESULT:
 			
+		case PHASE_RESULT:
+			display.removeAll();
+			JPanel result = new JPanel();
+			result.setLayout(new BorderLayout(30, 150));
+			
+			JPanel p11 = new JPanel();
+			p11.setLayout(new GridLayout(3, 1));
+			JLabel ui_jl_result0 = new JLabel("", SwingConstants.CENTER);
+			ui_jl_result0.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 64));
+			JLabel ui_jl_result1 = new JLabel("何対何で", SwingConstants.CENTER);
+			ui_jl_result1.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 48));
+			JLabel ui_jl_result2 = new JLabel("あなたの勝ち！", SwingConstants.CENTER);
+			ui_jl_result2.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 48));
+			p11.add(ui_jl_result0);
+			p11.add(ui_jl_result1);
+			p11.add(ui_jl_result2);
+			result.add(p11, "Center");
+			
+			JPanel p12 = new JPanel();
+			p12.setLayout(new GridLayout(2, 1, 30, 30));
+			ui_jb_totitle = new JButton("タイトルへ");
+			ui_jb_totitle.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
+			ui_jb_totitle.setPreferredSize(new Dimension(200, 50));
+			ui_jb_exit = new JButton("終了");
+			ui_jb_exit.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
+			ui_jb_exit.setPreferredSize(new Dimension(200, 50));
+			p12.add(ui_jb_totitle);
+			p12.add(ui_jb_exit);
+			result.add(p12, "South");
+			
+			display.add(result);
+			setVisible(true);
+			repaint();
 			break;
+			
 		default:
 			break;
 		}
 	}
 	
-	private ImageIcon getStoneIcon()
+	private ImageIcon getStoneIcon(int c, int angle)
 	{
 		Image img = createImage(50, 50);
 		Graphics g = img.getGraphics();
-		g.setColor(Color.GREEN);
-		for(int i = 0; i < 50; i++) {
-			g.drawLine(i, 0, i, 50 - 1);
+		
+		if(angle != -1) {
+			g.setColor(new Color(0, 127, 0));
+			if(angle == -2) {
+				g.setColor(new Color(191, 239, 239));
+			}
+			for(int i = 0; i < 50; i++) {
+				g.drawLine(i, 0, i, 50 - 1);
+			}
+			g.setColor(Color.BLACK);
+			g.drawRect(0, 0, 50 - 1, 50 - 1);
+			g.drawRect(1, 1, 50 - 3, 50 - 3);
 		}
-		g.setColor(Color.BLACK);
-		g.drawRect(0, 0, 50 - 1, 50 - 1);
-		g.drawRect(1, 1, 50 - 3, 50 - 3);
+		
+		if(c == Othello.BLACK) {
+			g.setColor(angle < 180 ? Color.BLACK : Color.WHITE);
+			g.fillOval(10 - (int)(8 * Math.sin(Math.PI / 360 * angle)), 9 + (int)(8 * Math.sin(Math.PI / 360 * angle)), 30 + (int)(16 * Math.sin(Math.PI / 360 * angle)), 1 + (int)((15 + (8 * Math.sin(Math.PI / 360 * angle))) * ( (Math.cos(Math.PI / 180 * angle) + 1))));
+		}
+		else if(c == Othello.WHITE) {
+			g.setColor(angle < 180 ? Color.WHITE : Color.BLACK);
+			g.fillOval(10 - (int)(8 * Math.sin(Math.PI / 360 * angle)), 9 + (int)(8 * Math.sin(Math.PI / 360 * angle)), 30 + (int)(16 * Math.sin(Math.PI / 360 * angle)), 1 + (int)((15 + (8 * Math.sin(Math.PI / 360 * angle))) * ( (Math.cos(Math.PI / 180 * angle) + 1))));
+		}
 		
 		ImageIcon icon = new ImageIcon(img);
 		return icon;
 	}
 
-	public void reloadDisplay()
+	public void reloadDisplay(int[] play)
 	{
+		boolean[][] change_board = othello.applyMove(play);
+		int[][] board = othello.getBoard();
+		int count_black = 0;
+		int count_white = 0;
+		(ui_jb_field[play[0]][play[1]]).setDisabledIcon(getStoneIcon((othello.getCurrentTurn() ? Othello.WHITE : Othello.BLACK), 0));
 		
+		System.out.println((othello.getCurrentTurn() ? Othello.WHITE : Othello.BLACK));
+		for(int i = 0; i < 8; i++) {
+			for(int j = 0; j < 8; j++) {
+				int di = i;
+				int dj = j;
+				if(change_board[i][j]) {
+					new Thread(() -> {
+						try {
+							for(int k = 0; k <= 360; k += 2) {
+								Thread.sleep(2);
+								ui_jb_field[di][dj].setDisabledIcon(getStoneIcon(othello.getCurrentTurn() ? Othello.BLACK : Othello.WHITE, k));
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}).start();
+				}
+				if(board[i][j] == Othello.BLACK) {
+					count_black++;
+				}
+				else if(board[i][j] == Othello.WHITE) {
+					count_white++;
+				}
+			}
+		}
+		ui_jl_nstones1.setText("× " + (count_black >= 10 ? "" : " ") + count_black + " ");
+		ui_jl_nstones2.setText("× " + (count_white >= 10 ? "" : " ") + count_white + " ");
 	}
-	/*
-	public String[] getWaitingPlayers()
-	{
-		
-	}
-
-	public String[] accessServer()
-	{
-
-	}
-
-	public boolean reactConnection()
-	{
-		
-	}
-*/
-
-
-
+	
 	public void doMyTurn()
 	{
 		
@@ -406,8 +504,47 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	/**
 	 int[2]を取得する仮実装。最後に押されたボタンを所得する関数をお願いします。
 	 **/
-	private static int[] getCommand() {
+	private int[] getCommand() {
 		int[] play = new int[2];
+		boolean[][] field = othello.searchPlaceable();
+		for(int i = 0; i < 8; i++) {
+			for(int j = 0; j < 8; j++) {
+				ui_jb_field[i][j].setEnabled(field[i][j]);
+				if(field[i][j]) {
+					ui_jb_field[i][j].setIcon(getStoneIcon(Othello.EMPTY, -2));
+				}
+			}
+		}
+		ui_jb_giveup.setEnabled(true);
+		
+		try {
+			int millis;
+			command_pressed = true;
+			while(command_pressed) {
+				Thread.sleep(100);
+				millis = othello.getPlayers()[0].getLeftTime() - 100;
+				othello.getPlayers()[0].setLeftTime(millis);
+				ui_jl_time1.setText((millis >= 600000 ? "" : " ") + millis / 60000 + ":" + (((millis / 1000) % 60) < 10 ? "0" : "") + ((millis / 1000) % 60));
+				if(millis <= 0) { //時間切れ
+					play[0] = 8;
+					play[1] = 9;
+					break;
+				}
+			}
+			for(int i = 0; i < 8; i++) {
+				for(int j = 0; j < 8; j++) {
+					ui_jb_field[i][j].setEnabled(false);
+				}
+			}
+			ui_jb_giveup.setEnabled(false);
+			Thread.sleep(10);
+			play[0] = command_value[0];
+			play[1] = command_value[1];
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		return play;
 	}
 
@@ -419,9 +556,80 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	
 	public void actionPerformed(ActionEvent ae)
 	{
+		String s = ae.getActionCommand();
 		
+		if(s.equals("5分")) {
+			ui_jb_5min.setForeground(Color.GREEN);
+			ui_jb_10min.setForeground(Color.BLACK);
+			ui_jb_20min.setForeground(Color.BLACK);
+			
+			//ui_jb_5min.setBackground(Color.GREEN);
+			//ui_jb_10min.setBackground(Color.WHITE);
+			//ui_jb_20min.setBackground(Color.WHITE);
+		}
+		else if(s.equals("10分")) {
+			ui_jb_5min.setForeground(Color.BLACK);
+			ui_jb_10min.setForeground(Color.GREEN);
+			ui_jb_20min.setForeground(Color.BLACK);
+			
+			//ui_jb_5min.setBackground(Color.WHITE);
+			//ui_jb_10min.setBackground(Color.GREEN);
+			//ui_jb_20min.setBackground(Color.WHITE);
+		}
+		else if(s.equals("20分")) {
+			ui_jb_5min.setForeground(Color.BLACK);
+			ui_jb_10min.setForeground(Color.BLACK);
+			ui_jb_20min.setForeground(Color.GREEN);
+			
+			//ui_jb_5min.setBackground(Color.WHITE);
+			//ui_jb_10min.setBackground(Color.WHITE);
+			//ui_jb_20min.setBackground(Color.GREEN);
+		}
+		else if(s.equals("開始")) {
+			ui_jb_start.setText("マッチング中止");
+			connectToServer();
+		}
+		else if(s.equals("マッチング中止")) {
+			ui_jb_start.setText("開始");
+			
+		}
+		else if(s.equals("投了")) {
+			command_pressed = false;
+			command_value[0] = 8;
+			command_value[1] = 8;
+		}
+		
+		else {
+			command_pressed = false;
+			try {
+				int i = (int)s.charAt(0) - (int)'0';
+				int j = (int)s.charAt(1) - (int)'0';
+				
+				if(i < 0 || i >= 8 || j < 0 || j >= 8) {
+					throw new Exception("Incorrect button processing.");
+				}
+				
+				command_value[0] = i;
+				command_value[1] = j;
+			}
+			catch(Exception ex) {
+				ex.printStackTrace();
+				System.exit(0);
+			}
+		}
+		/*new Thread(() -> {
+			try {
+				for(int i = 0; i <= 360; i += 2) {
+					Thread.sleep(2);
+					ui_jb_field[2][2].setIcon(getStoneIcon(1, i));
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}).start();*/
 	}
 	
+	//JTextAreaの「プレイヤ名」の表示切り替え
 	public void focusGained(FocusEvent fe)
 	{
 		String s = ui_tf_namefield.getText();
@@ -444,9 +652,16 @@ public class Client extends JFrame implements ActionListener, FocusListener{
     {
         Client client = new Client("Othello Game");
         client.changePhase(PHASE_TITLE);
-        client.othello = new Othello(new Player("aiueo", true, 800), new Player("oeuia", false, 800));
+        client.othello = new Othello(new Player("aiueo", true, 60000 * 10 + 5000), new Player("oeuia", false, 60000 * 11));
         client.changePhase(PHASE_BATTLE);
-
+        int[] play = client.getCommand();
+        System.out.println(play[0] + ", " + play[1]);
+        client.reloadDisplay(play);
+        while(true) {
+        	play = client.getCommand();
+        	client.reloadDisplay(play);
+        }
+        //client.changePhase(PHASE_RESULT);
     }
 
 }
