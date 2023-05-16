@@ -887,6 +887,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
         catch(Exception ex) {
         	ex.printStackTrace();
         }
+        connectFlag = true;
         client.changePhase(PHASE_BATTLE);
         
         if(client.othello.getPlayers()[1].isFirstMover()) {
