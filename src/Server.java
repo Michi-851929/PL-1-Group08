@@ -4,7 +4,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
@@ -14,7 +13,7 @@ import java.util.Scanner;
 
 public class Server{
 	private int port; // サーバの待ち受け用ポート
-	private PrintWriter out; //データ送信用オブジェクト
+	//private PrintWriter out; //データ送信用オブジェクト
 	//private Receiver receiver; //データ受信用オブジェクト
 	static boolean[] RoomInfo = {false, false, false};
 	private GameThread[] GameThread; //対局用スレッド
@@ -31,7 +30,6 @@ public class Server{
 		}
 		MatchThread mt = new MatchThread(port);
 		mt.start();
-
 	}
 
 	//待ちプレイヤ確認応答スレッド
@@ -277,7 +275,7 @@ public class Server{
 			}
 			P1_rmt.stopRunning();
 			P2_rmt.stopRunning();
-			int time = 0;
+			time = 0;
 			System.out.println("Room"+RoomID+"の試合を終了しました");
 		}
 
@@ -296,7 +294,7 @@ public class Server{
 						}
 					}
 					System.out.println(P1_name+"が Room"+RoomID+"に先攻として入りました");
-					ReceiveMessageThread P1_rmt = null;
+					ReceiveMessageThread P1_rmt = new ReceiveMessageThread(P1_socket);
 					P1_ct = new ConnectThread(RoomID, true, P1_socket, P1_rmt);
 					while(P2_name == null) {//後攻が来るまで無限ループ
 						try {
@@ -307,7 +305,7 @@ public class Server{
 						}
 					}
 					System.out.println(P2_name+"が Room"+RoomID+"に後攻として入りました");
-					ReceiveMessageThread P2_rmt = null;
+					ReceiveMessageThread P2_rmt = new ReceiveMessageThread(P2_socket);
 					P2_ct = new ConnectThread(RoomID, false, P2_socket, P2_rmt);
 
 					//後攻が来たら
@@ -340,7 +338,7 @@ public class Server{
 					//試合終了まで無限ループ
 					while(true) {
 						//先攻の番 盤面が変わるまで無限ループ
-						while(P1_commandBefore[0] ==P1_rmt.last_command[0] && P1_commandBefore[1] == P1_commandBefore[1]) {
+						while(P1_commandBefore[0] ==P1_rmt.last_command[0] && P1_commandBefore[1] == P1_rmt.last_command[1]) {
 							Thread.sleep(50);
 						}
 						//commandBeforeを更新
@@ -356,7 +354,7 @@ public class Server{
 						}
 						
 						//後攻の番 盤面が変わるまで無限ループ
-						while(P2_commandBefore[0] ==P2_rmt.last_command[0] && P2_commandBefore[1] == P2_commandBefore[1]) {
+						while(P2_commandBefore[0] ==P2_rmt.last_command[0] && P2_commandBefore[1] == P2_rmt.last_command[1]) {
 							Thread.sleep(50);
 						}
 						//commandBeforeを更新
@@ -480,9 +478,9 @@ public class Server{
 		public void run() {	
 			try {
 				//InputStream is_ct = ct_socket.getInputStream();
-				OutputStream os_ct = ct_socket.getOutputStream();
-				DataOutputStream dos_ct = new DataOutputStream(os_ct);
-				ObjectOutputStream oos_ct = new ObjectOutputStream(os_ct);
+				//OutputStream os_ct = ct_socket.getOutputStream();
+				//DataOutputStream dos_ct = new DataOutputStream(os_ct);
+				ObjectOutputStream oos_ct = new ObjectOutputStream(new DataOutputStream(ct_socket.getOutputStream()));
 				//ObjectInputStream ois_ct = new ObjectInputStream(ct_socket.getInputStream());
 
 				ct_socket.setSoTimeout(1000);
@@ -544,7 +542,7 @@ public class Server{
 				System.out.printf("未定義のコマンドです");
 			}
 		}
-
+		scanner.close();
 
 	}
 }
