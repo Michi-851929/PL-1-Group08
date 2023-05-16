@@ -850,7 +850,6 @@ public class Client extends JFrame implements ActionListener, FocusListener{
         }
         connectFlag = true;*/
         client.changePhase(PHASE_BATTLE);
-        
         if(client.othello.getPlayers()[1].isFirstMover()) {
         	client.doYourTurn();
         }
