@@ -30,6 +30,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import java.text.Format;
+
 public class Client extends JFrame implements ActionListener, FocusListener{
 
 	private static final int SERVER_PORT_1 = 10000;//接続確認に使うほうはこちら
@@ -43,6 +45,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	private static final Color BACKGROUND_COLOR = new Color(207, 207, 207);
 	int[] vacantRoom=new int[3];
 	Othello othello;
+	boolean connectFlag=true;
 	
 	JPanel display = new JPanel();
 	
@@ -444,13 +447,18 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 				try {
 					// プレイヤ名とルーム番号を受信する
 					BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+					int turn=Integer.parseInt(br.readLine());
 					String opponentName = br.readLine();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}).start();
 
+
 			//TODO:othelloオブジェクトを作る
+			toBoolean(Number n)
+			Player me=new Player(,);
+
 
 			// getCommandメソッドを監視するスレッド起動する
 			// マッチング中にもこれを走らせ、接続中断のボタンが押された時も対応可能にする。
