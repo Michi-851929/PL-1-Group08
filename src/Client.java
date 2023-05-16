@@ -1,13 +1,36 @@
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
-import javax.swing.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import javax.swing.JFrame;
-import java.util.*;
 
-public class Client extends JFrame implements ActionListener{
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+
+public class Client extends JFrame implements ActionListener, FocusListener{
 
 	private static final int SERVER_PORT_1 = 10000;//接続確認に使うほうはこちら
 	private static final int SERVER_PORT_2 = 10001;//部屋確認に使うほうはこちら
@@ -76,7 +99,7 @@ public class Client extends JFrame implements ActionListener{
 		setVisible(true);
 	}
 
-	public void changePhase()
+	public void changePhase(int phase)
 	{
 		switch(phase) {
 		//タイトル画面
@@ -304,6 +327,8 @@ public class Client extends JFrame implements ActionListener{
 			g.fillOval(10 - (int)(8 * Math.sin(Math.PI / 360 * angle)), 9 + (int)(8 * Math.sin(Math.PI / 360 * angle)), 30 + (int)(16 * Math.sin(Math.PI / 360 * angle)), 1 + (int)((15 + (8 * Math.sin(Math.PI / 360 * angle))) * ( (Math.cos(Math.PI / 180 * angle) + 1))));
 		}
 		
+		ImageIcon icon = new ImageIcon(img);
+		return icon;
 	}
 
 	public void reloadDisplay(int[] play)
@@ -597,7 +622,7 @@ public class Client extends JFrame implements ActionListener{
 		return play;
 	}
 
-
+/*
 	public void checkVacantRoom() {
 
 		try (
@@ -628,7 +653,7 @@ public class Client extends JFrame implements ActionListener{
 			System.err.println("Heartbeat interrupted: " + e.getMessage());
 		}
 	}
-
+*/
 
 
 

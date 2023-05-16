@@ -39,6 +39,11 @@ public class Othello {
         currentTurn = true; // 黒からスタートする
     }
 
+    public Player[] getPlayers()
+    {
+    	return players;
+    }
+    
     public boolean getCurrentTurn() {
         // 現在の手番
         return currentTurn;
