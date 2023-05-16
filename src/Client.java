@@ -485,23 +485,39 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			int roomNumber = getRoomNumber(f);
 			sendPlayerInfo(socket, name, roomNumber);
 
-
-			//プレイヤ名を受け取る
-			new Thread(() -> {
 				try {
 					// プレイヤ名とルーム番号を受信する
 					BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-					int turn=Integer.parseInt(br.readLine());
+					int turnNum=Integer.parseInt(br.readLine());
 					String opponentName = br.readLine();
 				} catch (IOException e) {
 					e.printStackTrace();
+				}
+
+				// ハートビートを送信するスレッドを起動する
+			new Thread(() -> {
+				try {
+					// 1秒ごとにハートビートを送信する
+					while (true) {
+						sendHeartbeat(socket,1);
+						Thread.sleep(HEARTBEAT_INTERVAL);
+					}
+				} catch (InterruptedException e) {
+					// スレッドが中断されたら終了する
+					return;
+				} catch (IOException e) {
+					// サーバーに接続できなかったら終了する
+					e.printStackTrace();
+					return;
 				}
 			}).start();
 
 
 			//TODO:othelloオブジェクトを作る
-			toBoolean(Number n)
-			Player me=new Player(,);
+			boolean turn=true;
+
+
+			connectFlag=false;
 
 
 			// getCommandメソッドを監視するスレッド起動する
@@ -519,9 +535,8 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 						int[] newCommand = commandX;
 
 							if (isEqual(newCommand, new int[]{16, 0})) {
-								// 特別な入力があった場合、ハートビートに0を送って接続を終了する
+								// 特別な入力があった場合、ハートビートを0に変更する
 								sendHeartbeat(socket, 0);
-								socket.close();
 								return;
 							}
 							sendCommand(socket, newCommand);
@@ -634,19 +649,11 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	 配列の送信方法は
 	 **/
 	private static void sendCommand(Socket socket, int[] command) throws IOException {
-		command[2] = getTimeLimit();
+		command[2] = othello.getPlayers()[0].getLeftTime();
 		OutputStream out = socket.getOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(out);
 		oos.writeObject(command);
 	}
-	/**
-	 TODO:現在の制限時間を参照できるようにする
-	 **/
-	public static int getTimeLimit() {
-		int timeLimit = 0;
-		return timeLimit;
-	}
-
 	/**
 	 サーバーにハートビートを送信する。接続確認って言ってましたが俗にハートビートというらしいです。
 	 **/
