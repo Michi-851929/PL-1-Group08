@@ -1,7 +1,9 @@
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
@@ -36,6 +38,7 @@ public class Server{
 	class RoomInfoThread extends Thread{
 		int Info_port;
 		private PrintWriter Info_out; //データ送信用オブジェクト
+		private BufferedReader Info_in; //データ受信用オブジェクト
 		//コンストラクタ
 		RoomInfoThread(){
 			Info_port = port+1; //port+1番のポートを待ちプレイヤ確認応答スレッドに使用する
@@ -47,14 +50,20 @@ public class Server{
 				try {
 					ServerSocket ri_ss = new ServerSocket(Info_port);
 					Socket ri_socket = ri_ss.accept();
-					Info_out = new PrintWriter(ri_socket.getOutputStream(), true);//データ送信オブジェクトを用意
-					updateRoomInfo();
-					Info_out.println(Server.GetRoomInfo()); //待ち状況を書き込む
-					Info_out.flush(); //待ち状況を送信する
+				    Info_in = new BufferedReader(new InputStreamReader(ri_socket.getInputStream()));
+				    if(Info_in.read()==1) {
+						Info_out = new PrintWriter(ri_socket.getOutputStream(), true);//データ送信オブジェクトを用意
+						updateRoomInfo();
+						Info_out.println(Server.GetRoomInfo()); //待ち状況を書き込む
+						Info_out.flush(); //待ち状況を送信する
+				    }
+				    else {
+				    	System.out.println("RoomInfoThread:クライアントから送られた値が1ではありません");
+				    }
 					ri_ss.close();
 					ri_socket.close();
 				} catch (IOException e) {
-					System.err.println("クライアントとの接続が切れました．");
+					System.err.println("RoomInfoThread:クライアントとの接続が切れました．");
 				}
 			}
 		}
@@ -88,7 +97,7 @@ public class Server{
 				try {
 					ServerSocket ss_match = new ServerSocket(port);
 					Socket socket_match = ss_match.accept();
-					System.out.println("プレイヤーがマッチングスレッドに接続しました");
+					System.out.println("MatchThread:プレイヤーがマッチングスレッドに接続しました");
 					
 					//プレイヤーデータ宣言
 					String player_name = null;
@@ -493,14 +502,14 @@ public class Server{
 						Thread.sleep(1000);
 					}
 					else if(rmt.last_heartbeat[1] == -1) {//前のハートビート確認から1秒後にrmt.last_heartbeat[1]が-1のままのとき
-						throw new SocketTimeoutException("タイムアウトしました");
+						throw new SocketTimeoutException("ConnectThread:タイムアウトしました");
 					}
 					else {
 						if(isFirst) {
-							throw new LeaveGameException("先攻がゲーム退出希望");
+							throw new LeaveGameException("ConnectThread:先攻がゲーム退出希望");
 						}
 						else {
-							throw new LeaveGameException("後攻がゲーム退出希望");
+							throw new LeaveGameException("ConnectThread:後攻がゲーム退出希望");
 						}
 					}
 				}
@@ -543,7 +552,7 @@ public class Server{
 			}
 		}
 		scanner.close();
-
+		return;
 	}
 }
 	//切断希望受信エラー
