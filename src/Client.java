@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
@@ -41,7 +42,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	private static final int PHASE_BATTLE = 1; //changePhase()の引数で対局画面への遷移を表す
 	private static final int PHASE_RESULT = 2; //changePhase()の引数で結果画面への遷移を表す
 	private static final Color BACKGROUND_COLOR = new Color(207, 207, 207);
-	int[] vacantRoom=new int[3];
+	int[] vacantRoom = new int[3];
 	Othello othello;
 	
 	JPanel display = new JPanel();
@@ -701,8 +702,6 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		}
 	}
 
-
-
 	public void endBattle()
 	{
 		
@@ -805,14 +804,16 @@ public class Client extends JFrame implements ActionListener, FocusListener{
     public static void main(String[] args)
     {
         Client client = new Client("Othello Game");
-        client.changePhase(PHASE_TITLE);
         client.othello = new Othello(new Player("aiueo", true, 60000 * 10 + 5000), new Player("oeuia", false, 60000 * 11));
+        
         client.changePhase(PHASE_BATTLE);
-        int[] play = client.getCommand();
-        client.reloadDisplay(play);
-        while(true) {
-        	play = client.getCommand();
-        	client.reloadDisplay(play);
+        
+        if(client.othello.getPlayers()[1].isFirstMover()) {
+        	client.doYourTurn();
+        }
+        while() {
+        	client.doMyTurn();
+        	client.doYourTurn();
         }
         //client.changePhase(PHASE_RESULT);
     }
