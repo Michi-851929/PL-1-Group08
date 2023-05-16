@@ -41,7 +41,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	private static final int PHASE_BATTLE = 1; //changePhase()の引数で対局画面への遷移を表す
 	private static final int PHASE_RESULT = 2; //changePhase()の引数で結果画面への遷移を表す
 	private static final Color BACKGROUND_COLOR = new Color(207, 207, 207);
-	
+	int[] vacantRoom=new int[3];
 	Othello othello;
 	
 	JPanel display = new JPanel();
@@ -383,13 +383,11 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 
 			// 仮のtextFieldと仮のアクションイベント
 			// エラーが表示されているのが気になるので追加しただけ
-			//TODO：後で消す
-			JTextField textField = new JTextField("Player1");
 			ActionEvent f = new ActionEvent(new JButton("Button 1"), ActionEvent.ACTION_PERFORMED, null);
 
 
 			// 名前とルーム番号をサーバーに送信する
-			String name = getPlayerName(textField);
+			String name = ui_tf_namefield.getText();
 			int roomNumber = getRoomNumber(f);
 			sendPlayerInfo(socket, name, roomNumber);
 
@@ -405,21 +403,22 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 				}
 			}).start();
 
+			//TODO:othelloオブジェクトを作る
+
 			// getCommandメソッドを監視するスレッド起動する
 			// マッチング中にもこれを走らせ、接続中断のボタンが押された時も対応可能にする。
 			new Thread(() -> {
-				int[] prevCommand = new int[2];
+
 				while (true) {
 					try {
 						// 0.1秒待つ
 						Thread.sleep(COMMAND_CHECK_INTERVAL);
 
 						// getCommandメソッドを呼び出す
-						int[] newCommand = getCommand();
+						//TODO:play[2]から指し手をいずれ読み込めるようにする
+						int[] commandX = new int[2];
+						int[] newCommand = commandX;
 
-						// 前回のコマンドと変化があったらサーバーに送信する
-						if (!isEqual(prevCommand, newCommand)) {
-							prevCommand = newCommand;
 							if (isEqual(newCommand, new int[]{16, 0})) {
 								// 特別な入力があった場合、ハートビートに0を送って接続を終了する
 								sendHeartbeat(socket, 0);
@@ -427,7 +426,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 								return;
 							}
 							sendCommand(socket, newCommand);
-						}
+
 					} catch (InterruptedException e) {
 						// スレッドが中断されたら終了する
 						return;
@@ -491,10 +490,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	 2つのint配列が等しいかどうかを判定する。
 	 **/
 	private static boolean isEqual(int[] a, int[] b) {
-		if (a.length != b.length) {
-			return false;
-		}
-		for (int i = 0; i < a.length; i++) {
+		for (int i = 0; i < 2; i++) {
 			if (a[i] != b[i]) {
 				return false;
 			}
@@ -527,9 +523,6 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		return roomNumber;
 	}
 
-	private static String getPlayerName(JTextField textField) {
-		return textField.getText();
-	}
 	private static void sendPlayerInfo(Socket socket, String name, int roomNumber) throws IOException {
 		// 名前とルーム番号をサーバーに送信する
 		DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -622,11 +615,11 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		return play;
 	}
 
-/*
+
 	public void checkVacantRoom() {
 
 		try (
-				Socket socket = new Socket(hostName, SERVER_PORT_2);
+				Socket socket = new Socket("localhost", SERVER_PORT_2);
 				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		) {
@@ -653,7 +646,6 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			System.err.println("Heartbeat interrupted: " + e.getMessage());
 		}
 	}
-*/
 
 
 

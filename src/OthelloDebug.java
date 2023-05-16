@@ -1,7 +1,7 @@
 import java.util.Scanner;
 
 public class OthelloDebug {
-
+/*
         public static void main(String[] args) {
             OthelloDebug debug = new OthelloDebug();
             debug.start();
@@ -90,4 +90,5 @@ public class OthelloDebug {
             }
         return false;
     }
+    */
 }
