@@ -53,6 +53,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	JButton ui_jb_5min;
 	JButton ui_jb_10min;
 	JButton ui_jb_20min;
+	int button_selected = 1;
 	JLabel ui_jl_5min;
 	JLabel ui_jl_10min;
 	JLabel ui_jl_20min;
@@ -777,6 +778,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			//ui_jb_5min.setBackground(Color.GREEN);
 			//ui_jb_10min.setBackground(Color.WHITE);
 			//ui_jb_20min.setBackground(Color.WHITE);
+			button_selected = 0;
 		}
 		else if(s.equals("10分")) {
 			ui_jb_5min.setForeground(Color.BLACK);
@@ -786,6 +788,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			//ui_jb_5min.setBackground(Color.WHITE);
 			//ui_jb_10min.setBackground(Color.GREEN);
 			//ui_jb_20min.setBackground(Color.WHITE);
+			button_selected = 1;
 		}
 		else if(s.equals("20分")) {
 			ui_jb_5min.setForeground(Color.BLACK);
@@ -795,6 +798,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			//ui_jb_5min.setBackground(Color.WHITE);
 			//ui_jb_10min.setBackground(Color.WHITE);
 			//ui_jb_20min.setBackground(Color.GREEN);
+			button_selected = 2;
 		}
 		else if(s.equals("開始")) {
 			ui_jb_start.setText("マッチング中止");
