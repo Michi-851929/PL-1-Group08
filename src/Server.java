@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -88,11 +89,15 @@ public class Server{
 					ServerSocket ss_match = new ServerSocket(port);
 					Socket socket_match = ss_match.accept();
 					System.out.println("プレイヤーがマッチングスレッドに接続しました");
-
-					//★データ受信
-
+					
+					//プレイヤーデータ宣言
 					String player_name = null;
 					int player_time = 0;//希望待ち時間　1:3min 2:5min 3:7min
+					//データ受信
+					DataInputStream is = new DataInputStream(socket_match.getInputStream());
+					player_name = is.readUTF();
+					player_time = is.readInt();
+					is.close(); //DataInputStreamをclose
 
 					//待ち時間の一致するプレイヤーを探す
 					int room_tojoin = findWaitingRoom(player_time);
@@ -117,12 +122,12 @@ public class Server{
 					else {
 						GameThread[room_tojoin].setPlayer(socket_match, player_name, false);//後攻なので3個目の引数はfalse
 					}
-
+					
 
 				} catch (IOException e) {
 					// TODO 自動生成された catch ブロック
 					e.printStackTrace();
-				}
+				} 
 			}
 		}
 
@@ -246,7 +251,7 @@ public class Server{
 						}
 					}
 					System.out.println(P1_name+"が Room"+RoomID+"に先攻として入りました");
-					ConnectThread P1_ct = new ConnectThread(RoomID, true,);
+					ConnectThread P1_ct = new ConnectThread(RoomID, true, P1_socket);
 					while(P2_name == null) {//後攻が来るまで無限ループ
 						try {
 							Thread.sleep(100);
@@ -256,6 +261,8 @@ public class Server{
 						}
 					}
 					System.out.println(P2_name+"が Room"+RoomID+"に後攻として入りました");
+					ConnectThread P2_ct = new ConnectThread(RoomID, false, P2_socket);
+
 					//後攻が来たら
 					
 					//★続き(対局部分)はここに今度書きます
@@ -268,7 +275,7 @@ public class Server{
 					//★切断希望が出たことをプレイヤーに伝える
 				}
 				closeGame();
-				//ここでGameThread[i]は初期状態に戻る→274行目へ(無限ループ)
+				//ここでGameThread[i]は初期状態に戻り、無限ループへ
 			}
 		}
 	}
@@ -276,14 +283,12 @@ public class Server{
 
 	//接続状態確認スレッド
 	class ConnectThread extends Thread{
-		int port;
 		int id;
 		Boolean isFirst;
 		Socket ct_socket;
-		ConnectThread(int id, boolean isFirst,int p, Socket s){
+		ConnectThread(int id, boolean isFirst, Socket s){
 			this.id = id;
 			this.isFirst = isFirst;
-			port = p;
 			ct_socket = s;
 		}
 		@Override
@@ -294,7 +299,7 @@ public class Server{
 			ct_socket.setSoTimeout(1000);
 			while(true) {
 				try {
-					os_ct.write(1);//★ここint型の二次元配列にする
+					os_ct.write(1);//★ここint型の二(or三)次元配列にする
 					if(is_ct.read() == 1) {
 						//ok
 						Thread.sleep(1000);
