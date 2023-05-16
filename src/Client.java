@@ -45,8 +45,8 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	private static final int PHASE_RESULT = 2; //changePhase()の引数で結果画面への遷移を表す
 	private static final Color BACKGROUND_COLOR = new Color(207, 207, 207);
 	int[] vacantRoom = new int[3];
-	Othello othello;
-	boolean connectFlag=true;
+	private Othello othello;
+	private static boolean connectFlag = true;
 	
 	JPanel display = new JPanel();
 	
@@ -815,7 +815,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
         client.othello = new Othello(new Player("aiueo", true, 60000 * 10 + 5000), new Player("oeuia", false, 60000 * 11));
         
         try {
-        	while(true) {
+        	while(connectFlag) {
         		Thread.sleep(100);
         	}
         }
