@@ -1,10 +1,14 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -165,7 +169,7 @@ public class Server{
 		int time;//開始時の残り時間
 		Socket P1_socket;//先攻のソケット
 		Socket P2_socket;//後攻のソケット
-
+		int command[];
 
 		//コンストラクタ
 		GameThread(int id){
@@ -173,7 +177,11 @@ public class Server{
 			P2_name = null;
 			time = 0;
 			RoomID = id;
-			System.out.println("Room"+id+"の試合を終了しました");
+			command = new int[3];
+			command[0]=0;
+			command[1]=0;
+			command[2]=0;
+			System.out.println("Room"+id+"の試合を開始しました");
 		}
 
 		//待機プレイヤの有無を返す
@@ -264,9 +272,33 @@ public class Server{
 					ConnectThread P2_ct = new ConnectThread(RoomID, false, P2_socket);
 
 					//後攻が来たら
+					BufferedReader br_p1 = new BufferedReader(new InputStreamReader(P1_socket.getInputStream()));
+					BufferedReader br_p2 = new BufferedReader(new InputStreamReader(P2_socket.getInputStream()));
+					BufferedWriter bw_p1 = new BufferedWriter(new OutputStreamWriter(P1_socket.getOutputStream()));
+					BufferedWriter bw_p2 = new BufferedWriter(new OutputStreamWriter(P2_socket.getOutputStream()));
+					ObjectOutputStream oos_p1 = new ObjectOutputStream(P1_socket.getOutputStream());
+					ObjectInputStream ois_p1 = new ObjectInputStream(P1_socket.getInputStream());
+					ObjectOutputStream oos_p2 = new ObjectOutputStream(P2_socket.getOutputStream());
+					ObjectInputStream ois_p2 = new ObjectInputStream(P2_socket.getInputStream());
 					
-					//★続き(対局部分)はここに今度書きます
-				
+					//先攻/後攻を送信
+					bw_p1.write(1);
+					bw_p1.flush();
+					bw_p2.write(0);
+					bw_p2.flush();
+					
+					//相手の名前を送信
+					bw_p1.write(P2_name);
+					bw_p1.flush();
+					bw_p2.write(P1_name);
+					bw_p2.flush();
+					
+					//試合終了まで無限ループ
+					while(true) {
+						//先攻の番
+						
+					}
+					//★続き(対局部分)はここに今度書きます			
 				}
 				catch (SocketTimeoutException es){
 					//★残っている側のプレイヤーに対戦相手がタイムアウトしたことを伝え試合を終了する
@@ -284,22 +316,28 @@ public class Server{
 	//接続状態確認スレッド
 	class ConnectThread extends Thread{
 		int id;
+		int command_send[];
 		Boolean isFirst;
 		Socket ct_socket;
 		ConnectThread(int id, boolean isFirst, Socket s){
 			this.id = id;
 			this.isFirst = isFirst;
 			ct_socket = s;
+			command_send = new int[3];
+			command_send[0]=16;
+			command_send[1]=1;
+			command_send[2]=-1;
 		}
 		@Override
 		public void run() {
 			InputStream is_ct = ct_socket.getInputStream();
 			OutputStream os_ct = ct_socket.getOutputStream();
 			DataOutputStream dos_ct = new DataOutputStream(os_ct);
+			ObjectOutputStream oos_ct = new ObjectOutputStream(os_ct);
 			ct_socket.setSoTimeout(1000);
 			while(true) {
 				try {
-					os_ct.write(1);//★ここint型の二(or三)次元配列にする
+					oos_ct.writeObject(command_send);
 					if(is_ct.read() == 1) {
 						//ok
 						Thread.sleep(1000);
