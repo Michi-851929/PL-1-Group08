@@ -1,9 +1,7 @@
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -12,6 +10,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.Scanner;
 
 public class Server{
 	private int port; // サーバの待ち受け用ポート
@@ -172,6 +171,8 @@ public class Server{
 		ReceiveMessageThread P1_rmt;
 		ReceiveMessageThread P2_rmt;
 		boolean running;
+		ConnectThread P1_ct;
+		ConnectThread P2_ct;
 
 		//コンストラクタ
 		GameThread(int id){
@@ -186,7 +187,7 @@ public class Server{
 			System.out.println("Room"+id+"の試合を開始しました");
 		}
 		
-		//試合を終了
+		//試合ループを終了
 		public void stopRunning() {
 			running = false;
 		}
@@ -237,6 +238,27 @@ public class Server{
 				P2_socket = sc;
 			}
 		}
+		
+		//部屋情報を出力
+		public void outputRoomInfo() {
+			System.out.println("Room ID: "+RoomID);
+			switch(getTime()) {
+			case 1:
+				System.out.println("Time: 3min");
+				break;
+			case 2:
+				System.out.println("Time: 5min");
+				break;
+			case 3:
+				System.out.println("Time: 7min");
+				break;
+			default:
+				System.out.println("Time: Unknown");
+
+			}
+			System.out.println("First Player: "+getPlayerName(true));
+			System.out.println("Second Player: "+getPlayerName(false));
+		}
 
 		//ゲーム開始時の残り時間を設定する
 		public void setTime(int t) {
@@ -275,7 +297,7 @@ public class Server{
 					}
 					System.out.println(P1_name+"が Room"+RoomID+"に先攻として入りました");
 					ReceiveMessageThread P1_rmt = null;
-					ConnectThread P1_ct = new ConnectThread(RoomID, true, P1_socket, P1_rmt);
+					P1_ct = new ConnectThread(RoomID, true, P1_socket, P1_rmt);
 					while(P2_name == null) {//後攻が来るまで無限ループ
 						try {
 							Thread.sleep(100);
@@ -286,17 +308,17 @@ public class Server{
 					}
 					System.out.println(P2_name+"が Room"+RoomID+"に後攻として入りました");
 					ReceiveMessageThread P2_rmt = null;
-					ConnectThread P2_ct = new ConnectThread(RoomID, false, P2_socket, P2_rmt);
+					P2_ct = new ConnectThread(RoomID, false, P2_socket, P2_rmt);
 
 					//後攻が来たら
-					BufferedReader br_p1 = new BufferedReader(new InputStreamReader(P1_socket.getInputStream()));
-					BufferedReader br_p2 = new BufferedReader(new InputStreamReader(P2_socket.getInputStream()));
+					//BufferedReader br_p1 = new BufferedReader(new InputStreamReader(P1_socket.getInputStream()));
+					//BufferedReader br_p2 = new BufferedReader(new InputStreamReader(P2_socket.getInputStream()));
 					BufferedWriter bw_p1 = new BufferedWriter(new OutputStreamWriter(P1_socket.getOutputStream()));
 					BufferedWriter bw_p2 = new BufferedWriter(new OutputStreamWriter(P2_socket.getOutputStream()));
 					ObjectOutputStream oos_p1 = new ObjectOutputStream(P1_socket.getOutputStream());
-					ObjectInputStream ois_p1 = new ObjectInputStream(P1_socket.getInputStream());
+					//ObjectInputStream ois_p1 = new ObjectInputStream(P1_socket.getInputStream());
 					ObjectOutputStream oos_p2 = new ObjectOutputStream(P2_socket.getOutputStream());
-					ObjectInputStream ois_p2 = new ObjectInputStream(P2_socket.getInputStream());
+					//ObjectInputStream ois_p2 = new ObjectInputStream(P2_socket.getInputStream());
 					
 					//先攻/後攻を送信
 					bw_p1.write(1);
@@ -349,7 +371,11 @@ public class Server{
 							break;
 						}
 					}
+					//試合終了後
 					
+					//接続確認メソッドを停止
+					P1_ct.stopRunning();
+					P2_ct.stopRunning();
 				}
 				/*catch (SocketTimeoutException es){
 					//★残っている側のプレイヤーに対戦相手がタイムアウトしたことを伝え試合を終了する
@@ -364,6 +390,7 @@ public class Server{
 				catch (IOException eio) {
 					eio.printStackTrace();
 				}
+				
 				closeGame();
 				//ここでGameThread[i]は初期状態に戻り、無限ループへ
 			}
@@ -445,6 +472,10 @@ public class Server{
 			rmt = r;
 			running = true;
 		}
+		public void stopRunning() {
+			running = false;
+		}
+		
 		@Override
 		public void run() {	
 			try {
@@ -490,7 +521,6 @@ public class Server{
 				ie.printStackTrace();
 			}
 			finally {
-				running = false;
 				GameThread[id].stopRunning(); //試合のループを終了させる
 			}
 		}
@@ -499,6 +529,23 @@ public class Server{
 	//mainメソッド
 	public static void main(String[] args){
 		Server server = new Server(10000); //待ち受けポート10000番でサーバオブジェクトを準備
+		Scanner scanner = new Scanner(System.in);
+		while(true) {
+			String admin_command = scanner.next();
+			if(admin_command.equals("status")) {
+				for(int i = 0; i<128;i++) {
+					server.GameThread[i].outputRoomInfo();
+				}
+			}
+			else if(admin_command.equals("stop")) {
+				break;
+			}
+			else {
+				System.out.printf("未定義のコマンドです");
+			}
+		}
+
+
 	}
 }
 	//切断希望受信エラー
