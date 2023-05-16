@@ -39,6 +39,11 @@ public class Othello {
         currentTurn = true; // 黒からスタートする
     }
 
+    public Player[] getPlayers()
+    {
+    	return players;
+    }
+    
     public boolean getCurrentTurn() {
         // 現在の手番
         return currentTurn;
@@ -58,13 +63,14 @@ public class Othello {
 
     */
 
-    public int[][] searchPlaceable() {
-        int[][] placeable = new int[8][8];
+    public boolean[][] searchPlaceable() {
+        boolean[][] placeable = new boolean[8][8];
 
         for(int i = 0; i < 8; i++) {
             for(int j = 0; j < 8; j++) {
+            	placeable[i][j] = false;
                 if(board[i][j] != EMPTY) {
-                    continue; // 空白マスでない場合はスキップ
+                	continue; // 空白マスでない場合はスキップ
                 }
                 for (int[] dir : directions) {
                     int x = i + dir[0];
@@ -76,7 +82,7 @@ public class Othello {
                         }
                         if (board[x][y] == (currentTurn ? 1 : -1)) {
                             if (count > 0) {
-                                placeable[i][j] = 1; // おける場所
+                                placeable[i][j] = true; // おける場所
                             }
                             break; // 自分の石がある場合は終了
                         } else {
@@ -126,10 +132,11 @@ public class Othello {
         }
     }
 
-    public void applyMove(int[] move) {
+    public boolean[][] applyMove(int[] move) {
         // 指し手の座標を取得
         int i = move[0];
         int j = move[1];
+        boolean[][] change = new boolean[8][8];
 
         // 石の色を設定
         int color = (currentTurn ? BLACK : WHITE);
@@ -138,6 +145,11 @@ public class Othello {
         try {
             if(i >= 0 && i < 8 && j >= 0 && j < 8 && board[i][j] == EMPTY) {
                 board[i][j] = color;
+                for(int inc1 = 0; inc1 < 8; inc1++) {
+                	for(int inc2 = 0; inc2 < 8; inc2++) {
+                		change[inc1][inc2] = false;
+                	}
+                }
                 
                 // 8方向について裏返せる石を探索し、裏返す
                 for(int[] dir : directions) {
@@ -155,6 +167,7 @@ public class Othello {
                                 y = j + dir[1];
                                 for (int k = 0; k < count; k++) {
                                     board[x][y] = color;
+                                    change[x][y] = true;
                                     x += dir[0];
                                     y += dir[1];
                                 }
@@ -180,5 +193,7 @@ public class Othello {
 
         // 現在の手番を更新する
         currentTurn = !currentTurn;
+        
+        return change;
     }
 }

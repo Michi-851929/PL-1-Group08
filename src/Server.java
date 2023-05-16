@@ -1,9 +1,14 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -73,41 +78,6 @@ public class Server{
 		return retval;
 	}
 
-	/*Sample
-	 // データ受信用スレッド(内部クラス)
-	 /
-	class Receiver extends Thread {
-		private InputStreamReader sisr; //受信データ用文字ストリーム
-		private BufferedReader br; //文字ストリーム用のバッファ
-
-		// 内部クラスReceiverのコンストラクタ
-		Receiver (Socket socket){
-			try{
-				sisr = new InputStreamReader(socket.getInputStream());
-				br = new BufferedReader(sisr);
-			} catch (IOException e) {
-				System.err.println("データ受信時にエラーが発生しました: " + e);
-			}
-		}
-
-		// 内部クラス Receiverのメソッド
-		public void run(){
-			try{
-				while(true) {// データを受信し続ける
-					String inputLine = br.readLine();//データを一行分読み込む
-					if (inputLine != null){ //データを受信したら
-						System.out.println("サーバからメッセージ " + inputLine + " が届きました．そのまま返信します．");
-						out.println(inputLine);//受信データをバッファに書き出す
-						out.flush();//受信データをそのまま返信する
-					}
-				}
-			} catch (IOException e){ // 接続が切れたとき
-				System.err.println("クライアントとの接続が切れました．");
-			}
-		}
-	}
-	//Sampleここまで*/
-
 	//マッチングスレッド
 	class MatchThread extends Thread{
 		int port;
@@ -123,11 +93,15 @@ public class Server{
 					ServerSocket ss_match = new ServerSocket(port);
 					Socket socket_match = ss_match.accept();
 					System.out.println("プレイヤーがマッチングスレッドに接続しました");
-
-					//★データ受信
-
+					
+					//プレイヤーデータ宣言
 					String player_name = null;
 					int player_time = 0;//希望待ち時間　1:3min 2:5min 3:7min
+					//データ受信
+					DataInputStream is = new DataInputStream(socket_match.getInputStream());
+					player_name = is.readUTF();
+					player_time = is.readInt();
+					is.close(); //DataInputStreamをclose
 
 					//待ち時間の一致するプレイヤーを探す
 					int room_tojoin = findWaitingRoom(player_time);
@@ -152,12 +126,12 @@ public class Server{
 					else {
 						GameThread[room_tojoin].setPlayer(socket_match, player_name, false);//後攻なので3個目の引数はfalse
 					}
-
+					
 
 				} catch (IOException e) {
 					// TODO 自動生成された catch ブロック
 					e.printStackTrace();
-				}
+				} 
 			}
 		}
 
@@ -195,7 +169,7 @@ public class Server{
 		int time;//開始時の残り時間
 		Socket P1_socket;//先攻のソケット
 		Socket P2_socket;//後攻のソケット
-
+		int command[];
 
 		//コンストラクタ
 		GameThread(int id){
@@ -203,7 +177,11 @@ public class Server{
 			P2_name = null;
 			time = 0;
 			RoomID = id;
-			System.out.println("Room"+id+"の試合を終了しました");
+			command = new int[3];
+			command[0]=0;
+			command[1]=0;
+			command[2]=0;
+			System.out.println("Room"+id+"の試合を開始しました");
 		}
 
 		//待機プレイヤの有無を返す
@@ -281,6 +259,7 @@ public class Server{
 						}
 					}
 					System.out.println(P1_name+"が Room"+RoomID+"に先攻として入りました");
+					ConnectThread P1_ct = new ConnectThread(RoomID, true, P1_socket);
 					while(P2_name == null) {//後攻が来るまで無限ループ
 						try {
 							Thread.sleep(100);
@@ -290,10 +269,36 @@ public class Server{
 						}
 					}
 					System.out.println(P2_name+"が Room"+RoomID+"に後攻として入りました");
+					ConnectThread P2_ct = new ConnectThread(RoomID, false, P2_socket);
+
 					//後攻が来たら
+					BufferedReader br_p1 = new BufferedReader(new InputStreamReader(P1_socket.getInputStream()));
+					BufferedReader br_p2 = new BufferedReader(new InputStreamReader(P2_socket.getInputStream()));
+					BufferedWriter bw_p1 = new BufferedWriter(new OutputStreamWriter(P1_socket.getOutputStream()));
+					BufferedWriter bw_p2 = new BufferedWriter(new OutputStreamWriter(P2_socket.getOutputStream()));
+					ObjectOutputStream oos_p1 = new ObjectOutputStream(P1_socket.getOutputStream());
+					ObjectInputStream ois_p1 = new ObjectInputStream(P1_socket.getInputStream());
+					ObjectOutputStream oos_p2 = new ObjectOutputStream(P2_socket.getOutputStream());
+					ObjectInputStream ois_p2 = new ObjectInputStream(P2_socket.getInputStream());
 					
-					//★続き(対局部分)はここに今度書きます
-				
+					//先攻/後攻を送信
+					bw_p1.write(1);
+					bw_p1.flush();
+					bw_p2.write(0);
+					bw_p2.flush();
+					
+					//相手の名前を送信
+					bw_p1.write(P2_name);
+					bw_p1.flush();
+					bw_p2.write(P1_name);
+					bw_p2.flush();
+					
+					//試合終了まで無限ループ
+					while(true) {
+						//先攻の番
+						
+					}
+					//★続き(対局部分)はここに今度書きます			
 				}
 				catch (SocketTimeoutException es){
 					//★残っている側のプレイヤーに対戦相手がタイムアウトしたことを伝え試合を終了する
@@ -302,51 +307,37 @@ public class Server{
 					//★切断希望が出たことをプレイヤーに伝える
 				}
 				closeGame();
-				//ここでGameThread[i]は初期状態に戻る→274行目へ(無限ループ)
+				//ここでGameThread[i]は初期状態に戻り、無限ループへ
 			}
 		}
 	}
 	//対局スレッドここまで
 
-	// メソッド
-	/*public void acceptClient(){ //クライアントの接続(サーバの起動)
-		try {
-			System.out.println("サーバが起動しました．");
-			ServerSocket ss = new ServerSocket(port); //サーバソケットを用意
-			while (true) {
-				Socket socket = ss.accept(); //新規接続を受け付ける
-				System.out.println("クライアントと接続しました．"); //テスト用出力
-					out = new PrintWriter(socket.getOutputStream(), true);//データ送信オブジェクトを用意
-					receiver = new Receiver(socket);//データ受信オブジェクト(スレッド)を用意
-					receiver.start();//データ送信オブジェクト(スレッド)を起動
-			}
-		} catch (Exception e) {
-			System.err.println("ソケット作成時にエラーが発生しました: " + e);
-		}
-	}
-	*/
-
 	//接続状態確認スレッド
 	class ConnectThread extends Thread{
-		int port;
 		int id;
+		int command_send[];
 		Boolean isFirst;
 		Socket ct_socket;
-		ConnectThread(int id, boolean isFirst,int p, Socket s){
+		ConnectThread(int id, boolean isFirst, Socket s){
 			this.id = id;
 			this.isFirst = isFirst;
-			port = p+2;
 			ct_socket = s;
+			command_send = new int[3];
+			command_send[0]=16;
+			command_send[1]=1;
+			command_send[2]=-1;
 		}
 		@Override
 		public void run() {
 			InputStream is_ct = ct_socket.getInputStream();
 			OutputStream os_ct = ct_socket.getOutputStream();
 			DataOutputStream dos_ct = new DataOutputStream(os_ct);
+			ObjectOutputStream oos_ct = new ObjectOutputStream(os_ct);
 			ct_socket.setSoTimeout(1000);
 			while(true) {
 				try {
-					os_ct.write(1);
+					oos_ct.writeObject(command_send);
 					if(is_ct.read() == 1) {
 						//ok
 						Thread.sleep(1000);
@@ -381,7 +372,6 @@ public class Server{
 	//mainメソッド
 	public static void main(String[] args){
 		Server server = new Server(10000); //待ち受けポート10000番でサーバオブジェクトを準備
-		//server.acceptClient(); //クライアント受け入れを開始
 	}
 }
 	//切断希望受信エラー
