@@ -169,7 +169,7 @@ public class Server{
 		int time;//開始時の残り時間
 		Socket P1_socket;//先攻のソケット
 		Socket P2_socket;//後攻のソケット
-
+		int command[];
 
 		//コンストラクタ
 		GameThread(int id){
@@ -177,7 +177,11 @@ public class Server{
 			P2_name = null;
 			time = 0;
 			RoomID = id;
-			System.out.println("Room"+id+"の試合を終了しました");
+			command = new int[3];
+			command[0]=0;
+			command[1]=0;
+			command[2]=0;
+			System.out.println("Room"+id+"の試合を開始しました");
 		}
 
 		//待機プレイヤの有無を返す
