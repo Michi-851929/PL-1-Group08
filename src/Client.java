@@ -368,12 +368,59 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	
 	public void doMyTurn()
 	{
+		//自分の持ち時間減少開始
+		//timer.scheduleAtFixedRate(new timeDecrease(), 3000, 5000);
 		
+		//while(true/*指し手が入力されるまで*/) {
+			//盤面描画(持ち時間変化)		
+		//}
+		
+		//自分の持ち時間減少終了
+		
+		
+		//指し手と残り持ち時間を盤面に反映
+		
+		
+		//終了条件の判断
+		//if(/*終了条件の判定 == 続行*/) {
+			//指し手、盤面の変化、残り持ち時間を描画
+			
+			
+			//指し手と残り時間をサーバに送信
+			
+			
+			doYourTurn();
+		//}
+		//else if(/*終了条件の判定 == 終了*/) {
+			//指し手と残り時間、終了の合図をサーバに送信
+			
+			
+			endBattle();
+		//}
 	}
 	
 	public void doYourTurn()
 	{
+		//while(/*指し手を受信するまで*/) {
+			//盤面描画(持ち時間変化)
+		//}
 		
+		//指し手と残り持ち時間を盤面に反映
+		//reloadDisplay();
+		
+		
+		//if(/*終了条件の判定 == 続行*/) {
+			//指し手、盤面の変化、残り持ち時間を描画
+			
+			
+			doMyTurn();
+		//}
+		//else if(/*終了条件の判定 == 終了*/) {
+			//終了の合図をサーバに送信
+		//	sendCommand();
+			
+		//	endBattle();
+		//}
 	}
 	public void connectToServer() {
 		try {
