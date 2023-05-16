@@ -380,7 +380,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		try {
 			while(command_pressed) {
 				Thread.sleep(100);
-				play[3] -= 100;
+				play[2] -= 100;
 				othello.getPlayers()[0].setLeftTime(play[2]);
 				ui_jl_time1.setText((play[2] >= 600000 ? "" : " ") + play[2] / 60000 + ":" + (((play[2] / 1000) % 60) < 10 ? "0" : "") + ((play[2] / 1000) % 60));
 				if(play[2] <= 0) { //時間切れ
@@ -430,66 +430,44 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		play[2] = othello.getPlayers()[1].getLeftTime();
 		command_pressed = true;
 		try {
-			while(command_pressed) {
+			while(command_pressed) {//相手の手が送られるまで実行し続ける
 				Thread.sleep(100);
-				play[3] -= 100;
-				othello.getPlayers()[0].setLeftTime(play[2]);
+				play[2] -= 100;
+				othello.getPlayers()[1].setLeftTime(play[2]);
 				ui_jl_time2.setText((play[2] >= 600000 ? "" : " ") + play[2] / 60000 + ":" + (((play[2] / 1000) % 60) < 10 ? "0" : "") + ((play[2] / 1000) % 60));
 				if(play[2] <= 0) { //時間切れ
 					break;
 				}
 			}
 			
-			//置けなくする
+			//置けるようにする
 			for(int i = 0; i < 8; i++) {
 				for(int j = 0; j < 8; j++) {
-					ui_jb_field[i][j].setEnabled(false);
+					ui_jb_field[i][j].setEnabled(true);
 				}
 			}
-			ui_jb_giveup.setEnabled(false);
+			ui_jb_giveup.setEnabled(true);
 			
 			Thread.sleep(10);
 			
 			//指し手を保存
-			play[0] = command_value[0];
-			play[1] = command_value[1];
+			//play[0] = 送られてきたさして
+			//play[1] = 送られてきたさして
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
 		if(play[2] <= 0) {//持ち時間0以下
-			play[0] += 8;
-			//sendCommand(socket,play);
 			endBattle();
 		}
 		else if(othello.checkWinner() != 2) {//盤面勝者確定
-			play[0] += 8;
-			//sendCommand(socket,play);
 			endBattle();
 		}
 		else {
-			//sendCommand(socket,play);
-			doYourTurn();
-		}
-		//while(/*指し手を受信するまで*/) {
-			//相手の残り時間を更新
-		//}
-		
-		//指し手と残り持ち時間を盤面に反映
-		
-		//if(/*終了条件の判定 == 続行*/) {
-			//指し手、盤面の変化、残り持ち時間を描画
-			
-			
 			doMyTurn();
-		//}
-		//else if(/*終了条件の判定 == 終了*/) {
-			//終了の合図をサーバに送信
-		//	sendCommand();
-			
-		//	endBattle();
-		//}
+		}
+		
 	}
 	public void connectToServer() {
 		try {
