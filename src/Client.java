@@ -806,12 +806,20 @@ public class Client extends JFrame implements ActionListener, FocusListener{
         Client client = new Client("Othello Game");
         client.othello = new Othello(new Player("aiueo", true, 60000 * 10 + 5000), new Player("oeuia", false, 60000 * 11));
         
+        try {
+        	while(true) {
+        		Thread.sleep(100);
+        	}
+        }
+        catch(Exception ex) {
+        	ex.printStackTrace();
+        }
         client.changePhase(PHASE_BATTLE);
         
         if(client.othello.getPlayers()[1].isFirstMover()) {
         	client.doYourTurn();
         }
-        while() {
+        while(true) {
         	client.doMyTurn();
         	client.doYourTurn();
         }
