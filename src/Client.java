@@ -91,8 +91,8 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		display.add(start_display);
 		add(display);
 		
-		//接続を待つ
-		
+		//接続を待つ(socket予定地)
+
 		//タイトル画面
 		//changePhase(PHASE_TITLE);
 		
@@ -471,6 +471,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	public void connectToServer() {
 		try {
 
+			//TODO:これをコンストラクタに移す
 			// サーバーに接続する
 			Socket socket = new Socket("hostName", SERVER_PORT_1);
 
@@ -618,14 +619,14 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			JButton button = (JButton) source;
 			String buttonText = button.getText();
 
-			switch (buttonText) {
-				case "Button 1":
+			switch (button_selected) {
+				case 0://5分
 					roomNumber = 1;
 					break;
-				case "Button 2":
+				case 1://10分
 					roomNumber = 2;
 					break;
-				case "Button 3":
+				case 2://20分
 					roomNumber = 3;
 					break;
 				default:
