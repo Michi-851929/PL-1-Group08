@@ -838,9 +838,9 @@ public class Client extends JFrame implements ActionListener, FocusListener{
     public static void main(String[] args)
     {
         Client client = new Client("Othello Game");
-        client.othello = new Othello(new Player("aiueo", true, 60000 * 10 + 5000), new Player("oeuia", false, 60000 * 11));
+        //client.othello = new Othello(new Player("aiueo", true, 60000 * 10 + 5000), new Player("oeuia", false, 60000 * 11));
         
-        /*try {
+        try {
         	while(connectFlag) {
         		Thread.sleep(100);
         	}
@@ -848,7 +848,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
         catch(Exception ex) {
         	ex.printStackTrace();
         }
-        connectFlag = true;*/
+        connectFlag = true;
         client.changePhase(PHASE_BATTLE);
         if(client.othello.getPlayers()[1].isFirstMover()) {
         	client.doYourTurn();
