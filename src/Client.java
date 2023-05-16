@@ -335,8 +335,6 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		int count_black = 0;
 		int count_white = 0;
 		(ui_jb_field[play[0]][play[1]]).setDisabledIcon(getStoneIcon((othello.getCurrentTurn() ? Othello.WHITE : Othello.BLACK), 0));
-		
-		System.out.println((othello.getCurrentTurn() ? Othello.WHITE : Othello.BLACK));
 		for(int i = 0; i < 8; i++) {
 			for(int j = 0; j < 8; j++) {
 				int di = i;
@@ -655,7 +653,6 @@ public class Client extends JFrame implements ActionListener, FocusListener{
         client.othello = new Othello(new Player("aiueo", true, 60000 * 10 + 5000), new Player("oeuia", false, 60000 * 11));
         client.changePhase(PHASE_BATTLE);
         int[] play = client.getCommand();
-        System.out.println(play[0] + ", " + play[1]);
         client.reloadDisplay(play);
         while(true) {
         	play = client.getCommand();
