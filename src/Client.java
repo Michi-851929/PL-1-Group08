@@ -399,15 +399,26 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		int[] in = new int[3];
 		in[0] = -1;
 		in[1] = -1;
-		in[2] = othello.getPlayers()[1].getLeftTime();
+		in[3] = othello.getPlayers()[1].getLeftTime();
+		Thread time_counter = new Thread(() -> {
+			try {
+				//サーバから相手の指し手を受け取るメソッド
+				in = getCommand();
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+		time_counter.start();
 		try {
-			while(in[0] == -1) {
+			while(time_counter.isAlive()) {
 				Thread.sleep(100);
-				in[2] = othello.getPlayers()[0].getLeftTime() - 100;
-				othello.getPlayers()[0].setLeftTime(in[2]);
+				in[2] = othello.getPlayers()[1].getLeftTime() - 100;
+				othello.getPlayers()[1].setLeftTime(in[2]);
 				ui_jl_time1.setText((in[2] >= 600000 ? "" : " ") + in[2] / 60000 + ":" + (((in[2] / 1000) % 60) < 10 ? "0" : "") + ((in[2] / 1000) % 60));
 				if(in[2] <= 0) { //時間切れ
-					in[0] += 8;
+					in[0] = 8;
+					in[1] = 9;
 					break;
 				}
 			}
