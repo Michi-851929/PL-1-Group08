@@ -42,8 +42,10 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	private static final int PHASE_BATTLE = 1; //changePhase()の引数で対局画面への遷移を表す
 	private static final int PHASE_RESULT = 2; //changePhase()の引数で結果画面への遷移を表す
 	private static final Color BACKGROUND_COLOR = new Color(207, 207, 207);
-	int[] vacantRoom = new int[3];
 	private Othello othello;
+	private Player me;
+	private Player your;
+	int[] vacantRoom = new int[3];
 	private static boolean connectFlag = true;
 	
 	JPanel display = new JPanel();
@@ -393,7 +395,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			doYourTurn();
 		}
 	}
-	
+
 	public void doYourTurn()
 	{
 		int[] in = new int[3];
@@ -446,7 +448,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		else {
 			doMyTurn();
 		}
-		
+
 	}
 	public void connectToServer() {
 		try {
@@ -465,16 +467,28 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			int roomNumber = getRoomNumber(f);
 			sendPlayerInfo(socket, name, roomNumber);
 
-				try {
-					// プレイヤ名とルーム番号を受信する
-					BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-					int turnNum=Integer.parseInt(br.readLine());
-					String opponentName = br.readLine();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
 
-				// ハートビートを送信するスレッドを起動する
+			try {
+				// プレイヤ名とルーム番号を受信する
+				BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+				int turnNum = Integer.parseInt(br.readLine());
+				String opponentName = br.readLine();
+				boolean turn = (turnNum != 0) ? true : false;
+
+				//1のとき300秒,2のとき600秒,3のとき1200秒となる
+				int leftTime = (roomNumber - 1) * 300;
+
+				me = new Player(name, turn, leftTime);
+				your = new Player(opponentName, !turn, leftTime);
+				othello = new Othello(me, your);
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+
+
+			// ハートビートを送信するスレッドを起動する
 			new Thread(() -> {
 				try {
 					// 1秒ごとにハートビートを送信する
@@ -492,11 +506,6 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 				}
 			}).start();
 
-
-			//TODO:othelloオブジェクトを作る
-			//toBoolean(Number n)
-			//Player me=new Player(,);
-			boolean turn=true;
 
 
 			connectFlag=false;
@@ -639,12 +648,15 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	/**
 	 サーバーにハートビートを送信する。接続確認って言ってましたが俗にハートビートというらしいです。
 	 **/
-	private static void sendHeartbeat(Socket socket,int heartbeat) throws IOException {
+	private static void sendHeartbeat(Socket socket,int flag) throws IOException {
+		int[] heartbeat = new int[3];
+		heartbeat[0] = 16;
+		heartbeat[1] = 0;
+		heartbeat[2] = flag;
 		OutputStream out = socket.getOutputStream();
-		DataOutputStream dos = new DataOutputStream(out);
-		dos.writeInt(heartbeat); // ハートビートを表す値として通常は1を送信する
+		ObjectOutputStream oos = new ObjectOutputStream(out);
+		oos.writeObject(heartbeat);
 	}
-
 	/**
 	 サーバーからのレスポンスを受け取る。
 	 タイムアウトした場合はSocketTimeoutExceptionを投げる。
