@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
@@ -29,6 +30,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+
+import java.text.Format;
 
 public class Client extends JFrame implements ActionListener, FocusListener{
 
@@ -41,8 +44,9 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	private static final int PHASE_BATTLE = 1; //changePhase()の引数で対局画面への遷移を表す
 	private static final int PHASE_RESULT = 2; //changePhase()の引数で結果画面への遷移を表す
 	private static final Color BACKGROUND_COLOR = new Color(207, 207, 207);
-	
-	Othello othello;
+	int[] vacantRoom = new int[3];
+	private Othello othello;
+	private static boolean connectFlag = true;
 	
 	JPanel display = new JPanel();
 	
@@ -495,13 +499,11 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 
 			// 仮のtextFieldと仮のアクションイベント
 			// エラーが表示されているのが気になるので追加しただけ
-			//TODO：後で消す
-			JTextField textField = new JTextField("Player1");
 			ActionEvent f = new ActionEvent(new JButton("Button 1"), ActionEvent.ACTION_PERFORMED, null);
 
 
 			// 名前とルーム番号をサーバーに送信する
-			String name = getPlayerName(textField);
+			String name = ui_tf_namefield.getText();
 			int roomNumber = getRoomNumber(f);
 			sendPlayerInfo(socket, name, roomNumber);
 
@@ -511,27 +513,33 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 				try {
 					// プレイヤ名とルーム番号を受信する
 					BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+					int turn=Integer.parseInt(br.readLine());
 					String opponentName = br.readLine();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}).start();
 
+
+			//TODO:othelloオブジェクトを作る
+			toBoolean(Number n)
+			Player me=new Player(,);
+
+
 			// getCommandメソッドを監視するスレッド起動する
 			// マッチング中にもこれを走らせ、接続中断のボタンが押された時も対応可能にする。
 			new Thread(() -> {
-				int[] prevCommand = new int[2];
+
 				while (true) {
 					try {
 						// 0.1秒待つ
 						Thread.sleep(COMMAND_CHECK_INTERVAL);
 
 						// getCommandメソッドを呼び出す
-						int[] newCommand = getCommand();
+						//TODO:play[2]から指し手をいずれ読み込めるようにする
+						int[] commandX = new int[2];
+						int[] newCommand = commandX;
 
-						// 前回のコマンドと変化があったらサーバーに送信する
-						if (!isEqual(prevCommand, newCommand)) {
-							prevCommand = newCommand;
 							if (isEqual(newCommand, new int[]{16, 0})) {
 								// 特別な入力があった場合、ハートビートに0を送って接続を終了する
 								sendHeartbeat(socket, 0);
@@ -539,7 +547,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 								return;
 							}
 							sendCommand(socket, newCommand);
-						}
+
 					} catch (InterruptedException e) {
 						// スレッドが中断されたら終了する
 						return;
@@ -603,10 +611,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	 2つのint配列が等しいかどうかを判定する。
 	 **/
 	private static boolean isEqual(int[] a, int[] b) {
-		if (a.length != b.length) {
-			return false;
-		}
-		for (int i = 0; i < a.length; i++) {
+		for (int i = 0; i < 2; i++) {
 			if (a[i] != b[i]) {
 				return false;
 			}
@@ -639,9 +644,6 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		return roomNumber;
 	}
 
-	private static String getPlayerName(JTextField textField) {
-		return textField.getText();
-	}
 	private static void sendPlayerInfo(Socket socket, String name, int roomNumber) throws IOException {
 		// 名前とルーム番号をサーバーに送信する
 		DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -692,14 +694,21 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	 **/
 	private int[] getCommand() {
 		int[] play = new int[2];
+		boolean pass = false;
 		boolean[][] field = othello.searchPlaceable();
 		for(int i = 0; i < 8; i++) {
 			for(int j = 0; j < 8; j++) {
 				ui_jb_field[i][j].setEnabled(field[i][j]);
 				if(field[i][j]) {
 					ui_jb_field[i][j].setIcon(getStoneIcon(Othello.EMPTY, -2));
+					pass = true;
 				}
 			}
+		}
+		if(!pass) {
+			play[0] = 8;
+			play[1] = 10;
+			return play;
 		}
 		ui_jb_giveup.setEnabled(true);
 		
@@ -734,11 +743,11 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		return play;
 	}
 
-/*
+
 	public void checkVacantRoom() {
 
 		try (
-				Socket socket = new Socket(hostName, SERVER_PORT_2);
+				Socket socket = new Socket("localhost", SERVER_PORT_2);
 				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		) {
@@ -765,9 +774,6 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			System.err.println("Heartbeat interrupted: " + e.getMessage());
 		}
 	}
-*/
-
-
 
 	public void endBattle()
 	{
@@ -871,14 +877,24 @@ public class Client extends JFrame implements ActionListener, FocusListener{
     public static void main(String[] args)
     {
         Client client = new Client("Othello Game");
-        client.changePhase(PHASE_TITLE);
         client.othello = new Othello(new Player("aiueo", true, 60000 * 10 + 5000), new Player("oeuia", false, 60000 * 11));
+        
+        try {
+        	while(connectFlag) {
+        		Thread.sleep(100);
+        	}
+        }
+        catch(Exception ex) {
+        	ex.printStackTrace();
+        }
         client.changePhase(PHASE_BATTLE);
-        int[] play = client.getCommand();
-        client.reloadDisplay(play);
+        
+        if(client.othello.getPlayers()[1].isFirstMover()) {
+        	client.doYourTurn();
+        }
         while(true) {
-        	play = client.getCommand();
-        	client.reloadDisplay(play);
+        	client.doMyTurn();
+        	client.doYourTurn();
         }
         //client.changePhase(PHASE_RESULT);
     }
