@@ -580,14 +580,21 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	 **/
 	private int[] getCommand() {
 		int[] play = new int[2];
+		boolean pass = false;
 		boolean[][] field = othello.searchPlaceable();
 		for(int i = 0; i < 8; i++) {
 			for(int j = 0; j < 8; j++) {
 				ui_jb_field[i][j].setEnabled(field[i][j]);
 				if(field[i][j]) {
 					ui_jb_field[i][j].setIcon(getStoneIcon(Othello.EMPTY, -2));
+					pass = true;
 				}
 			}
+		}
+		if(!pass) {
+			play[0] = 8;
+			play[1] = 10;
+			return play;
 		}
 		ui_jb_giveup.setEnabled(true);
 		
