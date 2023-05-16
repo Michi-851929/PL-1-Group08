@@ -31,8 +31,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import java.text.Format;
-
 public class Client extends JFrame implements ActionListener, FocusListener{
 
 	private static final int SERVER_PORT_1 = 10000;//接続確認に使うほうはこちら
@@ -698,7 +696,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		ui_jb_giveup.setEnabled(true);
 		
 		try {
-			int millis;
+			int millis = 600000;
 			command_pressed = true;
 			while(command_pressed) {
 				Thread.sleep(100);
@@ -718,8 +716,10 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			}
 			ui_jb_giveup.setEnabled(false);
 			Thread.sleep(10);
-			play[0] = command_value[0];
-			play[1] = command_value[1];
+			if(millis > 0) {
+				play[0] = command_value[0];
+				play[1] = command_value[1];
+			}
 			
 		} catch (Exception e) {
 			e.printStackTrace();
