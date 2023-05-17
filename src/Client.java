@@ -20,7 +20,11 @@ import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -502,7 +506,9 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			try {
 				// プレイヤ名とルーム番号を受信する
 				BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				int turnNum = Integer.parseInt(br.readLine());
+				String s = br.readLine();
+				System.out.println(s);
+				int turnNum = Integer.parseInt(s);
 				String opponentName = br.readLine();
 				boolean turn = (turnNum != 0) ? true : false;
 
