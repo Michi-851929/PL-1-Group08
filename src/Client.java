@@ -419,7 +419,9 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		int[] out = new int[2];
 		Thread time_counter = new Thread(() -> {
 			try {
-				in = receiveResponse(socket);
+				int[] play = receiveResponse(socket);
+				in[0] = play[0];
+				in[1] = play[1];
 			} catch (IOException e) {
 				// サーバーからのデータを受け取れなかったらエラー
 				e.printStackTrace();
