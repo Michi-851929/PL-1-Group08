@@ -20,9 +20,7 @@ import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
+import java.net.*;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -48,7 +46,16 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	private Player your;
 	private int[] vacantRoom = {-1, -1, -1};
 	private static boolean connectFlag = true;
-	
+	private static InetAddress hostname;
+
+	static {
+		try {
+			hostname = InetAddress.getByName("localhost");
+		} catch (UnknownHostException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	private JPanel display = new JPanel();
 	
 	//タイトル画面のオブジェクト
@@ -480,7 +487,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		try {
 
 			// サーバーに接続する
-			socket.connect(new InetSocketAddress("hostname", SERVER_PORT_1), TIMEOUT_INTERVAL);
+			socket.connect(new InetSocketAddress(hostname, SERVER_PORT_1), TIMEOUT_INTERVAL);
 			// 仮のtextFieldと仮のアクションイベント
 			// エラーが表示されているのが気になるので追加しただけ
 			ActionEvent f = new ActionEvent(new JButton("Button 1"), ActionEvent.ACTION_PERFORMED, null);
