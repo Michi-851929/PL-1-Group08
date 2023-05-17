@@ -97,9 +97,12 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		add(display);
 		
 		//接続を待つ(socket予定地)
-		this.socket = socket;
+		this.socket = new Socket();
+		checkVacantRoom();
+		
 		//タイトル画面
-		//changePhase(PHASE_TITLE);
+		changePhase(PHASE_TITLE);
+		ui_jl_5min.setText((vacantRoom[0] == ));
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBackground(BACKGROUND_COLOR);
@@ -455,6 +458,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		}
 
 	}
+	
 	public void connectToServer() {
 		try {
 
