@@ -507,7 +507,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 				boolean turn = (turnNum != 0) ? true : false;
 
 				//1のとき300秒,2のとき600秒,3のとき1200秒となる
-				int leftTime = (roomNumber - 1) * 300;
+				int leftTime = (roomNumber - 1) *(roomNumber - 1)* 300;
 
 				me = new Player(name, turn, leftTime);
 				your = new Player(opponentName, !turn, leftTime);
