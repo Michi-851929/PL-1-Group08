@@ -78,7 +78,8 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	private JButton ui_jb_totitle;
 	private JButton ui_jb_exit;
 
-	private Socket socket;
+	private Socket socket1;
+	private Socket socket2;
 	
 	public Client(String title)
 	{
@@ -97,9 +98,14 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		add(display);
 		
 		//接続を待つ(socket予定地)
-		this.socket = socket;
+		this.socket = new Socket();
+		checkVacantRoom();
+		
 		//タイトル画面
-		//changePhase(PHASE_TITLE);
+		changePhase(PHASE_TITLE);
+		ui_jl_5min.setText((vacantRoom[0] == 1 ? "○" : "×"));
+		ui_jl_10min.setText((vacantRoom[1] == 1 ? "○" : "×"));
+		ui_jl_20min.setText((vacantRoom[2] == 1 ? "○" : "×"));
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBackground(BACKGROUND_COLOR);
@@ -383,19 +389,24 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		out[0] = in[0];
 		out[1] = in[1];
 		out[2] = othello.getPlayers()[0].getLeftTime();
-		
-		if(out[2] <= 0) {//持ち時間0以下
-			//sendCommand(socket,out);
-			endBattle();
-		}
-		else if(othello.checkWinner() != 2) {//盤面勝者確定
-			out[0] += 8;
-			//sendCommand(socket,out);
-			endBattle();
-		}
-		else {
-			//sendCommand(socket,out);
-			doYourTurn();
+		try {
+			if(out[2] <= 0) {//持ち時間0以下
+				sendCommand(socket,out);
+				endBattle();
+			}
+			else if(othello.checkWinner() != 2) {//盤面勝者確定
+				out[0] += 8;
+				sendCommand(socket,out);
+				endBattle();
+			}
+			else {
+				sendCommand(socket,out);
+				doYourTurn();
+			}
+		} catch (IOException e) {
+			// サーバーに接続できなかったら終了する
+			e.printStackTrace();
+			return;
 		}
 	}
 
@@ -404,31 +415,33 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		int[] in = new int[3];
 		in[0] = -1;
 		in[1] = -1;
-		in[2] = othello.getPlayers()[1].getLeftTime();
+		in[2] = -1;
+		int millis = othello.getPlayers()[1].getLeftTime();
+		int[] out = new int[2];
 		Thread time_counter = new Thread(() -> {
 			try {
-				//サーバから相手の指し手を受け取るメソッド
-				int[] play = getCommand();
-				in[0] = play[0];
-				in[1] = play[1];
-				
-			} catch (Exception e) {
+				in = receiveResponse(socket);
+			} catch (IOException e) {
+				// サーバーからのデータを受け取れなかったらエラー
 				e.printStackTrace();
+				return;
 			}
 		});
 		time_counter.start();
 		try {
 			while(time_counter.isAlive()) {
 				Thread.sleep(100);
-				in[2] = othello.getPlayers()[1].getLeftTime() - 100;
-				othello.getPlayers()[1].setLeftTime(in[2]);
-				ui_jl_time1.setText((in[2] >= 600000 ? "" : " ") + in[2] / 60000 + ":" + (((in[2] / 1000) % 60) < 10 ? "0" : "") + ((in[2] / 1000) % 60));
-				if(in[2] <= 0) { //時間切れ
+				millis = othello.getPlayers()[1].getLeftTime() - 100;
+				othello.getPlayers()[1].setLeftTime(millis);
+				ui_jl_time1.setText((millis >= 600000 ? "" : " ") + millis / 60000 + ":" + (((millis / 1000) % 60) < 10 ? "0" : "") + ((millis / 1000) % 60));
+				if(millis <= 0) { //時間切れ
 					in[0] = 8;
 					in[1] = 9;
 					break;
 				}
 			}
+			out[0] = in[0];
+			out[1] = in[1];
 			for(int i = 0; i < 8; i++) {
 				for(int j = 0; j < 8; j++) {
 					ui_jb_field[i][j].setEnabled(false);
@@ -436,10 +449,8 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			}
 			ui_jb_giveup.setEnabled(false);
 			Thread.sleep(10);
-			othello.applyMove(in);
-			reloadDisplay(in);
-			//in = 送られてきた指し手
-			
+			othello.applyMove(out);
+			reloadDisplay(out);			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -455,6 +466,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		}
 
 	}
+	
 	public void connectToServer() {
 		try {
 
@@ -768,7 +780,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 
 	public void endBattle()
 	{
-		
+		changePhase(PHASE_RESULT);
 	}
 	
 	public void actionPerformed(ActionEvent ae)
