@@ -411,10 +411,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 
 	public void doYourTurn()
 	{
-		int[] in = new int[3];
-		in[0] = -1;
-		in[1] = -1;
-		in[2] = -1;
+		int[] in = {-1, -1, -1};
 		int millis = othello.getPlayers()[1].getLeftTime();
 		int[] out = new int[2];
 		Thread time_counter = new Thread(() -> {
@@ -422,6 +419,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 				int[] play = receiveResponse(socket);
 				in[0] = play[0];
 				in[1] = play[1];
+				in[2] = play[2];
 			} catch (IOException e) {
 				// サーバーからのデータを受け取れなかったらエラー
 				e.printStackTrace();
