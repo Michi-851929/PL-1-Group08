@@ -46,7 +46,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	private static Othello othello;
 	private Player me;
 	private Player your;
-	private int[] vacantRoom = new int[3];
+	private int[] vacantRoom = {-1, -1, -1};
 	private static boolean connectFlag = true;
 	
 	private JPanel display = new JPanel();
@@ -95,10 +95,24 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		start_display.add(new JLabel("通信中・・・", SwingConstants.CENTER), "South");
 		display.add(start_display);
 		add(display);
+
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBackground(BACKGROUND_COLOR);
+		setSize(800, 600);
+		setVisible(true);
 		
 		//接続を待つ(socket予定地)
 		this.socket = new Socket();
-		checkVacantRoom();
+		try {
+			while(vacantRoom[0] == -1) {
+				Thread.sleep(1000);
+				checkVacantRoom();
+			}
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			System.exit(0);
+		}
 		
 		//タイトル画面
 		changePhase(PHASE_TITLE);
@@ -106,10 +120,6 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		ui_jl_10min.setText((vacantRoom[1] == 1 ? "○" : "×"));
 		ui_jl_20min.setText((vacantRoom[2] == 1 ? "○" : "×"));
 		
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBackground(BACKGROUND_COLOR);
-		setSize(800, 600);
-		setVisible(true);
 	}
 
 	public void changePhase(int phase)
