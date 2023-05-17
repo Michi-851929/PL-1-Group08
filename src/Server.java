@@ -135,6 +135,7 @@ public class Server{
 					DataInputStream is = new DataInputStream(socket_match.getInputStream());
 					player_name = is.readUTF();
 					player_time = is.readInt();
+					
 					is.close(); //DataInputStreamをclose
 
 					//待ち時間の一致するプレイヤーを探す
@@ -335,7 +336,6 @@ public class Server{
 					}
 					System.out.println("GameThread["+RoomID+"]:"+P1_name+"が Room"+RoomID+"に先攻として入りました");
 					ReceiveMessageThread P1_rmt = new ReceiveMessageThread(P1_socket);
-					P1_ct = new ConnectThread(RoomID, true, P1_socket, P1_rmt);
 					while(P2_name == null) {//後攻が来るまで無限ループ
 						try {
 							Thread.sleep(100);
@@ -346,7 +346,6 @@ public class Server{
 					}
 					System.out.println("GameThread["+RoomID+"]:"+P2_name+"が Room"+RoomID+"に後攻として入りました");
 					ReceiveMessageThread P2_rmt = new ReceiveMessageThread(P2_socket);
-					P2_ct = new ConnectThread(RoomID, false, P2_socket, P2_rmt);
 
 					//後攻が来たら
 					BufferedWriter bw_p1 = new BufferedWriter(new OutputStreamWriter(P1_socket.getOutputStream()));
@@ -354,17 +353,22 @@ public class Server{
 					ObjectOutputStream oos_p1 = new ObjectOutputStream(P1_socket.getOutputStream());
 					ObjectOutputStream oos_p2 = new ObjectOutputStream(P2_socket.getOutputStream());
 					
-					//先攻/後攻を送信
-					bw_p1.write(1);
-					bw_p1.flush();
-					bw_p2.write(0);
-					bw_p2.flush();
 					
 					//相手の名前を送信
 					bw_p1.write(P2_name);
 					bw_p1.flush();
 					bw_p2.write(P1_name);
 					bw_p2.flush();
+					
+					//先攻/後攻を送信
+					bw_p1.write(1);//先攻
+					bw_p1.flush();
+					bw_p2.write(0);//後攻
+					bw_p2.flush();
+					
+					//ハートビート起動
+					P1_ct = new ConnectThread(RoomID, true, P1_socket, P1_rmt);
+					P2_ct = new ConnectThread(RoomID, false, P2_socket, P2_rmt);
 					
 					//前の入力を定義
 					int P1_commandBefore[] = new int[3];
