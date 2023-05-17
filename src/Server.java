@@ -372,6 +372,12 @@ public class Server{
 						//先攻の番 盤面が変わるまで無限ループ
 						while(P1_commandBefore[0] ==P1_rmt.last_command[0] && P1_commandBefore[1] == P1_rmt.last_command[1]) {
 							Thread.sleep(50);
+							if(running == false) { //runningがfalseなら試合を強制終了するためにwhileループを抜ける
+								break;
+							}
+						}
+						if(running == false) {
+							break;
 						}
 						//commandBeforeを更新
 						P1_commandBefore[0] = P1_rmt.last_command[0];
@@ -388,6 +394,12 @@ public class Server{
 						//後攻の番 盤面が変わるまで無限ループ
 						while(P2_commandBefore[0] ==P2_rmt.last_command[0] && P2_commandBefore[1] == P2_rmt.last_command[1]) {
 							Thread.sleep(50);
+							if(running == false) {
+								break;
+							}
+						}
+						if(running == false) {
+							break;
 						}
 						//commandBeforeを更新
 						P2_commandBefore[0] = P2_rmt.last_command[0];
