@@ -742,23 +742,17 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		try (
 				Socket socket1 = new Socket("localhost", SERVER_PORT_2);
 				PrintWriter out = new PrintWriter(socket1.getOutputStream(), true);
-				BufferedReader in = new BufferedReader(new InputStreamReader(socket1.getInputStream()));
+				DataInputStream in = new DataInputStream(socket1.getInputStream());
 		) {
 			int heartbeat = 1; // ハートビートメッセージ
-			String responseMsg; // サーバからのレスポンスメッセージ
 
 			out.println(heartbeat); // ハートビートメッセージを送信
 
-			// サーバからのレスポンスを受信
-			responseMsg = in.readLine();
-
-			if (responseMsg != null) {
-				// サーバからのレスポンスをパースしてint配列に格納
-				String[] responseArray = responseMsg.split(",");
-				vacantRoom[0] = Integer.parseInt(responseArray[0]);
-				vacantRoom[1] = Integer.parseInt(responseArray[1]);
-				vacantRoom[2] = Integer.parseInt(responseArray[2]);
-			}
+			// サーバからのレスポンスをパースしてint配列に格納
+			vacantRoom[0] = in.readInt();
+			vacantRoom[1] = in.readInt();
+			vacantRoom[2] = in.readInt();
+			
 		} catch (IOException e) {
 			System.err.println("Error connecting to server: " + e.getMessage());
 		}
