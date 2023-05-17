@@ -25,7 +25,7 @@ public class Server{
 		RoomInfoThread rit = new RoomInfoThread();//部屋状況確認スレッドを宣言
 		rit.start();
 		GameThread = new GameThread[128];//ゲームスレッドを宣言
-		for(int i = 0; i<128; i++) {
+		for(int i = 0; i < 128; i++) {
 			GameThread[i] = new GameThread(i);
 			GameThread[i].start();
 		}
@@ -87,7 +87,7 @@ public class Server{
 		retval[0] = false;
 		retval[1] = false;
 		retval[2] = false;
-		for(int i = 0; i<128; i++) {
+		for(int i = 0; i<1; i++) {
 			if(GameThread[i].isWaiting()) {
 				switch(GameThread[i].getTime()) {
 				case 1:
@@ -116,9 +116,15 @@ public class Server{
 		//runメソッド
 		@Override
 		public void run() {
+			ServerSocket ss_match = null;
+			try {
+				ss_match = new ServerSocket(port);
+			} catch (IOException e) {
+				// TODO 自動生成された catch ブロック
+				e.printStackTrace();
+			}
 			while(true) { //無限ループ
 				try {
-					ServerSocket ss_match = new ServerSocket(port);
 					Socket socket_match = ss_match.accept();
 					System.out.println("MatchThread:プレイヤーがマッチングスレッドに接続しました");
 					
@@ -168,7 +174,7 @@ public class Server{
 		//待機中のプレイヤがいる部屋を探す
 		private int findWaitingRoom(int time) {
 			int retval = -1;
-			for(int i = 0; i<128;i++) {
+			for(int i = 0; i<1;i++) {
 				if(GameThread[i].isWaiting() && time == GameThread[i].getTime()) {
 					retval = i;
 					break;
