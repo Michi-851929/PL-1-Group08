@@ -141,6 +141,8 @@ public class Server{
 						//空き部屋が見つかったら
 						if(room_tojoin != -1) {
 							GameThread[room_tojoin].setPlayer(socket_match, player_name, true);
+							//部屋の時間を設定
+							GameThread[room_tojoin].setTime(player_time);
 						}
 
 						//空き部屋が見つからないとき、クライアントを切断
@@ -341,14 +343,10 @@ public class Server{
 					P2_ct = new ConnectThread(RoomID, false, P2_socket, P2_rmt);
 
 					//後攻が来たら
-					//BufferedReader br_p1 = new BufferedReader(new InputStreamReader(P1_socket.getInputStream()));
-					//BufferedReader br_p2 = new BufferedReader(new InputStreamReader(P2_socket.getInputStream()));
 					BufferedWriter bw_p1 = new BufferedWriter(new OutputStreamWriter(P1_socket.getOutputStream()));
 					BufferedWriter bw_p2 = new BufferedWriter(new OutputStreamWriter(P2_socket.getOutputStream()));
 					ObjectOutputStream oos_p1 = new ObjectOutputStream(P1_socket.getOutputStream());
-					//ObjectInputStream ois_p1 = new ObjectInputStream(P1_socket.getInputStream());
 					ObjectOutputStream oos_p2 = new ObjectOutputStream(P2_socket.getOutputStream());
-					//ObjectInputStream ois_p2 = new ObjectInputStream(P2_socket.getInputStream());
 					
 					//先攻/後攻を送信
 					bw_p1.write(1);
@@ -440,10 +438,11 @@ public class Server{
 	
 	//対局スレッドここまで
 	
+	//クライアントから送られる差し手やハートビートを受け取るメソッド
 	class ReceiveMessageThread extends Thread{
-		int receive_message[];
-		int last_command[];
-		int last_heartbeat[];
+		int receive_message[];//プレイヤーから受け取ったメッセージ
+		int last_command[]; //最新のプレイヤーの差し手
+		int last_heartbeat[];//最新のプレイヤーのハートビート
 		Socket sc_rmt;
 		boolean running;
 		ReceiveMessageThread(Socket s){
@@ -494,10 +493,10 @@ public class Server{
 
 	//接続状態確認スレッド
 	class ConnectThread extends Thread{
-		int id;
+		int id; //部屋番号
 		int command_send[];
 		int command_receive[];
-		Boolean isFirst;
+		Boolean isFirst; //先攻か
 		Boolean running;
 		Socket ct_socket;
 		ReceiveMessageThread rmt;
@@ -520,11 +519,7 @@ public class Server{
 		@Override
 		public void run() {	
 			try {
-				//InputStream is_ct = ct_socket.getInputStream();
-				//OutputStream os_ct = ct_socket.getOutputStream();
-				//DataOutputStream dos_ct = new DataOutputStream(os_ct);
 				ObjectOutputStream oos_ct = new ObjectOutputStream(new DataOutputStream(ct_socket.getOutputStream()));
-				//ObjectInputStream ois_ct = new ObjectInputStream(ct_socket.getInputStream());
 
 				ct_socket.setSoTimeout(1000);
 				while(running) {
@@ -532,7 +527,7 @@ public class Server{
 					
 					if(rmt.last_heartbeat[1] == 1) {
 						//ok
-						rmt.last_heartbeat[1] = -1;
+						rmt.last_heartbeat[1] = -1;//-1に書き換える 次も[1]が-1だったら1秒間の間にハートビートが無いことになるのでタイムアウトと判定
 						Thread.sleep(1000);
 					}
 					else if(rmt.last_heartbeat[1] == -1) {//前のハートビート確認から1秒後にrmt.last_heartbeat[1]が-1のままのとき
