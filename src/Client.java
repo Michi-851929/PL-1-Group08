@@ -748,7 +748,6 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 
 
 	public void checkVacantRoom() {
-
 		try (
 				Socket socket = new Socket("localhost", SERVER_PORT_2);
 				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
@@ -757,24 +756,20 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			int heartbeat = 1; // ハートビートメッセージ
 			String responseMsg; // サーバからのレスポンスメッセージ
 
-			while (true) {
-				out.println(heartbeat); // ハートビートメッセージを送信
-				responseMsg = in.readLine(); // サーバからのレスポンスを受信
+			out.println(heartbeat); // ハートビートメッセージを送信
 
-				if (responseMsg != null) {
-					// サーバからのレスポンスをパースしてint配列に格納
-					String[] responseArray = responseMsg.split(",");
-					vacantRoom[0] = Integer.parseInt(responseArray[0]);
-					vacantRoom[1] = Integer.parseInt(responseArray[1]);
-					vacantRoom[2] = Integer.parseInt(responseArray[2]);
-				}
+			// サーバからのレスポンスを受信
+			responseMsg = in.readLine();
 
-				Thread.sleep(500); // 0.5秒待機
+			if (responseMsg != null) {
+				// サーバからのレスポンスをパースしてint配列に格納
+				String[] responseArray = responseMsg.split(",");
+				vacantRoom[0] = Integer.parseInt(responseArray[0]);
+				vacantRoom[1] = Integer.parseInt(responseArray[1]);
+				vacantRoom[2] = Integer.parseInt(responseArray[2]);
 			}
 		} catch (IOException e) {
 			System.err.println("Error connecting to server: " + e.getMessage());
-		} catch (InterruptedException e) {
-			System.err.println("Heartbeat interrupted: " + e.getMessage());
 		}
 	}
 
