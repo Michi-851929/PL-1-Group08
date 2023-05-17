@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
@@ -30,7 +31,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import java.net.*;
 
 public class Client extends JFrame implements ActionListener, FocusListener{
 
@@ -46,40 +46,41 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	private static Othello othello;
 	private Player me;
 	private Player your;
-	int[] vacantRoom = new int[3];
+	private int[] vacantRoom = new int[3];
 	private static boolean connectFlag = true;
 	
-	JPanel display = new JPanel();
+	private JPanel display = new JPanel();
 	
 	//タイトル画面のオブジェクト
-	JTextField ui_tf_namefield;
-	JButton ui_jb_5min;
-	JButton ui_jb_10min;
-	JButton ui_jb_20min;
-	int button_selected = 1;
-	JLabel ui_jl_5min;
-	JLabel ui_jl_10min;
-	JLabel ui_jl_20min;
-	JButton ui_jb_start;
+	private JTextField ui_tf_namefield;
+	private JButton ui_jb_5min;
+	private JButton ui_jb_10min;
+	private JButton ui_jb_20min;
+	private int button_selected = 1;
+	private JLabel ui_jl_5min;
+	private JLabel ui_jl_10min;
+	private JLabel ui_jl_20min;
+	private JButton ui_jb_start;
 	
 	//対局画面のオブジェクト
-	JLabel ui_jl_name1;
-	JLabel ui_jl_name2;
-	JLabel ui_jl_time1;
-	JLabel ui_jl_time2;
-	JLabel ui_jl_nstones1;
-	JLabel ui_jl_nstones2;
-	JButton ui_jb_giveup;
-	JButton[][] ui_jb_field = new JButton[8][8];
-	boolean command_pressed = false;
-	int[] command_value = {-1, -1};
+	private JLabel ui_jl_name1;
+	private JLabel ui_jl_name2;
+	private JLabel ui_jl_time1;
+	private JLabel ui_jl_time2;
+	private JLabel ui_jl_nstones1;
+	private JLabel ui_jl_nstones2;
+	private JButton ui_jb_giveup;
+	private JButton[][] ui_jb_field = new JButton[8][8];
+	private boolean command_pressed = false;
+	private int[] command_value = {-1, -1};
 
 	//結果画面のオブジェクト
-	JButton ui_jb_totitle;
-	JButton ui_jb_exit;
+	private JButton ui_jb_totitle;
+	private JButton ui_jb_exit;
 
 	private Socket socket;
-	Client(String title)
+	
+	public Client(String title)
 	{
 		super(title);
 		//RepaintManager currentManager = RepaintManager.currentManager(this);
