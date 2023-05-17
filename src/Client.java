@@ -556,12 +556,14 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 					// サーバーからのデータを受け取る
 					int[] response = receiveResponse(socket);
 
-					//TODO:配列を受け取り相手の手を実行する
-
+					if (response[0]!=16)
+					{
+						//TODO:配列を受け取り相手の手を実行する
+					}
 
 					// サーバーからのレスポンスが1でなければエラー
-					if (response[2] != 1) {
-						throw new RuntimeException("サーバーから不正な値が送信されました");
+					if (response[0]!=16 && response[2] != 1) {
+						throw new RuntimeException("サーバーから終了するが送信されました");
 					}
 				} catch (SocketTimeoutException e) {
 					// タイムアウトしたら例外処理を返して終了する
@@ -580,7 +582,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			e.printStackTrace();
 		}
 	}
-	public void sendCommand(int[] command) throws IOException {
+	public void sendToServer(int[] command) throws IOException {
 		try {
 
 			if (isEqual(command, new int[]{16, 0})) {
@@ -589,7 +591,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 				socket.close();
 				return;
 			}
-			sendCommand(command); // 手を送信するメソッドを呼び出す
+			sendCommand(socket,command); // 手を送信するメソッドを呼び出す
 
 		}
 		catch (IOException e) {
