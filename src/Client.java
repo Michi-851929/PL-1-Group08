@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
@@ -42,40 +43,44 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	private static final int PHASE_BATTLE = 1; //changePhase()の引数で対局画面への遷移を表す
 	private static final int PHASE_RESULT = 2; //changePhase()の引数で結果画面への遷移を表す
 	private static final Color BACKGROUND_COLOR = new Color(207, 207, 207);
-	int[] vacantRoom = new int[3];
-	private Othello othello;
+	private static Othello othello;
+	private Player me;
+	private Player your;
+	private int[] vacantRoom = new int[3];
 	private static boolean connectFlag = true;
 	
-	JPanel display = new JPanel();
+	private JPanel display = new JPanel();
 	
 	//タイトル画面のオブジェクト
-	JTextField ui_tf_namefield;
-	JButton ui_jb_5min;
-	JButton ui_jb_10min;
-	JButton ui_jb_20min;
-	int button_selected = 1;
-	JLabel ui_jl_5min;
-	JLabel ui_jl_10min;
-	JLabel ui_jl_20min;
-	JButton ui_jb_start;
+	private JTextField ui_tf_namefield;
+	private JButton ui_jb_5min;
+	private JButton ui_jb_10min;
+	private JButton ui_jb_20min;
+	private int button_selected = 1;
+	private JLabel ui_jl_5min;
+	private JLabel ui_jl_10min;
+	private JLabel ui_jl_20min;
+	private JButton ui_jb_start;
 	
 	//対局画面のオブジェクト
-	JLabel ui_jl_name1;
-	JLabel ui_jl_name2;
-	JLabel ui_jl_time1;
-	JLabel ui_jl_time2;
-	JLabel ui_jl_nstones1;
-	JLabel ui_jl_nstones2;
-	JButton ui_jb_giveup;
-	JButton[][] ui_jb_field = new JButton[8][8];
-	boolean command_pressed = false;
-	int[] command_value = {-1, -1};
-	
+	private JLabel ui_jl_name1;
+	private JLabel ui_jl_name2;
+	private JLabel ui_jl_time1;
+	private JLabel ui_jl_time2;
+	private JLabel ui_jl_nstones1;
+	private JLabel ui_jl_nstones2;
+	private JButton ui_jb_giveup;
+	private JButton[][] ui_jb_field = new JButton[8][8];
+	private boolean command_pressed = false;
+	private int[] command_value = {-1, -1};
+
 	//結果画面のオブジェクト
-	JButton ui_jb_totitle;
-	JButton ui_jb_exit;
+	private JButton ui_jb_totitle;
+	private JButton ui_jb_exit;
+
+	private Socket socket;
 	
-	Client(String title)
+	public Client(String title)
 	{
 		super(title);
 		//RepaintManager currentManager = RepaintManager.currentManager(this);
@@ -92,7 +97,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		add(display);
 		
 		//接続を待つ(socket予定地)
-
+		this.socket = socket;
 		//タイトル画面
 		//changePhase(PHASE_TITLE);
 		
@@ -393,7 +398,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			doYourTurn();
 		}
 	}
-	
+
 	public void doYourTurn()
 	{
 		int[] in = new int[3];
@@ -406,6 +411,13 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			try {
 				//サーバから相手の指し手を受け取るメソッド
 				//in = ;
+		in[2] = othello.getPlayers()[1].getLeftTime();
+		Thread time_counter = new Thread(() -> {
+			try {
+				//サーバから相手の指し手を受け取るメソッド
+				int[] play = getCommand();
+				in[0] = play[0];
+				in[1] = play[1];
 				
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -448,15 +460,13 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		else {
 			doMyTurn();
 		}
-		
+
 	}
 	public void connectToServer() {
 		try {
 
-			//TODO:これをコンストラクタに移す
 			// サーバーに接続する
-			Socket socket = new Socket("hostName", SERVER_PORT_1);
-
+			socket.connect(new InetSocketAddress("hostname", SERVER_PORT_1), TIMEOUT_INTERVAL);
 			// 仮のtextFieldと仮のアクションイベント
 			// エラーが表示されているのが気になるので追加しただけ
 			ActionEvent f = new ActionEvent(new JButton("Button 1"), ActionEvent.ACTION_PERFORMED, null);
@@ -467,16 +477,28 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			int roomNumber = getRoomNumber(f);
 			sendPlayerInfo(socket, name, roomNumber);
 
-				try {
-					// プレイヤ名とルーム番号を受信する
-					BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-					int turnNum=Integer.parseInt(br.readLine());
-					String opponentName = br.readLine();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
 
-				// ハートビートを送信するスレッドを起動する
+			try {
+				// プレイヤ名とルーム番号を受信する
+				BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+				int turnNum = Integer.parseInt(br.readLine());
+				String opponentName = br.readLine();
+				boolean turn = (turnNum != 0) ? true : false;
+
+				//1のとき300秒,2のとき600秒,3のとき1200秒となる
+				int leftTime = (roomNumber - 1) * 300;
+
+				me = new Player(name, turn, leftTime);
+				your = new Player(opponentName, !turn, leftTime);
+				othello = new Othello(me, your);
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+
+
+			// ハートビートを送信するスレッドを起動する
 			new Thread(() -> {
 				try {
 					// 1秒ごとにハートビートを送信する
@@ -494,15 +516,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 				}
 			}).start();
 
-
-			//TODO:othelloオブジェクトを作る
-			//toBoolean(Number n)
-			//Player me=new Player(,);
-			boolean turn=true;
-
-
 			connectFlag=false;
-
 
 			// getCommandメソッドを監視するスレッド起動する
 			// マッチング中にもこれを走らせ、接続中断のボタンが押された時も対応可能にする。
@@ -513,13 +527,15 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 						// 0.1秒待つ
 						Thread.sleep(COMMAND_CHECK_INTERVAL);
 
+
 						// getCommandメソッドを呼び出す
 						//TODO:play[2]から指し手をいずれ読み込めるようにする
 						int[] commandX = new int[2];
 						int[] newCommand = commandX;
 
 							if (isEqual(newCommand, new int[]{16, 0})) {
-								// 特別な入力があった場合、ハートビートを0に変更する
+								// 特別な入力があった場合、ハートビートを0に変更して終了
+								//ソケットはサーバが閉じる
 								sendHeartbeat(socket, 0);
 								return;
 							}
@@ -559,11 +575,14 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			while (true) {
 				try {
 					// サーバーからのデータを受け取る
-					int response = receiveResponse(socket);
+					int[] response = receiveResponse(socket);
+
+					//TODO:配列を受け取り相手の手を実行する
+
 
 					// サーバーからのレスポンスが1でなければエラー
-					if (response != 1) {
-						throw new RuntimeException("サーバーから不正な値が送信されました: " + response);
+					if (response[2] != 1) {
+						throw new RuntimeException("サーバーから不正な値が送信されました");
 					}
 				} catch (SocketTimeoutException e) {
 					// タイムアウトしたら例外処理を返して終了する
@@ -632,7 +651,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	 int[2]のコマンドをサーバーに送信する。
 	 配列の送信方法は
 	 **/
-	private static void sendCommand(Socket socket, int[] command) throws IOException {
+	private void sendCommand(Socket socket, int[] command) throws IOException {
 		command[2] = othello.getPlayers()[0].getLeftTime();
 		OutputStream out = socket.getOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(out);
@@ -641,23 +660,31 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	/**
 	 サーバーにハートビートを送信する。接続確認って言ってましたが俗にハートビートというらしいです。
 	 **/
-	private static void sendHeartbeat(Socket socket,int heartbeat) throws IOException {
+	private static void sendHeartbeat(Socket socket,int flag) throws IOException {
+		int[] heartbeat = new int[3];
+		heartbeat[0] = 16;
+		heartbeat[1] = 0;
+		heartbeat[2] = flag;
 		OutputStream out = socket.getOutputStream();
-		DataOutputStream dos = new DataOutputStream(out);
-		dos.writeInt(heartbeat); // ハートビートを表す値として通常は1を送信する
+		ObjectOutputStream oos = new ObjectOutputStream(out);
+		oos.writeObject(heartbeat);
 	}
-
 	/**
 	 サーバーからのレスポンスを受け取る。
 	 タイムアウトした場合はSocketTimeoutExceptionを投げる。
 	 **/
-	private static int receiveResponse(Socket socket) throws IOException {
+	private static int[] receiveResponse(Socket socket) throws IOException {
 		InputStream in = socket.getInputStream();
 		DataInputStream dis = new DataInputStream(in);
 		socket.setSoTimeout(TIMEOUT_INTERVAL); // タイムアウト時間を設定する
-		return dis.readInt();
-	}
 
+		int[] response = new int[3];
+		for (int i = 0; i < 3; i++) {
+			response[i] = dis.readInt();
+		}
+
+		return response;
+	}
 	/**
 	 int[2]を取得する仮実装。最後に押されたボタンを所得する関数をお願いします。
 	 **/
