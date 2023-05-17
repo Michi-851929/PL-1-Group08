@@ -532,41 +532,6 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 
 			connectFlag=false;
 
-			// getCommandメソッドを監視するスレッド起動する
-			// マッチング中にもこれを走らせ、接続中断のボタンが押された時も対応可能にする。
-			new Thread(() -> {
-
-				while (true) {
-					try {
-						// 0.1秒待つ
-						Thread.sleep(COMMAND_CHECK_INTERVAL);
-
-
-						// getCommandメソッドを呼び出す
-						//TODO:play[2]から指し手をいずれ読み込めるようにする
-						int[] commandX = new int[2];
-						int[] newCommand = commandX;
-
-							if (isEqual(newCommand, new int[]{16, 0})) {
-								// 特別な入力があった場合、ハートビートを0に変更して終了
-								//ソケットはサーバが閉じる
-								sendHeartbeat(socket, 0);
-								return;
-							}
-							sendCommand(socket, newCommand);
-
-					} catch (InterruptedException e) {
-						// スレッドが中断されたら終了する
-						return;
-					} catch (IOException e) {
-						// サーバーに接続できなかったら終了する
-						e.printStackTrace();
-						return;
-					}
-				}
-			}).start();
-
-
 			// ハートビートを送信するスレッドを起動する
 			new Thread(() -> {
 				try {
@@ -615,7 +580,24 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			e.printStackTrace();
 		}
 	}
+	public void sendCommand(int[] command) throws IOException {
+		try {
 
+			if (isEqual(command, new int[]{16, 0})) {
+				// 特別な入力があった場合、ハートビートを0に変更して終了
+				sendHeartbeat(socket, 0);
+				socket.close();
+				return;
+			}
+			sendCommand(command); // 手を送信するメソッドを呼び出す
+
+		}
+		catch (IOException e) {
+			// サーバーに接続できなかったら終了する
+			e.printStackTrace();
+			return;
+		}
+	}
 
 	/**
 	 2つのint配列が等しいかどうかを判定する。
@@ -758,9 +740,9 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 
 	public void checkVacantRoom() {
 		try (
-				Socket socket = new Socket("localhost", SERVER_PORT_2);
-				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+				Socket socket1 = new Socket("localhost", SERVER_PORT_2);
+				PrintWriter out = new PrintWriter(socket1.getOutputStream(), true);
+				BufferedReader in = new BufferedReader(new InputStreamReader(socket1.getInputStream()));
 		) {
 			int heartbeat = 1; // ハートビートメッセージ
 			String responseMsg; // サーバからのレスポンスメッセージ
