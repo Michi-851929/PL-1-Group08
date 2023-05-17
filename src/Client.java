@@ -383,19 +383,24 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		out[0] = in[0];
 		out[1] = in[1];
 		out[2] = othello.getPlayers()[0].getLeftTime();
-		
-		if(out[2] <= 0) {//持ち時間0以下
-			//sendCommand(socket,out);
-			endBattle();
-		}
-		else if(othello.checkWinner() != 2) {//盤面勝者確定
-			out[0] += 8;
-			//sendCommand(socket,out);
-			endBattle();
-		}
-		else {
-			//sendCommand(socket,out);
-			doYourTurn();
+		try {
+			if(out[2] <= 0) {//持ち時間0以下
+				sendCommand(socket,out);
+				endBattle();
+			}
+			else if(othello.checkWinner() != 2) {//盤面勝者確定
+				out[0] += 8;
+				sendCommand(socket,out);
+				endBattle();
+			}
+			else {
+				sendCommand(socket,out);
+				doYourTurn();
+			}
+		} catch (IOException e) {
+			// サーバーに接続できなかったら終了する
+			e.printStackTrace();
+			return;
 		}
 	}
 
@@ -405,14 +410,15 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		in[0] = -1;
 		in[1] = -1;
 		in[2] = -1;
-		int millis = othello.getPlayers()[1].getLeftTime() - 100;
+		int millis = othello.getPlayers()[1].getLeftTime();
 		int[] out = new int[2];
 		Thread time_counter = new Thread(() -> {
 			try {
-				//サーバから相手の指し手を受け取るメソッド
-				//in = ;
-			} catch (Exception e) {
+				in = receiveResponse(socket);
+			} catch (IOException e) {
+				// サーバーからのデータを受け取れなかったらエラー
 				e.printStackTrace();
+				return;
 			}
 		});
 		time_counter.start();
