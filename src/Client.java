@@ -30,6 +30,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import java.net.*;
 
 public class Client extends JFrame implements ActionListener, FocusListener{
 
@@ -42,7 +43,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	private static final int PHASE_BATTLE = 1; //changePhase()の引数で対局画面への遷移を表す
 	private static final int PHASE_RESULT = 2; //changePhase()の引数で結果画面への遷移を表す
 	private static final Color BACKGROUND_COLOR = new Color(207, 207, 207);
-	private Othello othello;
+	private static Othello othello;
 	private Player me;
 	private Player your;
 	int[] vacantRoom = new int[3];
@@ -72,11 +73,12 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	JButton[][] ui_jb_field = new JButton[8][8];
 	boolean command_pressed = false;
 	int[] command_value = {-1, -1};
-	
+
 	//結果画面のオブジェクト
 	JButton ui_jb_totitle;
 	JButton ui_jb_exit;
-	
+
+	private Socket socket;
 	Client(String title)
 	{
 		super(title);
@@ -94,7 +96,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		add(display);
 		
 		//接続を待つ(socket予定地)
-
+		this.socket = socket;
 		//タイトル画面
 		//changePhase(PHASE_TITLE);
 		
@@ -453,10 +455,8 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	public void connectToServer() {
 		try {
 
-			//TODO:これをコンストラクタに移す
 			// サーバーに接続する
-			Socket socket = new Socket("hostName", SERVER_PORT_1);
-
+			socket.connect(new InetSocketAddress("hostname", SERVER_PORT_1), TIMEOUT_INTERVAL);
 			// 仮のtextFieldと仮のアクションイベント
 			// エラーが表示されているのが気になるので追加しただけ
 			ActionEvent f = new ActionEvent(new JButton("Button 1"), ActionEvent.ACTION_PERFORMED, null);
@@ -506,10 +506,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 				}
 			}).start();
 
-
-
 			connectFlag=false;
-
 
 			// getCommandメソッドを監視するスレッド起動する
 			// マッチング中にもこれを走らせ、接続中断のボタンが押された時も対応可能にする。
@@ -520,13 +517,15 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 						// 0.1秒待つ
 						Thread.sleep(COMMAND_CHECK_INTERVAL);
 
+
 						// getCommandメソッドを呼び出す
 						//TODO:play[2]から指し手をいずれ読み込めるようにする
 						int[] commandX = new int[2];
 						int[] newCommand = commandX;
 
 							if (isEqual(newCommand, new int[]{16, 0})) {
-								// 特別な入力があった場合、ハートビートを0に変更する
+								// 特別な入力があった場合、ハートビートを0に変更して終了
+								//ソケットはサーバが閉じる
 								sendHeartbeat(socket, 0);
 								return;
 							}
@@ -566,11 +565,14 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			while (true) {
 				try {
 					// サーバーからのデータを受け取る
-					int response = receiveResponse(socket);
+					int[] response = receiveResponse(socket);
+
+					//TODO:配列を受け取り相手の手を実行する
+
 
 					// サーバーからのレスポンスが1でなければエラー
-					if (response != 1) {
-						throw new RuntimeException("サーバーから不正な値が送信されました: " + response);
+					if (response[2] != 1) {
+						throw new RuntimeException("サーバーから不正な値が送信されました");
 					}
 				} catch (SocketTimeoutException e) {
 					// タイムアウトしたら例外処理を返して終了する
@@ -661,13 +663,18 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	 サーバーからのレスポンスを受け取る。
 	 タイムアウトした場合はSocketTimeoutExceptionを投げる。
 	 **/
-	private static int receiveResponse(Socket socket) throws IOException {
+	private static int[] receiveResponse(Socket socket) throws IOException {
 		InputStream in = socket.getInputStream();
 		DataInputStream dis = new DataInputStream(in);
 		socket.setSoTimeout(TIMEOUT_INTERVAL); // タイムアウト時間を設定する
-		return dis.readInt();
-	}
 
+		int[] response = new int[3];
+		for (int i = 0; i < 3; i++) {
+			response[i] = dis.readInt();
+		}
+
+		return response;
+	}
 	/**
 	 int[2]を取得する仮実装。最後に押されたボタンを所得する関数をお願いします。
 	 **/
