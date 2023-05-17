@@ -411,14 +411,6 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			try {
 				//サーバから相手の指し手を受け取るメソッド
 				//in = ;
-		in[2] = othello.getPlayers()[1].getLeftTime();
-		Thread time_counter = new Thread(() -> {
-			try {
-				//サーバから相手の指し手を受け取るメソッド
-				int[] play = getCommand();
-				in[0] = play[0];
-				in[1] = play[1];
-				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
