@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -37,8 +36,8 @@ public class Server{
 	//待ちプレイヤ確認応答スレッド
 	class RoomInfoThread extends Thread{
 		int Info_port;
-		private PrintWriter Info_out; //データ送信用オブジェクト
 		private BufferedReader Info_in; //データ受信用オブジェクト
+		private DataOutputStream dos;
 		//コンストラクタ
 		RoomInfoThread(){
 			Info_port = port+1; //port+1番のポートを待ちプレイヤ確認応答スレッドに使用する
@@ -51,11 +50,19 @@ public class Server{
 					ServerSocket ri_ss = new ServerSocket(Info_port);
 					Socket ri_socket = ri_ss.accept();
 				    Info_in = new BufferedReader(new InputStreamReader(ri_socket.getInputStream()));
+				    dos = new DataOutputStream(ri_socket.getOutputStream());
+				    
 				    if(Info_in.read()==1) {
-						Info_out = new PrintWriter(ri_socket.getOutputStream(), true);//データ送信オブジェクトを用意
 						updateRoomInfo();
-						Info_out.println(Server.GetRoomInfo()); //待ち状況を書き込む
-						Info_out.flush(); //待ち状況を送信する
+						for(int i=0;i<3;i++) {
+							if(RoomInfo[i]) {//待機している人がいるなら
+								dos.writeInt(1);
+							}
+							else {//待機している人がいないなら
+								dos.writeInt(0);
+							}
+						}
+						dos.flush();//クライアントに待ち情報を送信
 				    }
 				    else {
 				    	System.out.println("RoomInfoThread:クライアントから送られた値が1ではありません");
@@ -77,8 +84,24 @@ public class Server{
 	//待ちプレイヤ更新メソッド
 	public boolean[] updateRoomInfo() {
 		boolean[] retval = new boolean[3];//返り値
-
-		//ここに更新処理を入れる//
+		retval[0] = false;
+		retval[1] = false;
+		retval[2] = false;
+		for(int i = 0; i<128; i++) {
+			if(GameThread[i].isWaiting()) {
+				switch(GameThread[i].getTime()) {
+				case 1:
+					retval[0] = true;
+					break;
+				case 2:
+					retval[1] = true;
+					break;
+				case 3:
+					retval[2] = true;
+					break;
+				}
+			}
+		}
 
 		return retval;
 	}
@@ -191,7 +214,7 @@ public class Server{
 			command[0]=0;
 			command[1]=0;
 			command[2]=0;
-			System.out.println("Room"+id+"の試合を開始しました");
+			System.out.println("GameThread["+RoomID+"]: GameThreadを開始しました");
 		}
 		
 		//試合ループを終了
@@ -285,14 +308,14 @@ public class Server{
 			P1_rmt.stopRunning();
 			P2_rmt.stopRunning();
 			time = 0;
-			System.out.println("Room"+RoomID+"の試合を終了しました");
+			System.out.println("GameThread["+RoomID+"]: 試合を終了しました");
 		}
 
 		//runメソッド
 		@Override
 		public void run() {
 			running = true;
-			while(running) {
+			while(true) {
 				try {
 					while(P1_name == null) {
 						try {
@@ -302,7 +325,7 @@ public class Server{
 							e.printStackTrace();
 						}
 					}
-					System.out.println(P1_name+"が Room"+RoomID+"に先攻として入りました");
+					System.out.println("GameThread["+RoomID+"]:"+P1_name+"が Room"+RoomID+"に先攻として入りました");
 					ReceiveMessageThread P1_rmt = new ReceiveMessageThread(P1_socket);
 					P1_ct = new ConnectThread(RoomID, true, P1_socket, P1_rmt);
 					while(P2_name == null) {//後攻が来るまで無限ループ
@@ -313,7 +336,7 @@ public class Server{
 							e.printStackTrace();
 						}
 					}
-					System.out.println(P2_name+"が Room"+RoomID+"に後攻として入りました");
+					System.out.println("GameThread["+RoomID+"]:"+P2_name+"が Room"+RoomID+"に後攻として入りました");
 					ReceiveMessageThread P2_rmt = new ReceiveMessageThread(P2_socket);
 					P2_ct = new ConnectThread(RoomID, false, P2_socket, P2_rmt);
 
@@ -345,7 +368,7 @@ public class Server{
 					int P2_commandBefore[] = new int[3];
 					P2_commandBefore = new int[]{-1,-1,-1};
 					//試合終了まで無限ループ
-					while(true) {
+					while(running) {
 						//先攻の番 盤面が変わるまで無限ループ
 						while(P1_commandBefore[0] ==P1_rmt.last_command[0] && P1_commandBefore[1] == P1_rmt.last_command[1]) {
 							Thread.sleep(50);
@@ -391,7 +414,6 @@ public class Server{
 					//★切断希望が出たことをプレイヤーに伝える
 				}*/
 				catch (InterruptedException e) {
-					// TODO 自動生成された catch ブロック
 					e.printStackTrace();
 				}
 				catch (IOException eio) {
