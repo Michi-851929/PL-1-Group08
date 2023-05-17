@@ -78,8 +78,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	private JButton ui_jb_totitle;
 	private JButton ui_jb_exit;
 
-	private Socket socket1;
-	private Socket socket2;
+	private Socket socket;
 	
 	public Client(String title)
 	{
