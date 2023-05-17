@@ -401,11 +401,13 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		int[] in = new int[3];
 		in[0] = -1;
 		in[1] = -1;
-		in[3] = othello.getPlayers()[1].getLeftTime();
+		in[2] = othello.getPlayers()[1].getLeftTime();
 		Thread time_counter = new Thread(() -> {
 			try {
 				//サーバから相手の指し手を受け取るメソッド
-				in = getCommand();
+				int[] play = getCommand();
+				in[0] = play[0];
+				in[1] = play[1];
 				
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -639,7 +641,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 	 int[2]のコマンドをサーバーに送信する。
 	 配列の送信方法は
 	 **/
-	private static void sendCommand(Socket socket, int[] command) throws IOException {
+	private void sendCommand(Socket socket, int[] command) throws IOException {
 		command[2] = othello.getPlayers()[0].getLeftTime();
 		OutputStream out = socket.getOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(out);
