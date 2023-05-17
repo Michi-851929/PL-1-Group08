@@ -334,7 +334,7 @@ public class Server{
 							e.printStackTrace();
 						}
 					}
-					System.out.println("GameThread["+RoomID+"]:"+P1_name+"が Room"+RoomID+"に先攻として入りました");
+					System.out.println("GameThread["+RoomID+"]:"+P1_name+"が Room"+RoomID+"に、time:"+time+"で先攻として入りました");
 					ReceiveMessageThread P1_rmt = new ReceiveMessageThread(P1_socket);
 					while(P2_name == null) {//後攻が来るまで無限ループ
 						try {
@@ -344,7 +344,7 @@ public class Server{
 							e.printStackTrace();
 						}
 					}
-					System.out.println("GameThread["+RoomID+"]:"+P2_name+"が Room"+RoomID+"に後攻として入りました");
+					System.out.println("GameThread["+RoomID+"]:"+P2_name+"が Room"+RoomID+"に、time:"+time+"後攻として入りました");
 					ReceiveMessageThread P2_rmt = new ReceiveMessageThread(P2_socket);
 
 					//後攻が来たら
