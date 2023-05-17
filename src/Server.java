@@ -52,9 +52,9 @@ public class Server{
 				    Info_in = new BufferedReader(new InputStreamReader(ri_socket.getInputStream()));
 				    dos = new DataOutputStream(ri_socket.getOutputStream());
 				    
-				    if(Info_in.read()==1) {
+				    if(Info_in.read() == '1') {
 						updateRoomInfo();
-						for(int i=0;i<3;i++) {
+						for(int i = 0; i < 3; i++) {
 							if(RoomInfo[i]) {//待機している人がいるなら
 								dos.writeInt(1);
 							}
