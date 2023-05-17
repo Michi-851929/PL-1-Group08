@@ -767,7 +767,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 
 	public void endBattle()
 	{
-		
+		changePhase(PHASE_RESULT);
 	}
 	
 	public void actionPerformed(ActionEvent ae)
