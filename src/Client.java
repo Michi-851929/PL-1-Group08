@@ -493,7 +493,6 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			// サーバーに接続する
 			socket.connect(new InetSocketAddress(hostname, SERVER_PORT_1), TIMEOUT_INTERVAL);
 			// 仮のtextFieldと仮のアクションイベント
-			// エラーが表示されているのが気になるので追加しただけ
 			ActionEvent f = new ActionEvent(new JButton("Button 1"), ActionEvent.ACTION_PERFORMED, null);
 
 
