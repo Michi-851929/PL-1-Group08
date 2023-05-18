@@ -113,7 +113,6 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		setVisible(true);
 		
 		//接続を待つ(socket予定地)
-		this.socket = new Socket();
 		try {
 			while(vacantRoom[0] == -1) {
 				Thread.sleep(1000);
@@ -491,14 +490,12 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		try {
 
 			// サーバーに接続する
-			socket.connect(new InetSocketAddress(hostname, SERVER_PORT_1), TIMEOUT_INTERVAL);
-			// 仮のtextFieldと仮のアクションイベント
-			ActionEvent f = new ActionEvent(new JButton("Button 1"), ActionEvent.ACTION_PERFORMED, null);
+			
 
 
 			// 名前とルーム番号をサーバーに送信する
 			String name = ui_tf_namefield.getText();
-			int roomNumber = getRoomNumber(f);
+			int roomNumber = button_selected;
 			sendPlayerInfo(socket, name, roomNumber);
 
 
@@ -624,32 +621,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		}
 		return true;
 	}
-	public int getRoomNumber(ActionEvent e) {
-		int roomNumber = 0;
-		Object source = e.getSource();
-
-		if (source instanceof JButton) {
-			JButton button = (JButton) source;
-			String buttonText = button.getText();
-
-			switch (button_selected) {
-				case 0://5分
-					roomNumber = 1;
-					break;
-				case 1://10分
-					roomNumber = 2;
-					break;
-				case 2://20分
-					roomNumber = 3;
-					break;
-				default:
-					break;
-			}
-		}
-
-		return roomNumber;
-	}
-
+	
 	private static void sendPlayerInfo(Socket socket, String name, int roomNumber) throws IOException {
 		// 名前とルーム番号をサーバーに送信する
 		DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -813,11 +785,25 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		}
 		else if(s.equals("開始")) {
 			ui_jb_start.setText("マッチング中止");
-			connectToServer();
+			socket = new Socket();
+			try {
+				socket.connect(new InetSocketAddress(hostname, SERVER_PORT_1), TIMEOUT_INTERVAL);
+				connectToServer();
+			} catch (IOException e) {
+				// TODO 自動生成された catch ブロック
+				e.printStackTrace();
+				ui_jb_start.setText("開始");
+			}
 		}
 		else if(s.equals("マッチング中止")) {
+			try {
+				socket.close();
+			}
+			catch (IOException e) {
+				// TODO 自動生成された catch ブロック
+				e.printStackTrace();
+			}
 			ui_jb_start.setText("開始");
-			
 		}
 		else if(s.equals("投了")) {
 			command_pressed = false;
