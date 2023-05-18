@@ -65,6 +65,7 @@ public class Server{
 				    }
 					ri_ss.close();
 					ri_socket.close();
+				    System.out.println("RoomInfoThread: ソケットを閉じました");
 				} catch (IOException e) {
 					System.err.println("RoomInfoThread:クライアントとの接続が切れました．");
 				}
@@ -152,6 +153,7 @@ public class Server{
 						else {
 							ss_match.close();
 							socket_match.close();
+						    System.out.println("MatchThread: 空き部屋が見つからないためソケットを閉じました");
 						}
 					}
 
@@ -306,8 +308,10 @@ public class Server{
 			try {
 				P1_socket.close();
 				P2_socket.close();
+			    System.out.println("GameThread"+RoomID+": 試合が終了したためソケットを閉じました");
 			} catch (IOException e) {
 				e.printStackTrace();
+			    System.out.println("GameThread"+RoomID+": 試合が終了したためソケットを閉じようとしましたが閉じることができませんでした");
 			}
 			P1_rmt.stopRunning();
 			P2_rmt.stopRunning();
