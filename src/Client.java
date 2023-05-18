@@ -886,10 +886,11 @@ public class Client extends JFrame implements ActionListener, FocusListener{
         //client.othello = new Othello(new Player("aiueo", true, 60000 * 10 + 5000), new Player("oeuia", false, 60000 * 11));
         
         try {
-        	while(connectFlag) {
-        		Thread.sleep(100);
-        	}
-        }
+			while(connectFlag) {
+				Thread.sleep(1000);
+				client.checkVacantRoom();
+			}
+		}
         catch(Exception ex) {
         	ex.printStackTrace();
         }
