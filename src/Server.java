@@ -338,7 +338,7 @@ public class Server{
 					ReceiveMessageThread P1_rmt = new ReceiveMessageThread(P1_socket);
 					while(P2_name == null) {//後攻が来るまで無限ループ
 						try {
-							Thread.sleep(100);
+							Thread.sleep(2000);
 							System.out.println("GameThread["+RoomID+"]:"+P1_name+"が対戦相手を待機中 (time:"+time+")");
 						} catch (InterruptedException e) {
 							// TODO 自動生成された catch ブロック
@@ -530,11 +530,16 @@ public class Server{
 		@Override
 		public void run() {	
 			try {
-				ObjectOutputStream oos_ct = new ObjectOutputStream(new DataOutputStream(ct_socket.getOutputStream()));
+				DataOutputStream dos_ct = new DataOutputStream(ct_socket.getOutputStream());
 
 				ct_socket.setSoTimeout(1000);
 				while(running) {
-					oos_ct.writeObject(command_send);
+					
+					//ハートビートをDataOutputStreamで送る
+					dos_ct.writeInt(command_send[0]);
+					dos_ct.writeInt(command_send[1]);
+					dos_ct.writeInt(command_send[2]);
+
 					
 					if(rmt.last_heartbeat[1] == 1) {
 						//ok
@@ -581,7 +586,9 @@ public class Server{
 			String admin_command = scanner.next();
 			if(admin_command.equals("status")) {
 				for(int i = 0; i<128;i++) {
-					server.GameThread[i].outputRoomInfo();
+					if(!server.GameThread[i].isVacant()) {
+						server.GameThread[i].outputRoomInfo();
+					}
 				}
 			}
 			else if(admin_command.equals("stop")) {
