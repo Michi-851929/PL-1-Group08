@@ -501,11 +501,10 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 
 			try {
 				// プレイヤ名とルーム番号を受信する
-				BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				String s = br.readLine();
-				System.out.println(s);
-				int turnNum = Integer.parseInt(s);
-				String opponentName = br.readLine();
+				InputStream in = socket.getInputStream();
+				DataInputStream dis = new DataInputStream(in);
+				String opponentName = dis.readUTF();
+				int turnNum = dis.readInt();
 				boolean turn = (turnNum != 0) ? true : false;
 
 				//1のとき300秒,2のとき600秒,3のとき1200秒となる
