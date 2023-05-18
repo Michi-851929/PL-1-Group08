@@ -581,7 +581,9 @@ public class Server{
 			String admin_command = scanner.next();
 			if(admin_command.equals("status")) {
 				for(int i = 0; i<128;i++) {
-					server.GameThread[i].outputRoomInfo();
+					if(!server.GameThread[i].isVacant()) {
+						server.GameThread[i].outputRoomInfo();
+					}
 				}
 			}
 			else if(admin_command.equals("stop")) {
