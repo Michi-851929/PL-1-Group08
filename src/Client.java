@@ -601,6 +601,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 				} catch (IOException e) {
 					// サーバーからのデータを受け取れなかったらエラー
 					e.printStackTrace();
+					System.err.println("サーバからのデータが読み取れませんでした。");
 					socket.close();
 					return;
 				}
