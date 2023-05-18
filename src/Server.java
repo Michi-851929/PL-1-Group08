@@ -530,11 +530,16 @@ public class Server{
 		@Override
 		public void run() {	
 			try {
-				ObjectOutputStream oos_ct = new ObjectOutputStream(new DataOutputStream(ct_socket.getOutputStream()));
+				DataOutputStream dos_ct = new DataOutputStream(ct_socket.getOutputStream());
 
 				ct_socket.setSoTimeout(1000);
 				while(running) {
-					oos_ct.writeObject(command_send);
+					
+					//ハートビートをDataOutputStreamで送る
+					dos_ct.writeInt(command_send[0]);
+					dos_ct.writeInt(command_send[1]);
+					dos_ct.writeInt(command_send[2]);
+
 					
 					if(rmt.last_heartbeat[1] == 1) {
 						//ok
