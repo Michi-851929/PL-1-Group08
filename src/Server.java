@@ -356,8 +356,9 @@ public class Server{
 					
 					
 					//相手の名前を送信
+					System.out.println("GameThread["+RoomID+"]:対戦相手の情報を送信します");
 					dos_p1.writeUTF(P2_name);
-					dos_p1.writeUTF(P1_name);
+					dos_p2.writeUTF(P1_name);
 					
 					//先攻/後攻を送信
 					dos_p1.writeInt(1);//先攻
