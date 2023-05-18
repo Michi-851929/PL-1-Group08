@@ -492,13 +492,11 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 
 			// サーバーに接続する
 			socket.connect(new InetSocketAddress(hostname, SERVER_PORT_1), TIMEOUT_INTERVAL);
-			// 仮のtextFieldと仮のアクションイベント
-			ActionEvent f = new ActionEvent(new JButton("Button 1"), ActionEvent.ACTION_PERFORMED, null);
 
 
 			// 名前とルーム番号をサーバーに送信する
 			String name = ui_tf_namefield.getText();
-			int roomNumber = getRoomNumber(f);
+			int roomNumber = button_selected;
 			sendPlayerInfo(socket, name, roomNumber);
 
 
@@ -624,32 +622,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 		}
 		return true;
 	}
-	public int getRoomNumber(ActionEvent e) {
-		int roomNumber = 0;
-		Object source = e.getSource();
-
-		if (source instanceof JButton) {
-			JButton button = (JButton) source;
-			String buttonText = button.getText();
-
-			switch (button_selected) {
-				case 0://5分
-					roomNumber = 1;
-					break;
-				case 1://10分
-					roomNumber = 2;
-					break;
-				case 2://20分
-					roomNumber = 3;
-					break;
-				default:
-					break;
-			}
-		}
-
-		return roomNumber;
-	}
-
+	
 	private static void sendPlayerInfo(Socket socket, String name, int roomNumber) throws IOException {
 		// 名前とルーム番号をサーバーに送信する
 		DataOutputStream out = new DataOutputStream(socket.getOutputStream());
