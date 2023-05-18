@@ -159,7 +159,6 @@ public class Server{
 					else {
 						GameThread[room_tojoin].setPlayer(socket_match, player_name, false);//後攻なので3個目の引数はfalse
 					}
-					
 
 				} catch (IOException e) {
 					// TODO 自動生成された catch ブロック
@@ -279,13 +278,13 @@ public class Server{
 			System.out.println("Room ID: "+RoomID);
 			switch(getTime()) {
 			case 1:
-				System.out.println("Time: 3min");
-				break;
-			case 2:
 				System.out.println("Time: 5min");
 				break;
+			case 2:
+				System.out.println("Time: 10min");
+				break;
 			case 3:
-				System.out.println("Time: 7min");
+				System.out.println("Time: 20min");
 				break;
 			default:
 				System.out.println("Time: Unknown");
@@ -345,23 +344,17 @@ public class Server{
 					ReceiveMessageThread P2_rmt = new ReceiveMessageThread(P2_socket);
 
 					//後攻が来たら
-					
-					//BufferedWriter bw_p1 = new BufferedWriter(new OutputStreamWriter(P1_socket.getOutputStream()));
-					//BufferedWriter bw_p2 = new BufferedWriter(new OutputStreamWriter(P2_socket.getOutputStream()));
-					//ObjectOutputStream oos_p1 = new ObjectOutputStream(P1_socket.getOutputStream());
-					//ObjectOutputStream oos_p2 = new ObjectOutputStream(P2_socket.getOutputStream());
 					DataOutputStream dos_p1 = new DataOutputStream(P1_socket.getOutputStream());
-					DataOutputStream dos_p2 = new DataOutputStream(P2_socket.getOutputStream());
+					DataOutputStream dos_p2 = new DataOutputStream(P2_socket.getOutputStream());					
 					
-					
-					//相手の名前を送信
+					//相手の名前をもう一方に送信
 					System.out.println("GameThread["+RoomID+"]:対戦相手の情報を送信します");
-					dos_p1.writeUTF(P2_name);
-					dos_p2.writeUTF(P1_name);
+					dos_p1.writeUTF(P2_name);//先攻に後攻の名前を伝える
+					dos_p2.writeUTF(P1_name);//後攻に先攻の名前を伝える
 					
 					//先攻/後攻を送信
-					dos_p1.writeInt(1);//先攻
-					dos_p2.writeInt(0);//後攻
+					dos_p1.writeInt(1);//先攻に自身が先攻であることを伝える
+					dos_p2.writeInt(0);//後攻に自身が先攻であることを伝える
 					
 					//ハートビート起動
 					P1_ct = new ConnectThread(RoomID, true, P1_socket, P1_rmt);
@@ -377,10 +370,12 @@ public class Server{
 						//先攻の番 盤面が変わるまで無限ループ
 						while(P1_commandBefore[0] ==P1_rmt.last_command[0] && P1_commandBefore[1] == P1_rmt.last_command[1]) {
 							Thread.sleep(50);
-							if(running == false) { //runningがfalseなら試合を強制終了するためにwhileループを抜ける
+							if(running == false) { //外部からstopRuningメソッドが呼び出されていた時はrunningがfalseとなる このときは試合のwhileループを強制的に抜ける
 								break;
 							}
 						}
+						
+						//外部からstopRuningメソッドが呼び出されていた時はrunningがfalseとなる このときは試合のwhileループを強制的に抜ける
 						if(running == false) {
 							break;
 						}
@@ -393,7 +388,7 @@ public class Server{
 							dos_p2.writeInt(P1_rmt.last_command[i]);
 						}
 						
-						//試合終了判定
+						//試合終了判定 if分内がtrueなら試合終了なのでwhileループを抜ける
 						if(P1_rmt.last_command[0]>7) {
 							break;
 						}
@@ -500,6 +495,7 @@ public class Server{
 			}
 		}
 	}
+	//ReceiveMessageThreadここまで
 
 	//接続状態確認スレッド
 	class ConnectThread extends Thread{
@@ -530,12 +526,10 @@ public class Server{
 		public void run() {	
 			try {
 				DataOutputStream dos_ct = new DataOutputStream(ct_socket.getOutputStream());
-
 				ct_socket.setSoTimeout(1000);
 				while(running) {
 					
 					//ハートビートをDataOutputStreamで送る
-					
 					dos_ct.writeInt(command_send[0]);
 					dos_ct.writeInt(command_send[1]);
 					dos_ct.writeInt(command_send[2]);
