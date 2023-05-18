@@ -3,7 +3,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -471,9 +470,9 @@ public class Server{
 		}
 		public void run() {
 			while(running) {
-				ObjectInputStream ois_rmt = null;
+				DataInputStream dis_rmt = null;
 				try {
-					ois_rmt = new ObjectInputStream(sc_rmt.getInputStream());
+					dis_rmt = new DataInputStream(sc_rmt.getInputStream());
 				} catch (IOException e1) {
 					// TODO 自動生成された catch ブロック
 					e1.printStackTrace();
@@ -481,7 +480,7 @@ public class Server{
 				while(true) {
 					for(int i = 0; i<3;i++) {
 						try {
-							receive_message[i] = ois_rmt.readInt();
+							receive_message[i] = dis_rmt.readInt();
 						} catch (IOException e) {
 							// TODO 自動生成された catch ブロック
 							e.printStackTrace();
@@ -536,10 +535,11 @@ public class Server{
 				while(running) {
 					
 					//ハートビートをDataOutputStreamで送る
+					
 					dos_ct.writeInt(command_send[0]);
 					dos_ct.writeInt(command_send[1]);
 					dos_ct.writeInt(command_send[2]);
-
+					System.out.println("ConnectThread: ハートビートを送信"+command_send[0]+","+command_send[1]+","+command_send[2]);
 					
 					if(rmt.last_heartbeat[1] == 1) {
 						//ok
