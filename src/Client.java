@@ -523,7 +523,6 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 						illmatched = false;
 					}
 				}
-				dis.readUTF();
 				int turnNum = dis.readInt();
 				boolean turn = (turnNum != 0) ? true : false;
 

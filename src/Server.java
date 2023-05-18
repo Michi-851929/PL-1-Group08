@@ -439,7 +439,7 @@ public class Server{
 				catch (IOException eio) {
 					eio.printStackTrace();
 				}
-				
+				System.out.println("a");
 				closeGame();
 				//ここでGameThread[i]は初期状態に戻り、無限ループへ
 			}
