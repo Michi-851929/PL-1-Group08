@@ -616,6 +616,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 			if (isEqual(command, new int[]{16, 0})) {
 				// 特別な入力があった場合、ハートビートを0に変更して終了
 				sendHeartbeat(socket, 0);
+				System.err.println("投了ボタンが押されました。");
 				socket.close();
 				return;
 			}
