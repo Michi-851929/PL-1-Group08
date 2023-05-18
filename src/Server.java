@@ -1,12 +1,9 @@
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -349,10 +346,11 @@ public class Server{
 					ReceiveMessageThread P2_rmt = new ReceiveMessageThread(P2_socket);
 
 					//後攻が来たら
-					BufferedWriter bw_p1 = new BufferedWriter(new OutputStreamWriter(P1_socket.getOutputStream()));
-					BufferedWriter bw_p2 = new BufferedWriter(new OutputStreamWriter(P2_socket.getOutputStream()));
-					ObjectOutputStream oos_p1 = new ObjectOutputStream(P1_socket.getOutputStream());
-					ObjectOutputStream oos_p2 = new ObjectOutputStream(P2_socket.getOutputStream());
+					
+					//BufferedWriter bw_p1 = new BufferedWriter(new OutputStreamWriter(P1_socket.getOutputStream()));
+					//BufferedWriter bw_p2 = new BufferedWriter(new OutputStreamWriter(P2_socket.getOutputStream()));
+					//ObjectOutputStream oos_p1 = new ObjectOutputStream(P1_socket.getOutputStream());
+					//ObjectOutputStream oos_p2 = new ObjectOutputStream(P2_socket.getOutputStream());
 					DataOutputStream dos_p1 = new DataOutputStream(P1_socket.getOutputStream());
 					DataOutputStream dos_p2 = new DataOutputStream(P2_socket.getOutputStream());
 					
@@ -391,7 +389,9 @@ public class Server{
 						P1_commandBefore[1] = P1_rmt.last_command[1];
 						
 						//後攻に情報を送信
-						oos_p2.writeObject(P1_rmt.last_command);
+						for(int i = 0; i<3;i++) {
+							dos_p2.writeInt(P1_rmt.last_command[i]);
+						}
 						
 						//試合終了判定
 						if(P1_rmt.last_command[0]>7) {
@@ -413,8 +413,9 @@ public class Server{
 						P2_commandBefore[1] = P2_rmt.last_command[1];
 						
 						//先攻に情報を送信
-						oos_p1.writeObject(P2_rmt.last_command);
-						
+						for(int i = 0; i<3;i++) {
+							dos_p1.writeInt(P2_rmt.last_command[i]);
+						}						
 						//試合終了判定
 						if(P2_rmt.last_command[0]>7) {
 							break;
