@@ -13,6 +13,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
@@ -501,8 +502,28 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 				// プレイヤ名とルーム番号を受信する
 				InputStream in = socket.getInputStream();
 				DataInputStream dis = new DataInputStream(in);
-				System.out.println(dis.read());
-				String opponentName = dis.readUTF();
+				
+				String opponentName = null;
+				boolean illmatched = false;
+				while(!illmatched) {
+					try {
+						Thread.sleep(200);
+						opponentName = dis.readUTF();
+					}
+					catch(EOFException eex) {
+						illmatched = true;
+					}
+					catch(Exception ex) {
+						ex.printStackTrace();
+					}
+					finally {
+						if(!illmatched) {
+							break;
+						}
+						illmatched = false;
+					}
+				}
+				dis.readUTF();
 				int turnNum = dis.readInt();
 				boolean turn = (turnNum != 0) ? true : false;
 
