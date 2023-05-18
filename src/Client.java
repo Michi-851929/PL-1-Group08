@@ -501,6 +501,7 @@ public class Client extends JFrame implements ActionListener, FocusListener{
 				// プレイヤ名とルーム番号を受信する
 				InputStream in = socket.getInputStream();
 				DataInputStream dis = new DataInputStream(in);
+				System.out.println(dis.read());
 				String opponentName = dis.readUTF();
 				int turnNum = dis.readInt();
 				boolean turn = (turnNum != 0) ? true : false;
