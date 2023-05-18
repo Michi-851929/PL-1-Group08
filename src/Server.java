@@ -338,7 +338,7 @@ public class Server{
 					ReceiveMessageThread P1_rmt = new ReceiveMessageThread(P1_socket);
 					while(P2_name == null) {//後攻が来るまで無限ループ
 						try {
-							Thread.sleep(100);
+							Thread.sleep(2000);
 							System.out.println("GameThread["+RoomID+"]:"+P1_name+"が対戦相手を待機中 (time:"+time+")");
 						} catch (InterruptedException e) {
 							// TODO 自動生成された catch ブロック
