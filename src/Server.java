@@ -353,19 +353,17 @@ public class Server{
 					BufferedWriter bw_p2 = new BufferedWriter(new OutputStreamWriter(P2_socket.getOutputStream()));
 					ObjectOutputStream oos_p1 = new ObjectOutputStream(P1_socket.getOutputStream());
 					ObjectOutputStream oos_p2 = new ObjectOutputStream(P2_socket.getOutputStream());
+					DataOutputStream dos_p1 = new DataOutputStream(P1_socket.getOutputStream());
+					DataOutputStream dos_p2 = new DataOutputStream(P2_socket.getOutputStream());
 					
 					
 					//相手の名前を送信
-					bw_p1.write(P2_name);
-					bw_p1.flush();
-					bw_p2.write(P1_name);
-					bw_p2.flush();
+					dos_p1.writeUTF(P2_name);
+					dos_p1.writeUTF(P1_name);
 					
 					//先攻/後攻を送信
-					bw_p1.write(1);//先攻
-					bw_p1.flush();
-					bw_p2.write(0);//後攻
-					bw_p2.flush();
+					dos_p1.writeInt(1);//先攻
+					dos_p2.writeInt(0);//後攻
 					
 					//ハートビート起動
 					P1_ct = new ConnectThread(RoomID, true, P1_socket, P1_rmt);
