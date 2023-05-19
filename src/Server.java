@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Scanner;
 
@@ -339,6 +340,12 @@ public class Server{
 						try {
 							Thread.sleep(2000);
 							System.out.println("GameThread["+RoomID+"]:"+P1_name+"が対戦相手を待機中 (time:"+time+")");
+							//以下デバッグ分
+					        if (P1_socket.isClosed())
+					            throw new SocketException("Socket is closed");
+					        else {
+					        	System.out.println("GameThread["+RoomID+"]:P1's Socket is not closed");
+					        }
 						} catch (InterruptedException e) {
 							// TODO 自動生成された catch ブロック
 							e.printStackTrace();
