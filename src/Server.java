@@ -126,11 +126,10 @@ public class Server {
 				try {
 					Socket socket_match = ss_match.accept();
 					System.out.println("MatchThread:プレイヤーがマッチングスレッドに接続しました");
-					
-					if(socket_match.isClosed()) {
+
+					if (socket_match.isClosed()) {
 						System.out.println("MatchThread.run(): Player's socket is closed!");
-					}
-					else {
+					} else {
 						System.out.println("MatchThread.run(): Player's socket is NOT closed!");
 					}
 
@@ -141,9 +140,7 @@ public class Server {
 					DataInputStream is = new DataInputStream(socket_match.getInputStream());
 					player_name = is.readUTF();
 					player_time = is.readInt();
-					System.out.println("MatchThread: socket_match ->"+socket_match.toString());
-
-					is.close(); // DataInputStreamをclose
+					System.out.println("MatchThread: socket_match ->" + socket_match.toString());
 
 					// 待ち時間の一致するプレイヤーを探す
 					int room_tojoin = findWaitingRoom(player_time);
@@ -171,13 +168,15 @@ public class Server {
 					else {
 						GameThread[room_tojoin].setPlayer(socket_match, player_name, false);// 後攻なので3個目の引数はfalse
 					}
-					
-					if(socket_match.isClosed()) {
+
+					if (socket_match.isClosed()) {
 						System.out.println("MatchThread end of run(): Player's socket is closed!");
-					}
-					else {
+					} else {
 						System.out.println("MatchThread end of run(): Player's socket is NOT closed!");
 					}
+
+					// InputStreamをclose
+					// is.close();
 
 				} catch (IOException e) {
 					// TODO 自動生成された catch ブロック
@@ -284,11 +283,11 @@ public class Server {
 			if (isFirst) {
 				P1_name = name;
 				P1_socket = sc;
-				System.out.println("GameThread.setPlayer(): P1's socket ->"+P1_socket.toString());
-				if(P1_socket.isClosed()) {
+				System.out.println("GameThread.setPlayer(): P1's socket ->" + P1_socket.toString());
+				if (P1_socket.isClosed()) {
 					System.out.println("GameThread.setPlayer(): P1's socket is closed!");
 				}
-				
+
 			} else {
 				P2_name = name;
 				P2_socket = sc;
@@ -363,11 +362,10 @@ public class Server {
 									.println("GameThread[" + RoomID + "]:" + P1_name + "が対戦相手を待機中 (time:" + time + ")");
 							// 以下デバッグ分
 							if (P1_socket.isClosed()) {
-								System.out.println("GameThread.run(): P1's socket ->"+P1_socket.toString());
+								System.out.println("GameThread.run(): P1's socket ->" + P1_socket.toString());
 								throw new SocketException("Socket is closed");
-							}
-							else {
-								System.out.println("GameThread.run(): P1's socket ->"+P1_socket.toString());
+							} else {
+								System.out.println("GameThread.run(): P1's socket ->" + P1_socket.toString());
 								System.out.println("GameThread[" + RoomID + "]:P1's Socket is not closed");
 							}
 						} catch (InterruptedException e) {
