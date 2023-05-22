@@ -381,7 +381,10 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	}
 
 	public void reloadDisplay(int[] play) {
-		if (play[0] == 16) { // 投了
+		if(play[0] == 18) {
+			return;
+		}
+		else if (play[0] == 16) { // 投了
 			endmsg1 = (othello.getCurrentTurn() == othello.getPlayers()[0].isFirstMover()) ? "あなたが" : "対戦相手が";
 			endmsg2 = "投了しました";
 			eob_flag = true;
@@ -524,6 +527,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			newPlayFlag = false;
 			out[0] = newPlay[0];
 			out[1] = newPlay[1];
+			othello.getPlayers()[1].setLeftTime(newPlay[2]);
 			Thread.sleep(10);
 			reloadDisplay(out);
 		} catch (Exception e) {
@@ -801,10 +805,11 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	}
 
 	public void checkVacantRoom() {
-		try (
-				Socket socket1 = new Socket("localhost", SERVER_PORT_2);
+		Socket socket1 = null;
+		try {
+				socket1 = new Socket("localhost", SERVER_PORT_2);
 				PrintWriter out = new PrintWriter(socket1.getOutputStream(), true);
-				DataInputStream in = new DataInputStream(socket1.getInputStream())) {
+				DataInputStream in = new DataInputStream(socket1.getInputStream());
 			int heartbeat = 1; // ハートビートメッセージ
 
 			out.println(heartbeat); // ハートビートメッセージを送信
@@ -816,6 +821,13 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 		} catch (IOException e) {
 			System.out.println("Error connecting to server: " + e.getMessage());
+		}finally {
+			try {
+				socket1.close();
+			} catch (IOException e) {
+				// TODO 自動生成された catch ブロック
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -861,6 +873,12 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			button_selected = 2;
 		} else if (s.equals("開始")) {
 			ui_jb_start.setText("マッチング中止");
+			try {
+				socket.close();
+			}
+			catch(Exception ex) {
+				
+			}
 			socket = new Socket();
 			try {
 				socket.connect(new InetSocketAddress(hostname, SERVER_PORT_1), TIMEOUT_INTERVAL);
