@@ -413,14 +413,19 @@ public class Server {
 
 		// 新 試合終了メソッド
 		public void closeGame() {
-
+			running = true;
 			try {
 				sockets[P1_num].close();
-				sockets[P2_num].close();
 				mt.list_clear(P1_num);
-				mt.list_clear(P2_num);
 				sockets[P1_num] = new Socket();
-				sockets[P2_num] = new Socket();
+				try {
+					sockets[P2_num].close();
+					mt.list_clear(P2_num);
+					sockets[P2_num] = new Socket();
+
+				} catch (ArrayIndexOutOfBoundsException e) {
+					System.out.println("P2は未入室");
+				}
 				System.out.println("GameThread" + RoomID + ": 試合が終了したためソケットを閉じました");
 				P1_rmt.stopRunning();
 				P2_rmt.stopRunning();
@@ -464,12 +469,15 @@ public class Server {
 									.println("GameThread[" + RoomID + "]:" + P1_name + "が対戦相手を待機中 (time:" + time + ")");
 							if (running == false) {
 								System.out.println("closeGame()メソッドを呼び出します");
-								closeGame();
+								break;
 							}
 
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
+					}
+					if (running == false) {
+						break;
 					}
 					System.out.println("GameThread[" + RoomID + "]:" + P2_name + "が Room" + RoomID + "に、time:" + time
 							+ "後攻として入りました");
