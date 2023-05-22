@@ -16,8 +16,6 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -662,9 +660,14 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	 **/
 	private void sendCommand(Socket socket, int[] command) throws IOException {
 		command[2] = othello.getPlayers()[0].getLeftTime();
-		OutputStream out = socket.getOutputStream();
-		ObjectOutputStream oos = new ObjectOutputStream(out);
-		oos.writeObject(command);
+		//OutputStream out = socket.getOutputStream();
+		//ObjectOutputStream oos = new ObjectOutputStream(out);
+		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+		dos.writeInt(command[0]);
+		dos.writeInt(command[1]);
+		dos.writeInt(command[2]);
+
+		//oos.writeObject(command);
 	}
 
 	/**
@@ -675,9 +678,14 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		heartbeat[0] = 16;
 		heartbeat[1] = 0;
 		heartbeat[2] = flag;
-		OutputStream out = socket.getOutputStream();
-		ObjectOutputStream oos = new ObjectOutputStream(out);
-		oos.writeObject(heartbeat);
+		//OutputStream out = socket.getOutputStream();
+		//ObjectOutputStream oos = new ObjectOutputStream(out);
+		//oos.writeObject(heartbeat);
+		
+		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+		dos.writeInt(heartbeat[0]);
+		dos.writeInt(heartbeat[1]);
+		dos.writeInt(heartbeat[2]);
 	}
 
 	/**
