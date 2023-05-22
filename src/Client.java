@@ -441,6 +441,40 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		}
 		System.out.println("applyMove: (" + play[0] + ", " + play[1] + ")");
 			boolean[][] change_board = othello.applyMove(play);
+			if(othello.checkWinner() != 2) {
+				int[][] result_board = othello.getBoard();
+				int count_black = 0;
+				int count_white = 0;
+				for(int i = 0; i < 8; i++) {
+					for(int j = 0; j < 8; j++) {
+						if (result_board[i][j] == Othello.BLACK) {
+							count_black++;
+						} else if (result_board[i][j] == Othello.WHITE) {
+							count_white++;
+						}
+					}
+				}
+				endmsg1 = (othello.getPlayers()[0].isFirstMover() ? count_black : count_white) + "対" 
+						+ (othello.getPlayers()[0].isFirstMover() ? count_white : count_black) + "で";
+				System.out.println(endmsg1);
+				eob_flag = true;
+				switch(othello.checkWinner()) {
+				case -1: //自分の通常勝利
+					endmsg2 = "あなたの勝ち！";
+					eob_flag = true;
+					break;
+				case 1: //相手の通常勝利
+					endmsg2 = "あなたの負け！";
+					eob_flag = true;
+					break;
+				case 0: //引き分け
+					endmsg2 = "引き分け！";
+					eob_flag = true;
+					break;
+				}
+				System.out.println(endmsg2);
+				return;
+			}
 			int[][] board = othello.getBoard();
 			int count_black = 0;
 			int count_white = 0;
