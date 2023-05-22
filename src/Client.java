@@ -571,13 +571,13 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 						if (response[0] == 16) {
 							if (response[2] == 0) {
-								// TODO: 投了時の処理を実装する
+
 							} else if (response[2] == 1) {
 								// ハートビートを送り返す処理をする
 								sendHeartbeat(1);
 							}
 							else if (response[0] >= 8 && response[0]<16) {
-								// TODO: 投了時の処理を実装する
+								// TODO: 最後の手が打たれたときの処理を実装する
 							}
 						} else {
 							newPlay = response;
@@ -754,6 +754,11 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 	public void endBattle() {
 		changePhase(PHASE_RESULT);
+		try {
+			socket.close();//投了がおくられてきたのでソケットを閉じる
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public void actionPerformed(ActionEvent ae) {
