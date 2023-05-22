@@ -92,6 +92,8 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	// 結果画面のオブジェクト
 	private JButton ui_jb_totitle;
 	private JButton ui_jb_exit;
+	private String endmsg1;
+	private String endmsg2;
 
 	private Socket socket;
 
@@ -311,22 +313,9 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				p11.setLayout(new GridLayout(3, 1));
 				JLabel ui_jl_result0 = new JLabel("", SwingConstants.CENTER);
 				ui_jl_result0.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 64));
-				int[][] result_board = othello.getBoard();
-				int count_black = 0;
-				int count_white = 0;
-				for(int i = 0; i < 8; i++) {
-					for(int j = 0; j < 8; j++) {
-						if (result_board[i][j] == Othello.BLACK) {
-							count_black++;
-						} else if (result_board[i][j] == Othello.WHITE) {
-							count_white++;
-						}
-					}
-				}
-				JLabel ui_jl_result1 = new JLabel((othello.getPlayers()[0].isFirstMover() ? count_black : count_white) + "対" 
-						+ (othello.getPlayers()[0].isFirstMover() ? count_white : count_black) + "で", SwingConstants.CENTER);
+				JLabel ui_jl_result1 = new JLabel(endmsg1, SwingConstants.CENTER);
 				ui_jl_result1.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 48));
-				JLabel ui_jl_result2 = new JLabel("あなたの勝ち！", SwingConstants.CENTER);
+				JLabel ui_jl_result2 = new JLabel(endmsg2, SwingConstants.CENTER);
 				ui_jl_result2.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 48));
 				p11.add(ui_jl_result0);
 				p11.add(ui_jl_result1);
@@ -336,9 +325,11 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				JPanel p12 = new JPanel();
 				p12.setLayout(new GridLayout(2, 1, 30, 30));
 				ui_jb_totitle = new JButton("タイトルへ");
+				ui_jb_totitle.addActionListener(this);
 				ui_jb_totitle.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
 				ui_jb_totitle.setPreferredSize(new Dimension(250, 50));
 				ui_jb_exit = new JButton("終了");
+				ui_jb_exit.addActionListener(this);
 				ui_jb_exit.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
 				ui_jb_exit.setPreferredSize(new Dimension(250, 50));
 				p12.add(ui_jb_totitle);
@@ -389,28 +380,55 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	}
 
 	public void reloadDisplay(int[] play) {
-		System.out.println("applyMove: (" + play[0] + ", " + play[1] + ")");
 		if(play[0] == 16) { //投了
+			endmsg1 = (othello.getCurrentTurn() == othello.getPlayers()[0].isFirstMover()) ? "あなたが" : "対戦相手が";
+			endmsg2 = "投了しました";
 			eob_flag = true;
 			return;
 		}
+		else if(play[0] >= 8) {
+			int[][] result_board = othello.getBoard();
+			int count_black = 0;
+			int count_white = 0;
+			for(int i = 0; i < 8; i++) {
+				for(int j = 0; j < 8; j++) {
+					if (result_board[i][j] == Othello.BLACK) {
+						count_black++;
+					} else if (result_board[i][j] == Othello.WHITE) {
+						count_white++;
+					}
+				}
+			}
+			endmsg1 = (othello.getPlayers()[0].isFirstMover() ? count_black : count_white) + "対" 
+			+ (othello.getPlayers()[0].isFirstMover() ? count_white : count_black) + "で";
+			play[0] -= 8;
+			eob_flag = true;
+		}
 		switch(othello.checkWinner()) {
 		case 3: //相手の時間切れ
+			endmsg1 = "時間制限で！";
+			endmsg2 = "あなたの勝ち！";
 			eob_flag = true;
 			break;
 		case -3: //自分の時間切れ
+			endmsg1 = "時間制限で";
+			endmsg2 = "あなたの負け！";
 			eob_flag = true;
 			break;
 		case 1: //自分の通常勝利
+			endmsg2 = "あなたの勝ち！";
 			eob_flag = true;
 			break;
 		case -1: //相手の通常勝利
+			endmsg2 = "あなたの負け！";
 			eob_flag = true;
 			break;
 		case 0: //引き分け
+			endmsg2 = "引き分け！";
 			eob_flag = true;
 			break;
 		default:
+			System.out.println("applyMove: (" + play[0] + ", " + play[1] + ")");
 			boolean[][] change_board = othello.applyMove(play);
 			int[][] board = othello.getBoard();
 			int count_black = 0;
@@ -789,6 +807,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	}
 
 	public void endBattle() {
+		eob_flag = false;
 		changePhase(PHASE_RESULT);
 	}
 
@@ -850,6 +869,10 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			command_pressed = false;
 			command_value[0] = 16;
 			command_value[1] = 0;
+		} else if (s.equals("終了")) {
+			System.exit(0);
+		} else if (s.equals("タイトルへ")) {
+			changePhase(PHASE_TITLE);
 		}
 
 		else {
@@ -913,6 +936,9 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		}
 		while (!client.eob_flag) {
 			client.doMyTurn();
+			if(client.eob_flag){
+				break;
+			}
 			client.doYourTurn();
 		}
 		client.endBattle();
