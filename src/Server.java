@@ -269,6 +269,7 @@ public class Server {
 			}
 			return retval;
 		}
+
 		// 最も番号が若い空き部屋を探す
 		private int findVacantRoom() {
 			int retval = -1;
@@ -702,7 +703,7 @@ public class Server {
 						if (loss <= -20) {
 							throw new SocketTimeoutException("ConnectThread:タイムアウトしました");
 						}
-					} else if (rmt.last_heartbeat[2] == 0) { // 棟梁ボタンが押されたら
+					} else if (rmt.last_heartbeat[0] == 16 & rmt.last_heartbeat[2] == 0) { // 棟梁ボタンが押されたら
 						GameThread[id].SetGiveUp(isFirst);
 						Thread.sleep(1000);
 						if (isFirst) {
