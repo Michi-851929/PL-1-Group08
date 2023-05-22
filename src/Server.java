@@ -147,9 +147,7 @@ public class Server {
 					 * }
 					 */
 					player_num++;
-					System.out.println("MatchThread:player_num = " + player_num);
-					System.out.println("MatchThread:" + sockets[player_num].isClosed());
-					System.out.println("MatchThread:プレイヤーを待っています 次のプレイヤーの番号: " + player_num);
+					System.out.println("MatchThread:プレイヤーを待っています 次のプレイヤーの番号: "+player_num);
 					sockets[player_num] = ss_match.accept();
 
 					System.out.println("MatchThread:プレイヤーがマッチングスレッドに接続しました player_num:" + player_num);
@@ -417,13 +415,15 @@ public class Server {
 				sockets[P2_num].close();
 				sockets[P1_num] = new Socket();
 				sockets[P2_num] = new Socket();
+				P1_rmt.stopRunning();
+				P2_rmt.stopRunning();
 				System.out.println("GameThread" + RoomID + ": 試合が終了したためソケットを閉じました");
 			} catch (IOException e) {
 				e.printStackTrace();
 				System.out.println("GameThread" + RoomID + ": 試合が終了したためソケットを閉じようとしましたが閉じることができませんでした");
+			} catch(NullPointerException npe) {
+				
 			}
-			P1_rmt.stopRunning();
-			P2_rmt.stopRunning();
 			time = 0;
 			System.out.println("GameThread[" + RoomID + "]: 試合を終了しました");
 		}
@@ -711,6 +711,149 @@ public class Server {
 				closeGame();
 				// ここでGameThread[i]は初期状態に戻り、無限ループへ
 			}
+			*/
+			
+			// runメソッド
+			@Override
+			public void run() {
+				running = true;
+				while (true) {
+					try {
+						while (P1_name == null) {
+							try {
+								Thread.sleep(100);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						}
+						System.out.println("GameThread[" + RoomID + "]:" + P1_name + "が Room" + RoomID + "に、time:" + time
+								+ "で先攻として入りました");
+						ReceiveMessageThread P1_rmt = new ReceiveMessageThread(P1_num);
+						//P1_rmt.start();
+						while (P2_name == null) {// 後攻が来るまで無限ループ
+							try {
+								Thread.sleep(2000);
+								System.out
+										.println("GameThread[" + RoomID + "]:" + P1_name + "が対戦相手を待機中 (time:" + time + ")");
+								// 以下デバッグ分
+								if (P1_socket.isClosed()) {
+									System.out.println("GameThread.run(): P1's socket ->" + sockets[P1_num].toString());
+									throw new SocketException("Socket is closed");
+								} else {
+									System.out.println("GameThread.run(): P1's socket ->" + sockets[P1_num].toString());
+									System.out.println("GameThread[" + RoomID + "]:P1's Socket is not closed");
+								}
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						}
+						System.out.println("GameThread[" + RoomID + "]:" + P2_name + "が Room" + RoomID + "に、time:" + time
+								+ "後攻として入りました");
+						ReceiveMessageThread P2_rmt = new ReceiveMessageThread(P2_num);
+
+						// 後攻が来たら
+						DataOutputStream dos_p1 = new DataOutputStream(sockets[P1_num].getOutputStream());
+						DataOutputStream dos_p2 = new DataOutputStream(sockets[P2_num].getOutputStream());
+
+						// 相手の名前をもう一方に送信
+						System.out.println("GameThread[" + RoomID + "]:対戦相手の情報を送信します");
+						dos_p1.writeUTF(P2_name);// 先攻に後攻の名前を伝える
+						dos_p2.writeUTF(P1_name);// 後攻に先攻の名前を伝える
+
+						// 先攻/後攻を送信
+						dos_p1.writeInt(1);// 先攻に自身が先攻であることを伝える
+						dos_p2.writeInt(0);// 後攻に自身が先攻であることを伝える
+
+						// ハートビート起動
+						P1_rmt.start();
+						P2_rmt.start();
+						P1_ct = new ConnectThread(RoomID, true, P1_num, P1_rmt);
+						P1_ct.start();
+						P2_ct = new ConnectThread(RoomID, false, P2_num, P2_rmt);
+						P2_ct.start();
+
+						// 前の入力を定義
+						int P1_commandBefore[] = new int[3];
+						P1_commandBefore = new int[] { -1, -1, -1 };
+						int P2_commandBefore[] = new int[3];
+						P2_commandBefore = new int[] { -1, -1, -1 };
+						// 試合終了まで無限ループ
+						while (running) {
+							// 先攻の番 盤面が変わるまで無限ループ
+							while (P1_commandBefore[0] == P1_rmt.last_command[0]
+									&& P1_commandBefore[1] == P1_rmt.last_command[1]) {
+								Thread.sleep(50);
+								if (running == false) { // 外部からstopRuningメソッドが呼び出されていた時はrunningがfalseとなる
+														// このときは試合のwhileループを強制的に抜ける
+									break;
+								}
+							}
+
+							// 外部からstopRuningメソッドが呼び出されていた時はrunningがfalseとなる このときは試合のwhileループを強制的に抜ける
+							if (running == false) {
+								break;
+							}
+							// commandBeforeを更新
+							P1_commandBefore[0] = P1_rmt.last_command[0];
+							P1_commandBefore[1] = P1_rmt.last_command[1];
+
+							// 後攻に情報を送信
+							for (int i = 0; i < 3; i++) {
+								dos_p2.writeInt(P1_rmt.last_command[i]);
+							}
+
+							// 試合終了判定 if分内がtrueなら試合終了なのでwhileループを抜ける
+							if (P1_rmt.last_command[0] > 7) {
+								break;
+							}
+
+							// 後攻の番 盤面が変わるまで無限ループ
+							while (P2_commandBefore[0] == P2_rmt.last_command[0]
+									&& P2_commandBefore[1] == P2_rmt.last_command[1]) {
+								Thread.sleep(50);
+								if (running == false) {
+									break;
+								}
+							}
+							if (running == false) {
+								break;
+							}
+							// commandBeforeを更新
+							P2_commandBefore[0] = P2_rmt.last_command[0];
+							P2_commandBefore[1] = P2_rmt.last_command[1];
+
+							// 先攻に情報を送信
+							for (int i = 0; i < 3; i++) {
+								dos_p1.writeInt(P2_rmt.last_command[i]);
+							}
+							// 試合終了判定
+							if (P2_rmt.last_command[0] > 7) {
+								break;
+							}
+						}
+						// 試合終了後
+
+						// 接続確認メソッドを停止
+						P1_ct.stopRunning();
+						P2_ct.stopRunning();
+					}
+					/*
+					 * catch (SocketTimeoutException es){
+					 * //★残っている側のプレイヤーに対戦相手がタイムアウトしたことを伝え試合を終了する
+					 * }
+					 * catch (LeaveGameException el) {
+					 * //★切断希望が出たことをプレイヤーに伝える
+					 * }
+					 */
+					catch (InterruptedException e) {
+						e.printStackTrace();
+					} catch (IOException eio) {
+						eio.printStackTrace();
+					}
+					System.out.println("closeGame()メソッドを呼び出します");
+					closeGame();
+					// ここでGameThread[i]は初期状態に戻り、無限ループへ
+				}
 		}
 	}
 
@@ -798,6 +941,13 @@ public class Server {
 		}
 
 		public void run() {
+			DataInputStream dis_rmt = null;
+			try {
+				dis_rmt = new DataInputStream(sockets[num_player].getInputStream());
+			} catch (IOException e1) {
+				// TODO 自動生成された catch ブロック
+				e1.printStackTrace();
+			}
 			while (running) {
 				DataInputStream dis_rmt = null;
 				try {
@@ -813,14 +963,21 @@ public class Server {
 							e.printStackTrace();
 						}
 					}
-					if (receive_message[0] != 16) {
-						for (int i = 0; i < 3; i++) {
-							last_command[i] = receive_message[i];
-						}
-					} else {
-						for (int i = 0; i < 3; i++) {
-							last_heartbeat[i] = receive_message[i];
-						}
+					catch(SocketException se) {
+						stopRunning();
+					}
+					catch (IOException e) {
+						// TODO 自動生成された catch ブロック
+						e.printStackTrace();
+					}
+				}
+				if (receive_message[0] != 16) {
+					for (int i = 0; i < 3; i++) {
+						last_command[i] = receive_message[i];
+					}
+				} else {
+					for (int i = 0; i < 3; i++) {
+						last_heartbeat[i] = receive_message[i];
 					}
 				}
 			}
@@ -935,12 +1092,18 @@ public class Server {
 			try {
 				DataOutputStream dos_ct = new DataOutputStream(sockets[num_player].getOutputStream());
 				sockets[num_player].setSoTimeout(1000);
+				System.out.println("ConnectThread: 起動");
 				while (running) {
 
 					// ハートビートをDataOutputStreamで送る
-					dos_ct.writeInt(command_send[0]);
-					dos_ct.writeInt(command_send[1]);
-					dos_ct.writeInt(command_send[2]);
+					try{
+						dos_ct.writeInt(command_send[0]);
+						dos_ct.writeInt(command_send[1]);
+						dos_ct.writeInt(command_send[2]);
+					}
+					catch (SocketException se) {
+						stopRunning();
+					} 
 					System.out.println("ConnectThread: ハートビートを送信" + command_send[0] + "," + command_send[1] + ","
 							+ command_send[2]);
 					Thread.sleep(1000); // 1秒待つ
@@ -956,6 +1119,10 @@ public class Server {
 						} else {
 							throw new LeaveGameException("ConnectThread:後攻がゲーム退出希望");
 						}
+					}
+					if(sockets[num_player].isClosed()) {
+						System.out.println("ConnectThread:Stopped for socket closing.");
+						stopRunning();
 					}
 				}
 

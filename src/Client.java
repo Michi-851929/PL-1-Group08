@@ -431,7 +431,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		int[] out = new int[2];
 		Thread time_counter = new Thread(() -> {
 			try {
-				int[] play = receiveResponse(socket);
+				int[] play = receiveResponse();
 				in[0] = play[0];
 				in[1] = play[1];
 				in[2] = play[2];
@@ -586,7 +586,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			while (true) {
 				try {
 					// サーバーからのデータを受け取る
-					int[] response = receiveResponse(socket);
+					int[] response = receiveResponse();
 
 					if (response[0] != 16) {
 						// TODO:配列を受け取り相手の手を実行する
@@ -692,7 +692,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	 * サーバーからのレスポンスを受け取る。
 	 * タイムアウトした場合はSocketTimeoutExceptionを投げる。
 	 **/
-	private static int[] receiveResponse(Socket socket) throws IOException {
+	private int[] receiveResponse() throws IOException {
 		InputStream in = socket.getInputStream();
 		DataInputStream dis = new DataInputStream(in);
 		socket.setSoTimeout(TIMEOUT_INTERVAL); // タイムアウト時間を設定する
