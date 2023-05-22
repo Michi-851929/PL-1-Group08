@@ -45,6 +45,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	private Player me;
 	private Player your;
 	private int[] vacantRoom = { -1, -1, -1 };
+	private boolean eob_flag = false;
 	private static boolean connectFlag = true;
 	private static InetAddress hostname;
 
@@ -410,14 +411,13 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		try {
 			if (out[2] <= 0) {// 持ち時間0以下
 				sendCommand(out);
-				endBattle();
+				eob_flag = true;
 			} else if (othello.checkWinner() != 2) {// 盤面勝者確定
 				out[0] += 8;
 				sendCommand(out);
-				endBattle();
+				eob_flag = true;
 			} else {
 				sendCommand(out);
-				doYourTurn();
 			}
 		} catch (IOException e) {
 			// サーバーに接続できなかったら終了する
@@ -472,11 +472,9 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		}
 
 		if (in[2] <= 0) {// 持ち時間0以下
-			endBattle();
+			eob_flag = true;
 		} else if (othello.checkWinner() != 2) {// 盤面勝者確定
-			endBattle();
-		} else {
-			doMyTurn();
+			eob_flag = true;
 		}
 
 	}
@@ -867,11 +865,11 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		} else {
 			System.out.println("doMyTurnから呼び出します"); // debug
 		}
-		while (true) {
+		while (!client.eob_flag) {
 			client.doMyTurn();
 			client.doYourTurn();
 		}
-		// client.changePhase(PHASE_RESULT);
+		client.changePhase(PHASE_RESULT);
 	}
 
 }
