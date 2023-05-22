@@ -441,10 +441,6 @@ public class Server {
 					System.out.println("GameThread[" + RoomID + "]:" + P2_name + "が Room" + RoomID + "に、time:" + time
 							+ "後攻として入りました");
 					ReceiveMessageThread P2_rmt = new ReceiveMessageThread(P2_num);
-					// ハートビート起動
-					P2_rmt.start();
-					P2_ct = new ConnectThread(RoomID, false, P2_num, P2_rmt);
-					P2_ct.start();
 
 					// 後攻が来たら
 					DataOutputStream dos_p1 = new DataOutputStream(sockets[P1_num].getOutputStream());
@@ -463,6 +459,11 @@ public class Server {
 					// 先攻/後攻を送信
 					dos_p1.writeInt(1);// 先攻に自身が先攻であることを伝える
 					dos_p2.writeInt(0);// 後攻に自身が後攻であることを伝える
+
+					// ハートビート起動
+					P2_rmt.start();
+					P2_ct = new ConnectThread(RoomID, false, P2_num, P2_rmt);
+					P2_ct.start();
 
 					// 前の入力を定義
 					int P1_commandBefore[] = new int[3];
