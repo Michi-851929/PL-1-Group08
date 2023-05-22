@@ -949,35 +949,36 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 	public static void main(String[] args) {
 		Client client = new Client("Othello Game");
-
-		try {
-			while (connectFlag) {
-				Thread.sleep(1000);
-				client.checkVacantRoom();
-				client.ui_jl_5min.setText((client.vacantRoom[0] == 1 ? "○" : "×"));
-				client.ui_jl_10min.setText((client.vacantRoom[1] == 1 ? "○" : "×"));
-				client.ui_jl_20min.setText((client.vacantRoom[2] == 1 ? "○" : "×"));
+		while(true) {
+			try {
+				while (connectFlag) {
+					Thread.sleep(1000);
+					client.checkVacantRoom();
+					client.ui_jl_5min.setText((client.vacantRoom[0] == 1 ? "○" : "×"));
+					client.ui_jl_10min.setText((client.vacantRoom[1] == 1 ? "○" : "×"));
+					client.ui_jl_20min.setText((client.vacantRoom[2] == 1 ? "○" : "×"));
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		connectFlag = true;
-		client.changePhase(PHASE_BATTLE);
+			connectFlag = true;
+			client.changePhase(PHASE_BATTLE);
 
-		if (othello.getPlayers()[1].isFirstMover()) {
-			System.out.println("doYourTurnから呼び出します"); // debug
-			client.doYourTurn();
-		} else {
-			System.out.println("doMyTurnから呼び出します"); // debug
-		}
-		while (!client.eob_flag) {
-			client.doMyTurn();
-			if (client.eob_flag) {
-				break;
+			if (othello.getPlayers()[1].isFirstMover()) {
+				System.out.println("doYourTurnから呼び出します"); // debug
+				client.doYourTurn();
+			} else {
+				System.out.println("doMyTurnから呼び出します"); // debug
 			}
-			client.doYourTurn();
+			while (!client.eob_flag) {
+				client.doMyTurn();
+				if (client.eob_flag) {
+					break;
+				}
+				client.doYourTurn();
+			}
+			client.endBattle();
 		}
-		client.endBattle();
 	}
 
 }
