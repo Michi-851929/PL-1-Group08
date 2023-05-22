@@ -46,6 +46,11 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	private Player your;
 	private int[] vacantRoom = { -1, -1, -1 };
 	private static boolean connectFlag = true;
+
+	private int[] newPlay = { -1, -1, -1 };//最新の相手が指した手
+	private static boolean newPlayFlag = false;
+
+
 	private static InetAddress hostname;
 
 	static {
@@ -550,7 +555,8 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				e.printStackTrace();
 			}
 
-			connectFlag = false;
+			connectFlag = false;//画面遷移用フラグ
+
 			new Thread(() -> {
 				try {
 					// サーバーからのデータを受け取る
@@ -564,7 +570,8 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 							sendHeartbeat(1);
 						}
 					} else {
-						// TODO: 打った盤面を反映する処理を実装する
+						newPlay=response;
+						newPlayFlag=true;
 					}
 				} catch (SocketTimeoutException e) {
 					// タイムアウトしたら例外処理を返して終了する
