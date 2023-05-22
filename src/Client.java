@@ -648,7 +648,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	private int[] receiveResponse() throws IOException {
 		InputStream in = socket.getInputStream();
 		DataInputStream dis = new DataInputStream(in);
-		socket.setSoTimeout(TIMEOUT_INTERVAL); // タイムアウト時間を設定する
+		//socket.setSoTimeout(TIMEOUT_INTERVAL); // タイムアウト時間を設定する
 
 		int[] response = new int[3];
 		for (int i = 0; i < 3; i++) {
