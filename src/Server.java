@@ -377,8 +377,7 @@ public class Server {
 
 		// 新 試合終了メソッド
 		public void closeGame() {
-			P1_name = null;
-			P2_name = null;
+
 			try {
 				sockets[P1_num].close();
 				sockets[P2_num].close();
@@ -392,6 +391,8 @@ public class Server {
 				System.out.println("GameThread" + RoomID + ": 試合が終了したためソケットを閉じようとしましたが閉じることができませんでした");
 			} catch (NullPointerException npe) {
 			}
+			P1_name = null;
+			P2_name = null;
 			time = 0;
 			System.out.println("GameThread[" + RoomID + "]: 試合を終了しました");
 		}
@@ -588,7 +589,7 @@ public class Server {
 					} catch (SocketException se) {
 						stopRunning();
 					} catch (EOFException eofe) {
-						
+
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
