@@ -639,9 +639,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		heartbeat[0] = 16;
 		heartbeat[1] = 0;
 		heartbeat[2] = flag;
-		// OutputStream out = socket.getOutputStream();
-		// ObjectOutputStream oos = new ObjectOutputStream(out);
-		// oos.writeObject(heartbeat);
 
 		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 		dos.writeInt(heartbeat[0]);
