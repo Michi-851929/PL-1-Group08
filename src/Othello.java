@@ -182,7 +182,12 @@ public class Othello {
                         y += dir[1];
                     }
                 }
-            } else {
+            }
+            else if(i==18)
+            {
+                //パスが入力されたのでなにもせずにスキップ
+            }
+            else {
                 throw new Exception("The place has already had a stone." + i + "," + j);
             }
         } catch (Exception ex) {
