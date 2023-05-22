@@ -876,7 +876,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			client.doMyTurn();
 			client.doYourTurn();
 		}
-		client.changePhase(PHASE_RESULT);
+		client.endBattle();
 	}
 
 }
