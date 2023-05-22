@@ -62,6 +62,7 @@ public class Server {
 		private BufferedReader Info_in; // データ受信用オブジェクト
 		private DataOutputStream dos;
 		private ServerSocket ri_ss;
+		boolean running;
 
 		// コンストラクタ
 		RoomInfoThread() {
@@ -290,6 +291,8 @@ public class Server {
 			P2_num = -1;
 			time = 0;
 			RoomID = id;
+			running = true;
+			keeprun = true;
 			command = new int[3];
 			command[0] = 0;
 			command[1] = 0;
@@ -302,7 +305,6 @@ public class Server {
 			keeprun = false;
 			running = false;
 		}
-
 
 		// 試合ループを終了
 		public void stopRunning() {
@@ -417,7 +419,7 @@ public class Server {
 		@Override
 		public void run() {
 			running = true;
-			while (true) {
+			while (keeprun) {
 				try {
 					while (P1_name == null) {
 						try {
@@ -429,7 +431,6 @@ public class Server {
 					System.out.println("GameThread[" + RoomID + "]:" + P1_name + "が Room" + RoomID + "に、time:" + time
 							+ "で先攻として入りました");
 					P1_rmt = new ReceiveMessageThread(P1_num);
-
 
 					// ハートビート起動
 					P1_rmt.start();
@@ -453,7 +454,6 @@ public class Server {
 					System.out.println("GameThread[" + RoomID + "]:" + P2_name + "が Room" + RoomID + "に、time:" + time
 							+ "後攻として入りました");
 					P2_rmt = new ReceiveMessageThread(P2_num);
-
 
 					// 後攻が来たら
 					DataOutputStream dos_p1 = new DataOutputStream(sockets[P1_num].getOutputStream());
