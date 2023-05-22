@@ -549,6 +549,9 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 								// ハートビートを送り返す処理をする
 								sendHeartbeat(1);
 							}
+							else if (response[0] >= 8 && response[0]<16) {
+								// TODO: 投了時の処理を実装する
+							}
 						} else {
 							newPlay = response;
 							newPlayFlag = true;
