@@ -443,7 +443,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 						+ (((millis / 1000) % 60) < 10 ? "0" : "") + ((millis / 1000) % 60));
 				if (millis <= 0) { // 時間切れ
 					out[0] = 8;
-					out[1] = 9;
+					out[1] = 8;
 					break;
 				}
 			}
@@ -679,8 +679,8 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			}
 		}
 		if (!pass) {
-			play[0] = 8;
-			play[1] = 10;
+			play[0] = 18;
+			play[1] = 0;
 			return play;
 		}
 		ui_jb_giveup.setEnabled(true);
@@ -696,7 +696,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 						+ (((millis / 1000) % 60) < 10 ? "0" : "") + ((millis / 1000) % 60));
 				if (millis <= 0) { // 時間切れ
 					play[0] = 8;
-					play[1] = 9;
+					play[1] = 8;
 					break;
 				}
 			}
@@ -835,9 +835,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 	public static void main(String[] args) {
 		Client client = new Client("Othello Game");
-		// client.othello = new Othello(new Player("aiueo", true, 60000 * 10 + 5000),
-		// new Player("oeuia", false, 60000 * 11));
-
+		
 		try {
 			while (connectFlag) {
 				Thread.sleep(1000);
