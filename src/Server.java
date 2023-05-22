@@ -629,7 +629,10 @@ public class Server {
 						e.printStackTrace();
 					}
 				}
-				if (receive_message[0] != 16) {
+				if (receive_message[0] != 16 || receive_message[2] == 0) {
+					if (receive_message[2] == 0 & receive_message[0] == 16) {
+						System.out.println("投了希望を送信");
+					}
 					for (int i = 0; i < 3; i++) {
 						last_command[i] = receive_message[i];
 					}
@@ -684,9 +687,6 @@ public class Server {
 					try {
 						dos_ct.writeInt(command_send[0]);
 						dos_ct.writeInt(command_send[1]);
-						if (command_send[2] == 0) {
-							System.out.printf("相手が投了した旨をクライアントに送信します");
-						}
 						dos_ct.writeInt(command_send[2]);
 					} catch (SocketException se) {
 						stopRunning();

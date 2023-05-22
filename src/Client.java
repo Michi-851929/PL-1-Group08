@@ -630,7 +630,9 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 						if (response[0] == 16) {
 							if (response[2] == 0) {
-
+								// 投了
+								newPlay = response;
+								newPlayFlag = true;
 							} else if (response[2] == 1) {
 								// ハートビートを送り返す処理をする
 								sendHeartbeat(1);
@@ -700,8 +702,12 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 		dos.writeInt(command[0]);
 		dos.writeInt(command[1]);
-		dos.writeInt(command[2]);
-		System.out.println("send 0,1,2 = " + command[0] + "," + command[1] + "," + command[2]);
+		if (command[0] == 16) {
+			dos.writeInt(0);
+			System.out.println("投了希望を送信しました");
+		} else {
+			dos.writeInt(command[2]);
+		}
 	}
 
 	/**
