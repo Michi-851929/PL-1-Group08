@@ -529,10 +529,13 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 					break;
 				case 1:
 					leftTime = 10 * 60 * 1000;
+					break;
 				case 2:
 					leftTime = 20 * 60 * 1000;
+					break;
 				default:
 					leftTime = 1000000;
+					break;
 				}
 
 				me = new Player(name, turn, leftTime);
