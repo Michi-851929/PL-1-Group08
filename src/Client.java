@@ -489,6 +489,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			// 名前とルーム番号をサーバーに送信する
 			String name = ui_tf_namefield.getText();
 			int roomNumber = button_selected;
+			System.out.println("connectToServer:" + name);
 			sendPlayerInfo(socket, name, roomNumber);
 
 			try {
@@ -504,6 +505,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 						opponentName = dis.readUTF();
 					} catch (EOFException eex) {
 						illmatched = true;
+						System.out.println("illmatched");
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					} finally {
@@ -513,6 +515,8 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 						illmatched = false;
 					}
 				}
+				System.out.println("name:" + name);
+				System.out.println("opponentName:" + opponentName);
 				int turnNum = dis.readInt();
 				boolean turn = (turnNum != 0) ? true : false;
 
@@ -604,7 +608,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			if (isEqual(command, new int[] { 16, 0 })) {
 				// 特別な入力があった場合、ハートビートを0に変更して終了
 				sendHeartbeat(socket, 0);
-				System.err.println("投了ボタンが押されました。");
+				System.out.println("投了ボタンが押されました。");
 				socket.close();
 				return;
 			}
@@ -750,7 +754,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			vacantRoom[2] = in.readInt();
 
 		} catch (IOException e) {
-			System.err.println("Error connecting to server: " + e.getMessage());
+			System.out.println("Error connecting to server: " + e.getMessage());
 		}
 	}
 
@@ -879,6 +883,8 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		if (client.othello.getPlayers()[1].isFirstMover()) {
 			client.doYourTurn();
 		}
+		System.out.println(client.othello.getPlayers()[0].isFirstMover());
+		System.out.println(client.othello.getPlayers()[1].isFirstMover());
 		while (true) {
 			client.doMyTurn();
 			client.doYourTurn();
