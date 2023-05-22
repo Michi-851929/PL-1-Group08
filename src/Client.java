@@ -49,7 +49,8 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	private static boolean connectFlag = true;
 
 	private int[] newPlay = { -1, -1, -1 };//最新の相手が指した手
-	private static boolean newPlayFlag = false;
+	private boolean newPlayFlag = false;
+	private boolean matching = false;
 
 
 	private static InetAddress hostname;
@@ -495,7 +496,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 				String opponentName = null;
 				int heartbeat_0;
-				int turnNum;
+				int turnNum = 0;
 
 				while (true) {
 					try {
@@ -516,6 +517,9 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 						}
 					} catch (Exception ex) {
 						ex.printStackTrace();
+					}
+					if(!matching) {
+						return;
 					}
 				}
 				boolean turn = (turnNum != 0) ? true : false;
@@ -779,13 +783,18 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			socket = new Socket();
 			try {
 				socket.connect(new InetSocketAddress(hostname, SERVER_PORT_1), TIMEOUT_INTERVAL);
-				connectToServer();
+				matching = true;
+				Thread connectThread = new Thread(() -> {
+					connectToServer();
+				});
+				connectThread.start();
 			} catch (IOException e) {
 				// TODO 自動生成された catch ブロック
 				e.printStackTrace();
 				ui_jb_start.setText("開始");
 			}
 		} else if (s.equals("マッチング中止")) {
+			matching = false;
 			try {
 				socket.close();
 			} catch (IOException e) {
