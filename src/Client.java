@@ -798,8 +798,8 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			ui_jb_start.setText("開始");
 		} else if (s.equals("投了")) {
 			command_pressed = false;
-			command_value[0] = 8;
-			command_value[1] = 8;
+			command_value[0] = 16;
+			command_value[1] = 0;
 		}
 
 		else {
