@@ -223,7 +223,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				ui_jl_time1 = new JLabel("00:00");
 				ui_jl_time1.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
 				JLabel ui_jl_turn1 = new JLabel(
-				getStoneIcon((othello.getPlayers()[0].isFirstMover() ? Othello.BLACK : Othello.WHITE), -1));
+						getStoneIcon((othello.getPlayers()[0].isFirstMover() ? Othello.BLACK : Othello.WHITE), -1));
 				System.out.println(othello.getPlayers()[0].isFirstMover() ? Othello.BLACK : Othello.WHITE);
 				p06.add(ui_jl_turn1);
 				p06.add(ui_jl_name1);
@@ -238,7 +238,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				ui_jl_time2 = new JLabel("00:00");
 				ui_jl_time2.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
 				JLabel ui_jl_turn2 = new JLabel(
-				getStoneIcon((othello.getPlayers()[1].isFirstMover() ? Othello.BLACK : Othello.WHITE), -1));
+						getStoneIcon((othello.getPlayers()[1].isFirstMover() ? Othello.BLACK : Othello.WHITE), -1));
 				System.out.println(othello.getPlayers()[1].isFirstMover() ? Othello.BLACK : Othello.WHITE);
 				p07.add(ui_jl_time2);
 				p07.add(ui_jl_name2);
@@ -498,43 +498,48 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 				String opponentName = null;
 				int heartbeat_0;
+				int turnNum;
+
 				while (true) {
 					try {
 						heartbeat_0 = dis.readInt();
-						if(heartbeat_0 == 17) {
+						if (heartbeat_0 == 17) {
 							opponentName = dis.readUTF();
+							turnNum = dis.readInt();
+							if (turnNum == 1) {
+								System.out.println("私が先攻");
+							} else {
+								System.out.println("私が後攻");
+							}
 							break;
-						}
-						else {
+						} else {
 							dis.readInt();
 							dis.readInt();
 							sendHeartbeat(1);
 						}
-					}
-					catch (Exception ex) {
+					} catch (Exception ex) {
 						ex.printStackTrace();
 					}
 				}
-				int turnNum = dis.readInt();
 				boolean turn = (turnNum != 0) ? true : false;
 
 				// 1のとき300秒,2のとき600秒,3のとき1200秒となる
 				int leftTime;
-				switch(roomNumber) {
-				case 0:
-					leftTime = 5 * 60 * 1000;
-					break;
-				case 1:
-					leftTime = 10 * 60 * 1000;
-					break;
-				case 2:
-					leftTime = 20 * 60 * 1000;
-					break;
-				default:
-					leftTime = 1000000;
-					break;
+				switch (roomNumber) {
+					case 0:
+						leftTime = 5 * 60 * 1000;
+						break;
+					case 1:
+						leftTime = 10 * 60 * 1000;
+						break;
+					case 2:
+						leftTime = 20 * 60 * 1000;
+						break;
+					default:
+						leftTime = 1000000;
+						break;
 				}
-				
+
 				me = new Player(name, turn, leftTime);
 				your = new Player(opponentName, !turn, leftTime);
 				othello = new Othello(me, your);
@@ -643,14 +648,14 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	 **/
 	private void sendCommand(int[] command) throws IOException {
 		command[2] = othello.getPlayers()[0].getLeftTime();
-		//OutputStream out = socket.getOutputStream();
-		//ObjectOutputStream oos = new ObjectOutputStream(out);
+		// OutputStream out = socket.getOutputStream();
+		// ObjectOutputStream oos = new ObjectOutputStream(out);
 		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 		dos.writeInt(command[0]);
 		dos.writeInt(command[1]);
 		dos.writeInt(command[2]);
 
-		//oos.writeObject(command);
+		// oos.writeObject(command);
 	}
 
 	/**
@@ -661,10 +666,10 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		heartbeat[0] = 16;
 		heartbeat[1] = 0;
 		heartbeat[2] = flag;
-		//OutputStream out = socket.getOutputStream();
-		//ObjectOutputStream oos = new ObjectOutputStream(out);
-		//oos.writeObject(heartbeat);
-		
+		// OutputStream out = socket.getOutputStream();
+		// ObjectOutputStream oos = new ObjectOutputStream(out);
+		// oos.writeObject(heartbeat);
+
 		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 		dos.writeInt(heartbeat[0]);
 		dos.writeInt(heartbeat[1]);
@@ -684,7 +689,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		for (int i = 0; i < 3; i++) {
 			response[i] = dis.readInt();
 		}
-		System.out.println("response 0,1,2 = "+ response[0]+","+response[1]+","+response[2]);
+		System.out.println("response 0,1,2 = " + response[0] + "," + response[1] + "," + response[2]);
 
 		return response;
 	}
@@ -875,8 +880,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		}
 		connectFlag = true;
 		client.changePhase(PHASE_BATTLE);
-		
-		
+
 		if (client.othello.getPlayers()[1].isFirstMover()) {
 			client.doYourTurn();
 		}
