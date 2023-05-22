@@ -13,7 +13,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -489,7 +488,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			String name = ui_tf_namefield.getText();
 			int roomNumber = button_selected;
 			System.out.println("connectToServer:" + name);
-			sendPlayerInfo(socket, name, roomNumber);
+			sendPlayerInfo(name, roomNumber);
 
 			try {
 				// プレイヤ名とルーム番号を受信する
@@ -497,21 +496,22 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				DataInputStream dis = new DataInputStream(in);
 
 				String opponentName = null;
-				boolean illmatched = false;
-				while (!illmatched) {
+				int heartbeat_0;
+				while (true) {
 					try {
-						Thread.sleep(200);
-						opponentName = dis.readUTF();
-					} catch (EOFException eex) {
-						illmatched = true;
-						System.out.println("illmatched");
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					} finally {
-						if (!illmatched) {
+						heartbeat_0 = dis.readInt();
+						if(heartbeat_0 == 17) {
+							opponentName = dis.readUTF();
 							break;
 						}
-						illmatched = false;
+						else {
+							dis.readInt();
+							dis.readInt();
+							sendHeartbeat(1);
+						}
+					}
+					catch (Exception ex) {
+						ex.printStackTrace();
 					}
 				}
 				System.out.println("name:" + name);
@@ -549,7 +549,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				try {
 					// 1秒ごとにハートビートを送信する
 					while (true) {
-						sendHeartbeat(socket, 1);
+						sendHeartbeat(1);
 						Thread.sleep(HEARTBEAT_INTERVAL);
 					}
 				} catch (InterruptedException e) {
@@ -563,24 +563,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			}).start();
 
 			connectFlag = false;
-
-			// ハートビートを送信するスレッドを起動する
-			new Thread(() -> {
-				try {
-					// 1秒ごとにハートビートを送信する
-					while (true) {
-						sendHeartbeat(socket, 1);
-						Thread.sleep(HEARTBEAT_INTERVAL);
-					}
-				} catch (InterruptedException e) {
-					// スレッドが中断されたら終了する
-					return;
-				} catch (IOException e) {
-					// サーバーに接続できなかったら終了する
-					e.printStackTrace();
-					return;
-				}
-			}).start();
 
 			// サーバーからのレスポンスを受け取る
 			while (true) {
@@ -620,7 +602,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 			if (isEqual(command, new int[] { 16, 0 })) {
 				// 特別な入力があった場合、ハートビートを0に変更して終了
-				sendHeartbeat(socket, 0);
+				sendHeartbeat(0);
 				System.out.println("投了ボタンが押されました。");
 				socket.close();
 				return;
@@ -646,7 +628,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		return true;
 	}
 
-	private static void sendPlayerInfo(Socket socket, String name, int roomNumber) throws IOException {
+	private void sendPlayerInfo(String name, int roomNumber) throws IOException {
 		// 名前とルーム番号をサーバーに送信する
 		DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 		out.writeUTF(name);
@@ -673,7 +655,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	/**
 	 * サーバーにハートビートを送信する。接続確認って言ってましたが俗にハートビートというらしいです。
 	 **/
-	private static void sendHeartbeat(Socket socket, int flag) throws IOException {
+	private void sendHeartbeat(int flag) throws IOException {
 		int[] heartbeat = new int[3];
 		heartbeat[0] = 16;
 		heartbeat[1] = 0;
