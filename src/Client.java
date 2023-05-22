@@ -223,7 +223,8 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				ui_jl_time1 = new JLabel("00:00");
 				ui_jl_time1.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
 				JLabel ui_jl_turn1 = new JLabel(
-						getStoneIcon((othello.getPlayers()[0].isFirstMover() ? Othello.BLACK : Othello.WHITE), -1));
+				getStoneIcon((othello.getPlayers()[0].isFirstMover() ? Othello.BLACK : Othello.WHITE), -1));
+				System.out.println(othello.getPlayers()[0].isFirstMover() ? Othello.BLACK : Othello.WHITE);
 				p06.add(ui_jl_turn1);
 				p06.add(ui_jl_name1);
 				p06.add(ui_jl_time1);
@@ -237,7 +238,8 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				ui_jl_time2 = new JLabel("00:00");
 				ui_jl_time2.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
 				JLabel ui_jl_turn2 = new JLabel(
-						getStoneIcon((othello.getPlayers()[1].isFirstMover() ? Othello.BLACK : Othello.WHITE), -1));
+				getStoneIcon((othello.getPlayers()[1].isFirstMover() ? Othello.BLACK : Othello.WHITE), -1));
+				System.out.println(othello.getPlayers()[1].isFirstMover() ? Othello.BLACK : Othello.WHITE);
 				p07.add(ui_jl_time2);
 				p07.add(ui_jl_name2);
 				p07.add(ui_jl_turn2);
@@ -407,14 +409,14 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		out[2] = othello.getPlayers()[0].getLeftTime();
 		try {
 			if (out[2] <= 0) {// 持ち時間0以下
-				sendCommand(socket, out);
+				sendCommand(out);
 				endBattle();
 			} else if (othello.checkWinner() != 2) {// 盤面勝者確定
 				out[0] += 8;
-				sendCommand(socket, out);
+				sendCommand(out);
 				endBattle();
 			} else {
-				sendCommand(socket, out);
+				sendCommand(out);
 				doYourTurn();
 			}
 		} catch (IOException e) {
@@ -487,7 +489,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			// 名前とルーム番号をサーバーに送信する
 			String name = ui_tf_namefield.getText();
 			int roomNumber = button_selected;
-			System.out.println("connectToServer:" + name);
 			sendPlayerInfo(name, roomNumber);
 
 			try {
@@ -514,8 +515,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 						ex.printStackTrace();
 					}
 				}
-				System.out.println("name:" + name);
-				System.out.println("opponentName:" + opponentName);
 				int turnNum = dis.readInt();
 				boolean turn = (turnNum != 0) ? true : false;
 
@@ -535,10 +534,12 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 					leftTime = 1000000;
 					break;
 				}
-
+				
 				me = new Player(name, turn, leftTime);
 				your = new Player(opponentName, !turn, leftTime);
 				othello = new Othello(me, your);
+				System.out.println(me.getPlayerName() + othello.getPlayers()[0].isFirstMover());
+				System.out.println(your.getPlayerName() + othello.getPlayers()[1].isFirstMover());
 
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -607,7 +608,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				socket.close();
 				return;
 			}
-			sendCommand(socket, command); // 手を送信するメソッドを呼び出す
+			sendCommand(command); // 手を送信するメソッドを呼び出す
 
 		} catch (IOException e) {
 			// サーバーに接続できなかったら終了する
@@ -640,7 +641,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	 * int[2]のコマンドをサーバーに送信する。
 	 * 配列の送信方法は
 	 **/
-	private void sendCommand(Socket socket, int[] command) throws IOException {
+	private void sendCommand(int[] command) throws IOException {
 		command[2] = othello.getPlayers()[0].getLeftTime();
 		//OutputStream out = socket.getOutputStream();
 		//ObjectOutputStream oos = new ObjectOutputStream(out);
@@ -840,18 +841,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				System.exit(0);
 			}
 		}
-		/*
-		 * new Thread(() -> {
-		 * try {
-		 * for(int i = 0; i <= 360; i += 2) {
-		 * Thread.sleep(2);
-		 * ui_jb_field[2][2].setIcon(getStoneIcon(1, i));
-		 * }
-		 * } catch (Exception e) {
-		 * e.printStackTrace();
-		 * }
-		 * }).start();
-		 */
 	}
 
 	// JTextAreaの「プレイヤ名」の表示切り替え
@@ -886,8 +875,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		}
 		connectFlag = true;
 		client.changePhase(PHASE_BATTLE);
-		System.out.println(client.othello.getPlayers()[0].getLeftTime());
-		System.out.println(client.othello.getPlayers()[1].getLeftTime());
 		
 		
 		if (client.othello.getPlayers()[1].isFirstMover()) {

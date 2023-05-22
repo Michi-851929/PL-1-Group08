@@ -376,14 +376,13 @@ public class Server {
 				sockets[P2_num].close();
 				sockets[P1_num] = new Socket();
 				sockets[P2_num] = new Socket();
+				System.out.println("GameThread" + RoomID + ": 試合が終了したためソケットを閉じました");
 				P1_rmt.stopRunning();
 				P2_rmt.stopRunning();
-				System.out.println("GameThread" + RoomID + ": 試合が終了したためソケットを閉じました");
 			} catch (IOException e) {
 				e.printStackTrace();
 				System.out.println("GameThread" + RoomID + ": 試合が終了したためソケットを閉じようとしましたが閉じることができませんでした");
 			} catch(NullPointerException npe) {
-				
 			}
 			time = 0;
 			System.out.println("GameThread[" + RoomID + "]: 試合を終了しました");
@@ -628,7 +627,7 @@ public class Server {
 		public void run() {
 			try {
 				DataOutputStream dos_ct = new DataOutputStream(sockets[num_player].getOutputStream());
-				sockets[num_player].setSoTimeout(1000);
+				sockets[num_player].setSoTimeout(100);
 				System.out.println("ConnectThread: 起動");
 				while (running) {
 
@@ -649,17 +648,13 @@ public class Server {
 						// ok
 						rmt.last_heartbeat[1] = -1;// -1に書き換える 次も[1]が-1だったら1秒間の間にハートビートが無いことになるのでタイムアウトと判定
 					} else if (rmt.last_heartbeat[1] == -1) {// 前のハートビート確認から1秒後にrmt.last_heartbeat[1]が-1のままのとき
-						throw new SocketTimeoutException("ConnectThread:タイムアウトしました");
+						//throw new SocketTimeoutException("ConnectThread:タイムアウトしました");
 					} else {
 						if (isFirst) {
 							throw new LeaveGameException("ConnectThread:先攻がゲーム退出希望");
 						} else {
 							throw new LeaveGameException("ConnectThread:後攻がゲーム退出希望");
 						}
-					}
-					if(sockets[num_player].isClosed()) {
-						System.out.println("ConnectThread:Stopped for socket closing.");
-						stopRunning();
 					}
 				}
 
