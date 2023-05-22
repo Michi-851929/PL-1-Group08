@@ -46,8 +46,7 @@ public class Server {
 
 	public void stopRunning() {
 		rit.interrupt();
-		;
-
+		//TODO 
 	}
 
 	// 待ちプレイヤ確認応答スレッド
