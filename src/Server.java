@@ -71,13 +71,13 @@ public class Server {
 								dos.writeInt(0);
 							}
 						}
+						System.out.println("RoomInfo: " + RoomInfo[0] + RoomInfo[1] + RoomInfo[2]);
 						dos.flush();// クライアントに待ち情報を送信
 					} else {
 						System.out.println("RoomInfoThread:クライアントから送られた値が1ではありません");
 					}
 					ri_ss.close();
 					ri_socket.close();
-					// System.out.println("RoomInfoThread: ソケットを閉じました");
 				} catch (IOException e) {
 					System.err.println("RoomInfoThread:クライアントとの接続が切れました．");
 				}
@@ -96,7 +96,7 @@ public class Server {
 		retval[0] = false;
 		retval[1] = false;
 		retval[2] = false;
-		for (int i = 0; i < 1; i++) {
+		for (int i = 0; i < 128; i++) {
 			if (GameThread[i].isWaiting()) {
 				switch (GameThread[i].getTime()) {
 					case 1:
@@ -394,7 +394,7 @@ public class Server {
 								System.out.println("closeGame()メソッドを呼び出します");
 								closeGame();
 							}
-							
+
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
@@ -487,8 +487,7 @@ public class Server {
 					// 接続確認メソッドを停止
 					P1_ct.stopRunning();
 					P2_ct.stopRunning();
-				}
-				catch (InterruptedException e) {
+				} catch (InterruptedException e) {
 					e.printStackTrace();
 				} catch (IOException eio) {
 					eio.printStackTrace();
