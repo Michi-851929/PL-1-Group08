@@ -311,7 +311,20 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				p11.setLayout(new GridLayout(3, 1));
 				JLabel ui_jl_result0 = new JLabel("", SwingConstants.CENTER);
 				ui_jl_result0.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 64));
-				JLabel ui_jl_result1 = new JLabel("何対何で", SwingConstants.CENTER);
+				int[][] result_board = othello.getBoard();
+				int count_black = 0;
+				int count_white = 0;
+				for(int i = 0; i < 8; i++) {
+					for(int j = 0; j < 8; j++) {
+						if (result_board[i][j] == Othello.BLACK) {
+							count_black++;
+						} else if (result_board[i][j] == Othello.WHITE) {
+							count_white++;
+						}
+					}
+				}
+				JLabel ui_jl_result1 = new JLabel((othello.getPlayers()[0].isFirstMover() ? count_black : count_white) + "対" 
+						+ (othello.getPlayers()[0].isFirstMover() ? count_white : count_black) + "で", SwingConstants.CENTER);
 				ui_jl_result1.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 48));
 				JLabel ui_jl_result2 = new JLabel("あなたの勝ち！", SwingConstants.CENTER);
 				ui_jl_result2.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 48));
@@ -377,20 +390,24 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 	public void reloadDisplay(int[] play) {
 		System.out.println("applyMove: (" + play[0] + ", " + play[1] + ")");
+		if(play[0] == 16) { //投了
+			eob_flag = true;
+			return;
+		}
 		switch(othello.checkWinner()) {
-		case 3:
+		case 3: //相手の時間切れ
 			eob_flag = true;
 			break;
-		case -3:
+		case -3: //自分の時間切れ
 			eob_flag = true;
 			break;
-		case 1:
+		case 1: //自分の通常勝利
 			eob_flag = true;
 			break;
-		case -1:
+		case -1: //相手の通常勝利
 			eob_flag = true;
 			break;
-		case 0:
+		case 0: //引き分け
 			eob_flag = true;
 			break;
 		default:
