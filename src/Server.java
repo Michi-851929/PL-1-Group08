@@ -19,7 +19,7 @@ public class Server {
 
 	private Socket sockets[]; // ソケット
 	private DataInputStream diss[];
-	
+
 	RoomInfoThread rit;
 
 	// Serverコンストラクタ
@@ -50,7 +50,7 @@ public class Server {
 			e.printStackTrace();
 		}
 		rit.closeThread();
-		for(int i = 0; i<128;i++) {
+		for (int i = 0; i < 128; i++) {
 			GameThread[i].closeThread();
 		}
 	}
@@ -68,6 +68,7 @@ public class Server {
 			Info_port = port + 1; // port+1番のポートを待ちプレイヤ確認応答スレッドに使用する
 			running = true;
 		}
+
 		public void closeThread() {
 			try {
 				running = false;
@@ -77,6 +78,7 @@ public class Server {
 				e.printStackTrace();
 			}
 		}
+
 		// run
 		@Override
 		public void run() {
@@ -145,13 +147,14 @@ public class Server {
 		int player_num; // プレイヤー番号
 		boolean running;
 		ServerSocket ss_match;
+
 		MatchThread(int port) {
 			this.port = port;
 			player_num = 0;
 			ss_match = null;
 			running = true;
 		}
-		
+
 		public void closeThread() {
 			try {
 				running = false;
@@ -273,10 +276,9 @@ public class Server {
 		private ReceiveMessageThread P1_rmt;
 		private ReceiveMessageThread P2_rmt;
 		private boolean running;
-		private boolean keeprun; //スレッド終了時にfalseになる
+		private boolean keeprun; // スレッド終了時にfalseになる
 		private ConnectThread P1_ct;
 		private ConnectThread P2_ct;
-
 
 		// コンストラクタ
 		GameThread(int id) {
@@ -294,6 +296,7 @@ public class Server {
 			command[2] = 0;
 			System.out.println("GameThread[" + RoomID + "]: GameThreadを開始しました");
 		}
+
 		// スレッドを終了
 		public void closeThread() {
 			keeprun = false;
@@ -422,7 +425,8 @@ public class Server {
 							e.printStackTrace();
 						}
 					}
-					System.out.println("GameThread[" + RoomID + "]:" + P1_name + "が Room" + RoomID + "に、time:" + time+ "で先攻として入りました");
+					System.out.println("GameThread[" + RoomID + "]:" + P1_name + "が Room" + RoomID + "に、time:" + time
+							+ "で先攻として入りました");
 					P1_rmt = new ReceiveMessageThread(P1_num);
 
 					// ハートビート起動
@@ -444,7 +448,8 @@ public class Server {
 							e.printStackTrace();
 						}
 					}
-					System.out.println("GameThread[" + RoomID + "]:" + P2_name + "が Room" + RoomID + "に、time:" + time+ "後攻として入りました");
+					System.out.println("GameThread[" + RoomID + "]:" + P2_name + "が Room" + RoomID + "に、time:" + time
+							+ "後攻として入りました");
 					P2_rmt = new ReceiveMessageThread(P2_num);
 
 					// 後攻が来たら
@@ -704,9 +709,7 @@ public class Server {
 					}
 				}
 			} else if (admin_command.equals("stop")) {
-				for (int i = 0; i < 128; i++) {
-					server.GameThread[i].stopRunning();
-				}
+				server.stopRunning();
 
 				break;
 			} else {
