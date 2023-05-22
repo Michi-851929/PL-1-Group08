@@ -450,7 +450,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			out[0] = newPlay[0];
 			out[1] = newPlay[1];
 			Thread.sleep(10);
-			othello.applyMove(out);
 			reloadDisplay(out);
 		} catch (Exception e) {
 			e.printStackTrace();
