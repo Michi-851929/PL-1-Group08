@@ -627,7 +627,7 @@ public class Server {
 		public void run() {
 			try {
 				DataOutputStream dos_ct = new DataOutputStream(sockets[num_player].getOutputStream());
-				sockets[num_player].setSoTimeout(100);
+				//sockets[num_player].setSoTimeout(100);
 				System.out.println("ConnectThread: 起動");
 				while (running) {
 
