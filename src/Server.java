@@ -448,7 +448,7 @@ public class Server {
 
 					// 先攻/後攻を送信
 					dos_p1.writeInt(1);// 先攻に自身が先攻であることを伝える
-					dos_p2.writeInt(0);// 後攻に自身が先攻であることを伝える
+					dos_p2.writeInt(0);// 後攻に自身が後攻であることを伝える
 
 					// 前の入力を定義
 					int P1_commandBefore[] = new int[3];
@@ -633,7 +633,8 @@ public class Server {
 					} catch (SocketException se) {
 						stopRunning();
 					}
-					System.out.println("ConnectThread: ハートビートを送信" + command_send[0] + "," + command_send[1] + ","
+					System.out.println("ConnectThread: ハートビートをnum_playuer:" + num_player + "に送信" + command_send[0] + ","
+							+ command_send[1] + ","
 							+ command_send[2]);
 					Thread.sleep(1000); // 1秒待つ
 
