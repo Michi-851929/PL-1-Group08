@@ -35,8 +35,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 	private static final int SERVER_PORT_1 = 10000;// 接続確認に使うほうはこちら
 	private static final int SERVER_PORT_2 = 10001;// 部屋確認に使うほうはこちら
-	private static final int COMMAND_CHECK_INTERVAL = 101; // 0.1秒ごとにgetCommandメソッドを監視する
-	private static final int HEARTBEAT_INTERVAL = 1000; // 1秒ごとにサーバーにハートビートを送信する
 	private static final int TIMEOUT_INTERVAL = 5000; // 5秒サーバーからのレスポンスがなかったらタイムアウトする
 	private static final int PHASE_TITLE = 0; // changePhase()の引数でタイトル画面への遷移を表す
 	private static final int PHASE_BATTLE = 1; // changePhase()の引数で対局画面への遷移を表す
@@ -45,7 +43,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	private static Othello othello;
 	private Player me;
 	private Player your;
-	private int[] vacantRoom = { -1, -1, -1 };
+	private final int[] vacantRoom = { -1, -1, -1 };
 	private boolean eob_flag = false;
 	private static boolean connectFlag = true;
 
@@ -54,7 +52,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	private boolean matching = false;
 
 
-	private static InetAddress hostname;
+	private final static InetAddress hostname;
 
 	static {
 		try {
@@ -64,7 +62,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		}
 	}
 
-	private JPanel display = new JPanel();
+	private final JPanel display = new JPanel();
 
 	// タイトル画面のオブジェクト
 	private JTextField ui_tf_namefield;
@@ -85,9 +83,9 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	private JLabel ui_jl_nstones1;
 	private JLabel ui_jl_nstones2;
 	private JButton ui_jb_giveup;
-	private JButton[][] ui_jb_field = new JButton[8][8];
+	private final JButton[][] ui_jb_field = new JButton[8][8];
 	private boolean command_pressed = false;
-	private int[] command_value = { -1, -1 };
+	private final int[] command_value = { -1, -1 };
 
 	// 結果画面のオブジェクト
 	private JButton ui_jb_totitle;
@@ -288,7 +286,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				int[][] board_state = othello.getBoard();
 				for (int i = 0; i < 8; i++) {
 					for (int j = 0; j < 8; j++) {
-						ui_jb_field[i][j] = new JButton(Integer.toString(i) + Integer.toString(j));
+						ui_jb_field[i][j] = new JButton(Integer.toString(i) + j);
 						ui_jb_field[i][j].setIcon(getStoneIcon(board_state[i][j], 0));
 						ui_jb_field[i][j].setDisabledIcon(getStoneIcon(board_state[i][j], 0));
 						ui_jb_field[i][j].setMargin(new Insets(-4, -4, -4, -24));
@@ -492,7 +490,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			} catch (IOException ex) {
 				throw new RuntimeException(ex);
 			}
-			return;
 		}
 	}
 
@@ -584,7 +581,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 						ex.printStackTrace();
 					}
 				}
-				boolean turn = (turnNum != 0) ? true : false;
+				boolean turn = turnNum != 0;
 
 				// 1のとき300秒,2のとき600秒,3のとき1200秒となる
 				int leftTime;
@@ -791,7 +788,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		try (
 				Socket socket1 = new Socket("localhost", SERVER_PORT_2);
 				PrintWriter out = new PrintWriter(socket1.getOutputStream(), true);
-				DataInputStream in = new DataInputStream(socket1.getInputStream());) {
+				DataInputStream in = new DataInputStream(socket1.getInputStream())) {
 			int heartbeat = 1; // ハートビートメッセージ
 
 			out.println(heartbeat); // ハートビートメッセージを送信
@@ -810,7 +807,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		eob_flag = false;
 		changePhase(PHASE_RESULT);
 		try {
-			socket.close();//投了がおくられてきたのでソケットを閉じる
+			socket.close();//ソケットを閉じる
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -933,7 +930,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		connectFlag = true;
 		client.changePhase(PHASE_BATTLE);
 
-		if (client.othello.getPlayers()[1].isFirstMover()) {
+		if (othello.getPlayers()[1].isFirstMover()) {
 			System.out.println("doYourTurnから呼び出します"); // debug
 			client.doYourTurn();
 		} else {
