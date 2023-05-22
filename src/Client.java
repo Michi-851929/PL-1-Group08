@@ -48,8 +48,9 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	private boolean eob_flag = false;
 	private static boolean connectFlag = true;
 
-	private int[] newPlay = { -1, -1, -1 };// 最新の相手が指した手
+	private int[] newPlay = { -1, -1, -1 };//最新の相手が指した手
 	private static boolean newPlayFlag = false;
+
 
 	private static InetAddress hostname;
 
@@ -532,33 +533,36 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				e.printStackTrace();
 			}
 
-			connectFlag = false;// 画面遷移用フラグ
+			connectFlag = false;//画面遷移用フラグ
+
 
 			new Thread(() -> {
-				try {
-					// サーバーからのデータを受け取る
-					int[] response = receiveResponse();
+				while (true) {
+					try {
+						// サーバーからのデータを受け取る
+						int[] response = receiveResponse();
 
-					if (response[0] == 16) {
-						if (response[2] == 0) {
-							// TODO: 投了時の処理を実装する
-						} else if (response[2] == 1) {
-							// ハートビートを送り返す処理をする
-							sendHeartbeat(1);
+						if (response[0] == 16) {
+							if (response[2] == 0) {
+								// TODO: 投了時の処理を実装する
+							} else if (response[2] == 1) {
+								// ハートビートを送り返す処理をする
+								sendHeartbeat(1);
+							}
+						} else {
+							newPlay = response;
+							newPlayFlag = true;
 						}
-					} else {
-						newPlay = response;
-						newPlayFlag = true;
+					} catch (SocketTimeoutException e) {
+						// タイムアウトしたら例外処理を返して終了する
+						System.err.println("接続がタイムアウトしました");
+						return;
+					} catch (IOException e) {
+						// サーバーからのデータを受け取れなかったらエラー
+						e.printStackTrace();
+						System.err.println("サーバからのデータが読み取れませんでした。");
+						return;
 					}
-				} catch (SocketTimeoutException e) {
-					// タイムアウトしたら例外処理を返して終了する
-					System.err.println("接続がタイムアウトしました");
-					return;
-				} catch (IOException e) {
-					// サーバーからのデータを受け取れなかったらエラー
-					e.printStackTrace();
-					System.err.println("サーバからのデータが読み取れませんでした。");
-					return;
 				}
 			}).start();
 		} catch (IOException e) {
@@ -647,7 +651,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	private int[] receiveResponse() throws IOException {
 		InputStream in = socket.getInputStream();
 		DataInputStream dis = new DataInputStream(in);
-		// socket.setSoTimeout(TIMEOUT_INTERVAL); // タイムアウト時間を設定する
+		//socket.setSoTimeout(TIMEOUT_INTERVAL); // タイムアウト時間を設定する
 
 		int[] response = new int[3];
 		for (int i = 0; i < 3; i++) {
