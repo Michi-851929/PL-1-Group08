@@ -19,11 +19,13 @@ public class Server {
 
 	private Socket sockets[]; // ソケット
 	private DataInputStream diss[];
+	private boolean running;
+	RoomInfoThread rit;
 
 	// Serverコンストラクタ
 	public Server(int port) { // 待ち受けポートを引数とする
 		this.port = port; // 待ち受けポートを渡す
-		RoomInfoThread rit = new RoomInfoThread();// 部屋状況確認スレッドを宣言
+		rit = new RoomInfoThread();// 部屋状況確認スレッドを宣言
 		rit.start();
 		GameThread = new GameThread[128];// ゲームスレッドを宣言
 		for (int i = 0; i < 128; i++) {
@@ -39,6 +41,12 @@ public class Server {
 		}
 
 		diss = new DataInputStream[256];
+		running = false;
+	}
+
+	public void stopRunning() {
+		rit.interrupt();
+		//TODO 
 	}
 
 	// 待ちプレイヤ確認応答スレッド
@@ -46,6 +54,7 @@ public class Server {
 		int Info_port;
 		private BufferedReader Info_in; // データ受信用オブジェクト
 		private DataOutputStream dos;
+		private ServerSocket ri_ss;
 
 		// コンストラクタ
 		RoomInfoThread() {
@@ -55,9 +64,9 @@ public class Server {
 		// run
 		@Override
 		public void run() {
-			while (true) {
+			while (running) {
 				try {
-					ServerSocket ri_ss = new ServerSocket(Info_port);
+					ri_ss = new ServerSocket(Info_port);
 					Socket ri_socket = ri_ss.accept();
 					Info_in = new BufferedReader(new InputStreamReader(ri_socket.getInputStream()));
 					dos = new DataOutputStream(ri_socket.getOutputStream());
@@ -77,8 +86,8 @@ public class Server {
 					}
 					ri_ss.close();
 					ri_socket.close();
-				} catch (IOException e) {
-					System.err.println("RoomInfoThread:クライアントとの接続が切れました．");
+				} catch (Exception e) {
+					System.err.println("RoomInfoThread:スレッドを停止します．");
 				}
 			}
 		}
@@ -655,6 +664,10 @@ public class Server {
 					}
 				}
 			} else if (admin_command.equals("stop")) {
+				for (int i = 0; i < 128; i++) {
+					server.GameThread[i].stopRunning();
+				}
+
 				break;
 			} else {
 				System.out.printf("未定義のコマンドです");
