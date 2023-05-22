@@ -227,6 +227,8 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				ui_jl_name1 = new JLabel(othello.getPlayers()[0].getPlayerName());
 				ui_jl_name1.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
 				ui_jl_time1 = new JLabel("00:00");
+				ui_jl_time1.setText((othello.getPlayers()[0].getLeftTime() >= 600000 ? "" : " ") + othello.getPlayers()[0].getLeftTime() / 60000 + ":"
+						+ (((othello.getPlayers()[0].getLeftTime() / 1000) % 60) < 10 ? "0" : "") + ((othello.getPlayers()[0].getLeftTime() / 1000) % 60));
 				ui_jl_time1.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
 				JLabel ui_jl_turn1 = new JLabel(
 						getStoneIcon((othello.getPlayers()[0].isFirstMover() ? Othello.BLACK : Othello.WHITE), -1));
@@ -242,6 +244,8 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				ui_jl_name2 = new JLabel(othello.getPlayers()[1].getPlayerName());
 				ui_jl_name2.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
 				ui_jl_time2 = new JLabel("00:00");
+				ui_jl_time2.setText((othello.getPlayers()[1].getLeftTime() >= 600000 ? "" : " ") + othello.getPlayers()[1].getLeftTime() / 60000 + ":"
+						+ (((othello.getPlayers()[1].getLeftTime() / 1000) % 60) < 10 ? "0" : "") + ((othello.getPlayers()[1].getLeftTime() / 1000) % 60));
 				ui_jl_time2.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
 				JLabel ui_jl_turn2 = new JLabel(
 						getStoneIcon((othello.getPlayers()[1].isFirstMover() ? Othello.BLACK : Othello.WHITE), -1));
@@ -439,7 +443,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				Thread.sleep(100);
 				millis = othello.getPlayers()[1].getLeftTime() - 100;
 				othello.getPlayers()[1].setLeftTime(millis);
-				ui_jl_time1.setText((millis >= 600000 ? "" : " ") + millis / 60000 + ":"
+				ui_jl_time2.setText((millis >= 600000 ? "" : " ") + millis / 60000 + ":"
 						+ (((millis / 1000) % 60) < 10 ? "0" : "") + ((millis / 1000) % 60));
 				if (millis <= 0) { // 時間切れ
 					out[0] = 8;
