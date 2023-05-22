@@ -507,9 +507,9 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 							opponentName = dis.readUTF();
 							turnNum = dis.readInt();
 							if (turnNum == 1) {
-								System.out.println("私が先攻");
+								System.out.println("私が先攻, 相手の名前は" + opponentName);
 							} else {
-								System.out.println("私が後攻");
+								System.out.println("私が後攻, 相手の名前は" + opponentName);
 							}
 							break;
 						} else {

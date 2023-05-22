@@ -445,6 +445,7 @@ public class Server {
 					System.out.println("GameThread[" + RoomID + "]:対戦相手の情報を送信します");
 					dos_p1.writeUTF(P2_name);// 先攻に後攻の名前を伝える
 					dos_p2.writeUTF(P1_name);// 後攻に先攻の名前を伝える
+					System.out.println("GameThread[" + RoomID + "]: 先攻は" + P1_name + ", 後攻は" + P2_name);
 
 					// 先攻/後攻を送信
 					dos_p1.writeInt(1);// 先攻に自身が先攻であることを伝える
@@ -624,6 +625,7 @@ public class Server {
 				// sockets[num_player].setSoTimeout(100);
 				System.out.println("ConnectThread: 起動");
 				while (running) {
+					Thread.sleep(1000); // 1秒待つ
 
 					// ハートビートをDataOutputStreamで送る
 					try {
@@ -636,7 +638,6 @@ public class Server {
 					System.out.println("ConnectThread: ハートビートをnum_playuer:" + num_player + "に送信" + command_send[0] + ","
 							+ command_send[1] + ","
 							+ command_send[2]);
-					Thread.sleep(1000); // 1秒待つ
 
 					if (rmt.last_heartbeat[1] == 0) {
 						// ok
