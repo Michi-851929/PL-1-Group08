@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
@@ -584,6 +585,8 @@ public class Server {
 						receive_message[i] = dis_rmt.readInt();
 					} catch (SocketException se) {
 						stopRunning();
+					} catch (EOFException eofe) {
+						
 					} catch (IOException e) {
 						e.printStackTrace();
 					}

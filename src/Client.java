@@ -432,43 +432,23 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	}
 
 	public void doYourTurn() {
-		int[] in = { -1, -1, -1 };
 		int millis = othello.getPlayers()[1].getLeftTime();
 		int[] out = new int[2];
-		Thread time_counter = new Thread(() -> {
-			try {
-				int[] play = receiveResponse();
-				in[0] = play[0];
-				in[1] = play[1];
-				in[2] = play[2];
-			} catch (IOException e) {
-				// サーバーからのデータを受け取れなかったらエラー
-				e.printStackTrace();
-				return;
-			}
-		});
-		time_counter.start();
 		try {
-			while (time_counter.isAlive()) {
+			while (!newPlayFlag) {
 				Thread.sleep(100);
 				millis = othello.getPlayers()[1].getLeftTime() - 100;
 				othello.getPlayers()[1].setLeftTime(millis);
 				ui_jl_time1.setText((millis >= 600000 ? "" : " ") + millis / 60000 + ":"
 						+ (((millis / 1000) % 60) < 10 ? "0" : "") + ((millis / 1000) % 60));
 				if (millis <= 0) { // 時間切れ
-					in[0] = 8;
-					in[1] = 9;
+					out[0] = 8;
+					out[1] = 9;
 					break;
 				}
 			}
-			out[0] = in[0];
-			out[1] = in[1];
-			for (int i = 0; i < 8; i++) {
-				for (int j = 0; j < 8; j++) {
-					ui_jb_field[i][j].setEnabled(false);
-				}
-			}
-			ui_jb_giveup.setEnabled(false);
+			out[0] = newPlay[0];
+			out[1] = newPlay[1];
 			Thread.sleep(10);
 			othello.applyMove(out);
 			reloadDisplay(out);
@@ -476,7 +456,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			e.printStackTrace();
 		}
 
-		if (in[2] <= 0) {// 持ち時間0以下
+		if (newPlay[2] <= 0) {// 持ち時間0以下
 			eob_flag = true;
 		} else if (othello.checkWinner() != 2) {// 盤面勝者確定
 			eob_flag = true;
