@@ -422,6 +422,10 @@ public class Server {
 							Thread.sleep(2000);
 							System.out
 									.println("GameThread[" + RoomID + "]:" + P1_name + "が対戦相手を待機中 (time:" + time + ")");
+							if (running == false) {
+								System.out.println("closeGame()メソッドを呼び出します");
+								closeGame();
+							}
 							// 以下デバッグ分
 							if (P1_socket.isClosed()) {
 								System.out.println("GameThread.run(): P1's socket ->" + sockets[P1_num].toString());
@@ -602,6 +606,7 @@ public class Server {
 		int id; // 部屋番号
 		int command_send[];
 		int command_receive[];
+		int loss; // 連続応答なし回数
 		Boolean isFirst; // 先攻か
 		Boolean running;
 		int num_player;
@@ -618,6 +623,7 @@ public class Server {
 			command_receive = new int[3];
 			rmt = r;
 			running = true;
+			loss = 0;
 			System.out.println("ConnectThread: コンストラクトしました num_player:" + num_player);
 		}
 
@@ -650,10 +656,13 @@ public class Server {
 							+ command_send[2]);
 
 					if (rmt.last_heartbeat[1] == 0) {
-						// ok
+						loss = 0;
 						rmt.last_heartbeat[1] = -1;// -1に書き換える 次も[1]が-1だったら1秒間の間にハートビートが無いことになるのでタイムアウトと判定
 					} else if (rmt.last_heartbeat[1] == -1) {// 前のハートビート確認から1秒後にrmt.last_heartbeat[1]が-1のままのとき
-						throw new SocketTimeoutException("ConnectThread:タイムアウトしました");
+						System.out.println(--loss);
+						if (loss <= -20) {
+							throw new SocketTimeoutException("ConnectThread:タイムアウトしました");
+						}
 					} else if (rmt.last_heartbeat[2] == 0) { // 棟梁ボタンが押されたら
 						GameThread[id].SetGiveUp(isFirst);
 						Thread.sleep(1000);
