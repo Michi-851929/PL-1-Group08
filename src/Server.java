@@ -137,29 +137,11 @@ public class Server {
 			}
 			while (true) { // 無限ループ
 				try {
-					// Socket socket_match = ss_match.accept();
-					/*
-					 * for(int i = 0;i<256;i++) {
-					 * System.out.println("MatchThread:" + sockets[i].isClosed());
-					 * if(sockets[i].isClosed()) {
-					 * player_num = i;
-					 * break;
-					 * }
-					 * }
-					 */
 					player_num++;
 					System.out.println("MatchThread:プレイヤーを待っています 次のプレイヤーの番号: " + player_num);
 					sockets[player_num] = ss_match.accept();
 
 					System.out.println("MatchThread:プレイヤーがマッチングスレッドに接続しました player_num:" + player_num);
-
-					/*
-					 * if (socket_match.isClosed()) {
-					 * System.out.println("MatchThread.run(): Player's socket is closed!");
-					 * } else {
-					 * System.out.println("MatchThread.run(): Player's socket is NOT closed!");
-					 * }
-					 */
 
 					// プレイヤーデータ宣言
 					String player_name = null;
@@ -168,31 +150,19 @@ public class Server {
 					// DataInputStream is = new DataInputStream(socket_match.getInputStream());
 					diss[player_num] = new DataInputStream(sockets[player_num].getInputStream());
 
-					/*
-					 * player_name = is.readUTF();
-					 * player_time = is.readInt();
-					 */
 					player_name = diss[player_num].readUTF();
 					player_time = diss[player_num].readInt();
 
-					// System.out.println("MatchThread: socket_match ->" + socket_match.toString());
 					System.out.println("MatchThread: socket_match ->" + sockets[player_num].toString());
 
 					// 待ち時間の一致するプレイヤーを探す
 					int room_tojoin = findWaitingRoom(player_time);
 
-					// 待機中のプレイヤがいない場合、最も番号の若い空き部屋を探す(findVacantRoom)
 					if (room_tojoin == -1) {
 						room_tojoin = findVacantRoom();
 
 						// 空き部屋が見つかったら
-						/*
-						 * if (room_tojoin != -1) {
-						 * GameThread[room_tojoin].setPlayer(socket_match, player_name, true);
-						 * // 部屋の時間を設定
-						 * GameThread[room_tojoin].setTime(player_time);
-						 * }
-						 */
+
 						if (room_tojoin != -1) {
 							GameThread[room_tojoin].setPlayer(player_num, player_name, true);
 							// 部屋の時間を設定
@@ -256,20 +226,18 @@ public class Server {
 
 	// 対局スレッド
 	class GameThread extends Thread {
-		int RoomID;
-		int P1_num; // プレイヤー番号
-		int P2_num;
-		String P1_name;// 先攻
-		String P2_name;// 後攻
-		int time;// 開始時の残り時間
-		Socket P1_socket;// 先攻のソケット
-		Socket P2_socket;// 後攻のソケット
-		int command[];
-		ReceiveMessageThread P1_rmt;
-		ReceiveMessageThread P2_rmt;
-		boolean running;
-		ConnectThread P1_ct;
-		ConnectThread P2_ct;
+		private int RoomID;
+		private int P1_num; // プレイヤー番号
+		private int P2_num;
+		private String P1_name;// 先攻
+		private String P2_name;// 後攻
+		private int time;// 開始時の残り時間
+		private int command[];
+		private ReceiveMessageThread P1_rmt;
+		private ReceiveMessageThread P2_rmt;
+		private boolean running;
+		private ConnectThread P1_ct;
+		private ConnectThread P2_ct;
 
 		// コンストラクタ
 		GameThread(int id) {
@@ -277,8 +245,6 @@ public class Server {
 			P2_name = null;
 			P1_num = -1;
 			P2_num = -1;
-			P1_socket = new Socket();
-			P2_socket = new Socket();
 			time = 0;
 			RoomID = id;
 			command = new int[3];
@@ -428,14 +394,7 @@ public class Server {
 								System.out.println("closeGame()メソッドを呼び出します");
 								closeGame();
 							}
-							// 以下デバッグ分
-							if (P1_socket.isClosed()) {
-								System.out.println("GameThread.run(): P1's socket ->" + sockets[P1_num].toString());
-								throw new SocketException("Socket is closed");
-							} else {
-								System.out.println("GameThread.run(): P1's socket ->" + sockets[P1_num].toString());
-								System.out.println("GameThread[" + RoomID + "]:P1's Socket is not closed");
-							}
+							
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
@@ -529,14 +488,6 @@ public class Server {
 					P1_ct.stopRunning();
 					P2_ct.stopRunning();
 				}
-				/*
-				 * catch (SocketTimeoutException es){
-				 * //★残っている側のプレイヤーに対戦相手がタイムアウトしたことを伝え試合を終了する
-				 * }
-				 * catch (LeaveGameException el) {
-				 * //★切断希望が出たことをプレイヤーに伝える
-				 * }
-				 */
 				catch (InterruptedException e) {
 					e.printStackTrace();
 				} catch (IOException eio) {
@@ -553,12 +504,12 @@ public class Server {
 
 	// 新 クライアントから送られる差し手やハートビートを受け取るメソッド
 	class ReceiveMessageThread extends Thread {
-		int receive_message[];// プレイヤーから受け取ったメッセージ
-		int last_command[]; // 最新のプレイヤーの差し手
-		int last_heartbeat[];// 最新のプレイヤーのハートビート
+		private int receive_message[];// プレイヤーから受け取ったメッセージ
+		private int last_command[]; // 最新のプレイヤーの差し手
+		private int last_heartbeat[];// 最新のプレイヤーのハートビート
 		// Socket sc_rmt;
-		boolean running;
-		int num_player;
+		private boolean running;
+		private int num_player;
 
 		ReceiveMessageThread(int pnum) {
 			receive_message = new int[3];
@@ -610,14 +561,13 @@ public class Server {
 
 	// 新 接続状態確認スレッド
 	class ConnectThread extends Thread {
-		int id; // 部屋番号
-		int command_send[];
-		int command_receive[];
-		int loss; // 連続応答なし回数
-		Boolean isFirst; // 先攻か
-		Boolean running;
-		int num_player;
-		ReceiveMessageThread rmt;
+		private int id; // 部屋番号
+		private int command_send[];
+		private int loss; // 連続応答なし回数
+		private Boolean isFirst; // 先攻か
+		private Boolean running;
+		private int num_player;
+		private ReceiveMessageThread rmt;
 
 		ConnectThread(int id, boolean isFirst, int pnum, ReceiveMessageThread r) {
 			this.id = id;
@@ -627,7 +577,6 @@ public class Server {
 			command_send[0] = 16;
 			command_send[1] = 0;
 			command_send[2] = 1;
-			command_receive = new int[3];
 			rmt = r;
 			running = true;
 			loss = 0;
