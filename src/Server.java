@@ -19,6 +19,7 @@ public class Server {
 
 	private Socket sockets[]; // ソケット
 	private DataInputStream diss[];
+	private MatchThread mt;
 
 	RoomInfoThread rit;
 
@@ -32,7 +33,7 @@ public class Server {
 			GameThread[i] = new GameThread(i);
 			GameThread[i].start();
 		}
-		MatchThread mt = new MatchThread(port);
+		mt = new MatchThread(port);
 		mt.start();
 
 		sockets = new Socket[256];
@@ -147,6 +148,7 @@ public class Server {
 		int port;
 		int player_num; // プレイヤー番号
 		boolean running;
+		private boolean[] player_list; // 各番号のプレイヤーの有無
 		ServerSocket ss_match;
 
 		MatchThread(int port) {
@@ -154,6 +156,14 @@ public class Server {
 			player_num = 0;
 			ss_match = null;
 			running = true;
+			player_list = new boolean[256];
+			for (int i = 0; i < 256; i++) {
+				player_list[i] = false;
+			}
+		}
+
+		public void list_clear(int pnum) {
+			player_list[pnum] = false;
 		}
 
 		public void closeThread() {
@@ -179,7 +189,14 @@ public class Server {
 			}
 			while (true) { // 無限ループ
 				try {
-					player_num++;
+					for (player_num = 0; player_num < 256; player_num++) {
+						if (player_list[player_num]) {
+							// NR
+						} else {
+							player_list[player_num] = true;
+							break;
+						}
+					}
 					System.out.println("MatchThread:プレイヤーを待っています 次のプレイヤーの番号: " + player_num);
 					sockets[player_num] = ss_match.accept();
 
@@ -215,6 +232,7 @@ public class Server {
 						else {
 							ss_match.close();
 							sockets[player_num].close();
+							mt.list_clear(player_num);
 							System.out.println("MatchThread: 空き部屋が見つからないためソケットを閉じました");
 						}
 					}
@@ -399,6 +417,8 @@ public class Server {
 			try {
 				sockets[P1_num].close();
 				sockets[P2_num].close();
+				mt.list_clear(P1_num);
+				mt.list_clear(P2_num);
 				sockets[P1_num] = new Socket();
 				sockets[P2_num] = new Socket();
 				System.out.println("GameThread" + RoomID + ": 試合が終了したためソケットを閉じました");
