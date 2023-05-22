@@ -550,53 +550,33 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				e.printStackTrace();
 			}
 
-			// ハートビートを送信するスレッドを起動する
-			new Thread(() -> {
-				try {
-					// 1秒ごとにハートビートを送信する
-					while (true) {
-						sendHeartbeat(1);
-						Thread.sleep(HEARTBEAT_INTERVAL);
-					}
-				} catch (InterruptedException e) {
-					// スレッドが中断されたら終了する
-					return;
-				} catch (IOException e) {
-					// サーバーに接続できなかったら終了する
-					e.printStackTrace();
-					return;
-				}
-			}).start();
-
 			connectFlag = false;
-
-			// サーバーからのレスポンスを受け取る
-			while (true) {
+			new Thread(() -> {
 				try {
 					// サーバーからのデータを受け取る
 					int[] response = receiveResponse();
 
-					if (response[0] != 16) {
-						// TODO:配列を受け取り相手の手を実行する
-					}
-
-					// サーバーからのレスポンスが1でなければエラー
-					if (response[0] != 16 && response[2] != 1) {
-						throw new RuntimeException("サーバーから終了するが送信されました");
+					if (response[0] == 16) {
+						if (response[2] == 0) {
+							// TODO: 投了時の処理を実装する
+						} else if (response[2] == 1) {
+							// ハートビートを送り返す処理をする
+							sendHeartbeat(1);
+						}
+					} else {
+						// TODO: 打った盤面を反映する処理を実装する
 					}
 				} catch (SocketTimeoutException e) {
 					// タイムアウトしたら例外処理を返して終了する
 					System.err.println("接続がタイムアウトしました");
-					socket.close();
 					return;
 				} catch (IOException e) {
 					// サーバーからのデータを受け取れなかったらエラー
 					e.printStackTrace();
 					System.err.println("サーバからのデータが読み取れませんでした。");
-					socket.close();
 					return;
 				}
-			}
+			}).start();
 		} catch (IOException e) {
 			// サーバーに接続できなかったらエラー
 			e.printStackTrace();
