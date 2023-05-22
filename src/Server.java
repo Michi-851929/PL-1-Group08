@@ -571,7 +571,6 @@ public class Server {
 			try {
 				dis_rmt = new DataInputStream(sockets[num_player].getInputStream());
 			} catch (IOException e1) {
-				// TODO 自動生成された catch ブロック
 				e1.printStackTrace();
 			}
 			while (running) {
@@ -581,7 +580,6 @@ public class Server {
 					} catch (SocketException se) {
 						stopRunning();
 					} catch (IOException e) {
-						// TODO 自動生成された catch ブロック
 						e.printStackTrace();
 					}
 				}
@@ -640,6 +638,9 @@ public class Server {
 					try {
 						dos_ct.writeInt(command_send[0]);
 						dos_ct.writeInt(command_send[1]);
+						if (command_send[2] == 0) {
+							System.out.printf("相手が投了した旨をクライアントに送信します");
+						}
 						dos_ct.writeInt(command_send[2]);
 					} catch (SocketException se) {
 						stopRunning();
@@ -654,6 +655,8 @@ public class Server {
 					} else if (rmt.last_heartbeat[1] == -1) {// 前のハートビート確認から1秒後にrmt.last_heartbeat[1]が-1のままのとき
 						throw new SocketTimeoutException("ConnectThread:タイムアウトしました");
 					} else if (rmt.last_heartbeat[2] == 0) { // 棟梁ボタンが押されたら
+						GameThread[id].SetGiveUp(isFirst);
+						Thread.sleep(1000);
 						if (isFirst) {
 							throw new LeaveGameException("ConnectThread:先攻がゲーム退出希望");
 						} else {
