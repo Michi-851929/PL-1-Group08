@@ -493,6 +493,7 @@ public class Server {
 						// 後攻に情報を送信
 						for (int i = 0; i < 3; i++) {
 							dos_p2.writeInt(P1_rmt.last_command[i]);
+							dos_p2.flush();
 						}
 						// 試合終了判定 if分内がtrueなら試合終了なのでwhileループを抜ける
 						if (P1_rmt.last_command[0] > 7) {
@@ -515,6 +516,7 @@ public class Server {
 						// 先攻に情報を送信
 						for (int i = 0; i < 3; i++) {
 							dos_p1.writeInt(P2_rmt.last_command[i]);
+							dos_p1.flush();
 						}
 						// 試合終了判定
 						if (P2_rmt.last_command[0] > 7) {
