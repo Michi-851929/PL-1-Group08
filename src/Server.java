@@ -606,15 +606,10 @@ public class Server {
 						DataOutputStream dos_p1 = new DataOutputStream(sockets[P1_num].getOutputStream());
 						DataOutputStream dos_p2 = new DataOutputStream(sockets[P2_num].getOutputStream());
 
-						System.out.println(P1_num);
-						System.out.println(P2_num);
-
 						// 相手の名前をもう一方に送信
 						System.out.println("GameThread[" + RoomID + "]:対戦相手の情報を送信します");
 						dos_p1.writeUTF(P2_name);// 先攻に後攻の名前を伝える
 						dos_p2.writeUTF(P1_name);// 後攻に先攻の名前を伝える
-						System.out.println(P1_name);
-						System.out.println(P2_name);
 
 						// 先攻/後攻を送信
 						dos_p1.writeInt(1);// 先攻に自身が先攻であることを伝える

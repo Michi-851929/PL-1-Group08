@@ -365,6 +365,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	}
 
 	public void reloadDisplay(int[] play) {
+		System.out.println("applyMove: (" + play[0] + ", " + play[1] + ")");
 		boolean[][] change_board = othello.applyMove(play);
 		int[][] board = othello.getBoard();
 		int count_black = 0;
@@ -521,7 +522,18 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				boolean turn = (turnNum != 0) ? true : false;
 
 				// 1のとき300秒,2のとき600秒,3のとき1200秒となる
-				int leftTime = (roomNumber - 1) * (roomNumber - 1) * 300;
+				int leftTime;
+				switch(roomNumber) {
+				case 0:
+					leftTime = 5 * 60 * 1000;
+					break;
+				case 1:
+					leftTime = 10 * 60 * 1000;
+				case 2:
+					leftTime = 20 * 60 * 1000;
+				default:
+					leftTime = 1000000;
+				}
 
 				me = new Player(name, turn, leftTime);
 				your = new Player(opponentName, !turn, leftTime);
@@ -880,11 +892,13 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		}
 		connectFlag = true;
 		client.changePhase(PHASE_BATTLE);
+		System.out.println(client.othello.getPlayers()[0].getLeftTime());
+		System.out.println(client.othello.getPlayers()[1].getLeftTime());
+		
+		
 		if (client.othello.getPlayers()[1].isFirstMover()) {
 			client.doYourTurn();
 		}
-		System.out.println(client.othello.getPlayers()[0].isFirstMover());
-		System.out.println(client.othello.getPlayers()[1].isFirstMover());
 		while (true) {
 			client.doMyTurn();
 			client.doYourTurn();
