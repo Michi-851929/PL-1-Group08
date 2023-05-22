@@ -542,7 +542,7 @@ public class Server {
 							dos_p2.flush();
 						}
 						// 試合終了判定 if分内がtrueなら試合終了なのでwhileループを抜ける
-						if (P1_rmt.last_command[0] > 7) {
+						if (P2_rmt.last_command[0] > 7 && P2_rmt.last_command[0] < 18) {
 							break;
 						}
 						// 後攻の番 盤面が変わるまで無限ループ
@@ -565,7 +565,7 @@ public class Server {
 							dos_p1.flush();
 						}
 						// 試合終了判定
-						if (P2_rmt.last_command[0] > 7) {
+						if (P2_rmt.last_command[0] > 7 && P2_rmt.last_command[0] < 18) {
 							break;
 						}
 					}
