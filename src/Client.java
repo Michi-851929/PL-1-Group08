@@ -19,6 +19,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
@@ -513,13 +514,20 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 						} else {
 							dis.readInt();
 							dis.readInt();
-							sendHeartbeat(1);
+							if(matching) {
+								sendHeartbeat(1);
+							}
+							else {
+								sendHeartbeat(0);
+								return;
+							}
 						}
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-					if(!matching) {
+					} 
+					catch (SocketException se) {
 						return;
+					}
+					catch (Exception ex) {
+						ex.printStackTrace();
 					}
 				}
 				boolean turn = (turnNum != 0) ? true : false;
