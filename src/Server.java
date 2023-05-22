@@ -932,11 +932,11 @@ public class Server {
 					dos_ct.writeInt(command_send[2]);
 					System.out.println("ConnectThread: ハートビートを送信" + command_send[0] + "," + command_send[1] + ","
 							+ command_send[2]);
+					Thread.sleep(1000); //1秒待つ
 
 					if (rmt.last_heartbeat[1] == 1) {
 						// ok
 						rmt.last_heartbeat[1] = -1;// -1に書き換える 次も[1]が-1だったら1秒間の間にハートビートが無いことになるのでタイムアウトと判定
-						Thread.sleep(1000);
 					} else if (rmt.last_heartbeat[1] == -1) {// 前のハートビート確認から1秒後にrmt.last_heartbeat[1]が-1のままのとき
 						throw new SocketTimeoutException("ConnectThread:タイムアウトしました");
 					} else {
