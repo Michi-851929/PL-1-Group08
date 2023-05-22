@@ -572,7 +572,7 @@ public class Server {
 		 * // ここでGameThread[i]は初期状態に戻り、無限ループへ
 		 * }
 		 */
-
+		
 		// runメソッド
 		@Override
 		public void run() {
@@ -589,6 +589,7 @@ public class Server {
 					System.out.println("GameThread[" + RoomID + "]:" + P1_name + "が Room" + RoomID + "に、time:" + time
 							+ "で先攻として入りました");
 					ReceiveMessageThread P1_rmt = new ReceiveMessageThread(P1_num);
+					//P1_rmt.start();
 					while (P2_name == null) {// 後攻が来るまで無限ループ
 						try {
 							Thread.sleep(2000);
@@ -606,34 +607,36 @@ public class Server {
 							e.printStackTrace();
 						}
 					}
-					System.out.println("GameThread[" + RoomID + "]:" + P2_name + "が Room" + RoomID + "に、time:" + time
-							+ "後攻として入りました");
+					System.out.println("GameThread[" + RoomID + "]:" + P2_name + "が Room" + RoomID + "に、time:" + time+ "後攻として入りました");
 					ReceiveMessageThread P2_rmt = new ReceiveMessageThread(P2_num);
-
+					
 					// 後攻が来たら
 					DataOutputStream dos_p1 = new DataOutputStream(sockets[P1_num].getOutputStream());
 					DataOutputStream dos_p2 = new DataOutputStream(sockets[P2_num].getOutputStream());
-
+					
 					// 相手の名前をもう一方に送信
 					System.out.println("GameThread[" + RoomID + "]:対戦相手の情報を送信します");
 					dos_p1.writeUTF(P2_name);// 先攻に後攻の名前を伝える
 					dos_p2.writeUTF(P1_name);// 後攻に先攻の名前を伝える
-
+					
 					// 先攻/後攻を送信
 					dos_p1.writeInt(1);// 先攻に自身が先攻であることを伝える
 					dos_p2.writeInt(0);// 後攻に自身が先攻であることを伝える
-
+					
 					// ハートビート起動
+					P1_rmt.start();
+					P2_rmt.start();
 					P1_ct = new ConnectThread(RoomID, true, P1_num, P1_rmt);
+					P1_ct.start();
 					P2_ct = new ConnectThread(RoomID, false, P2_num, P2_rmt);
-					P1_ct.run();
-					P2_ct.run();
-
+					P2_ct.start();
+					
 					// 前の入力を定義
 					int P1_commandBefore[] = new int[3];
 					P1_commandBefore = new int[] { -1, -1, -1 };
 					int P2_commandBefore[] = new int[3];
 					P2_commandBefore = new int[] { -1, -1, -1 };
+					
 					// 試合終了まで無限ループ
 					while (running) {
 						// 先攻の番 盤面が変わるまで無限ループ
@@ -645,7 +648,6 @@ public class Server {
 								break;
 							}
 						}
-
 						// 外部からstopRuningメソッドが呼び出されていた時はrunningがfalseとなる このときは試合のwhileループを強制的に抜ける
 						if (running == false) {
 							break;
@@ -653,17 +655,14 @@ public class Server {
 						// commandBeforeを更新
 						P1_commandBefore[0] = P1_rmt.last_command[0];
 						P1_commandBefore[1] = P1_rmt.last_command[1];
-
 						// 後攻に情報を送信
 						for (int i = 0; i < 3; i++) {
 							dos_p2.writeInt(P1_rmt.last_command[i]);
 						}
-
 						// 試合終了判定 if分内がtrueなら試合終了なのでwhileループを抜ける
 						if (P1_rmt.last_command[0] > 7) {
 							break;
 						}
-
 						// 後攻の番 盤面が変わるまで無限ループ
 						while (P2_commandBefore[0] == P2_rmt.last_command[0]
 								&& P2_commandBefore[1] == P2_rmt.last_command[1]) {
@@ -678,7 +677,6 @@ public class Server {
 						// commandBeforeを更新
 						P2_commandBefore[0] = P2_rmt.last_command[0];
 						P2_commandBefore[1] = P2_rmt.last_command[1];
-
 						// 先攻に情報を送信
 						for (int i = 0; i < 3; i++) {
 							dos_p1.writeInt(P2_rmt.last_command[i]);
@@ -689,7 +687,6 @@ public class Server {
 						}
 					}
 					// 試合終了後
-
 					// 接続確認メソッドを停止
 					P1_ct.stopRunning();
 					P2_ct.stopRunning();
@@ -707,153 +704,10 @@ public class Server {
 				} catch (IOException eio) {
 					eio.printStackTrace();
 				}
-				System.out.println("closeGame()メソッドを呼び出します a");
+				System.out.println("closeGame()メソッドを呼び出します");
 				closeGame();
 				// ここでGameThread[i]は初期状態に戻り、無限ループへ
 			}
-			*/
-			
-			// runメソッド
-			@Override
-			public void run() {
-				running = true;
-				while (true) {
-					try {
-						while (P1_name == null) {
-							try {
-								Thread.sleep(100);
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-						}
-						System.out.println("GameThread[" + RoomID + "]:" + P1_name + "が Room" + RoomID + "に、time:" + time
-								+ "で先攻として入りました");
-						ReceiveMessageThread P1_rmt = new ReceiveMessageThread(P1_num);
-						//P1_rmt.start();
-						while (P2_name == null) {// 後攻が来るまで無限ループ
-							try {
-								Thread.sleep(2000);
-								System.out
-										.println("GameThread[" + RoomID + "]:" + P1_name + "が対戦相手を待機中 (time:" + time + ")");
-								// 以下デバッグ分
-								if (P1_socket.isClosed()) {
-									System.out.println("GameThread.run(): P1's socket ->" + sockets[P1_num].toString());
-									throw new SocketException("Socket is closed");
-								} else {
-									System.out.println("GameThread.run(): P1's socket ->" + sockets[P1_num].toString());
-									System.out.println("GameThread[" + RoomID + "]:P1's Socket is not closed");
-								}
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-						}
-						System.out.println("GameThread[" + RoomID + "]:" + P2_name + "が Room" + RoomID + "に、time:" + time
-								+ "後攻として入りました");
-						ReceiveMessageThread P2_rmt = new ReceiveMessageThread(P2_num);
-
-						// 後攻が来たら
-						DataOutputStream dos_p1 = new DataOutputStream(sockets[P1_num].getOutputStream());
-						DataOutputStream dos_p2 = new DataOutputStream(sockets[P2_num].getOutputStream());
-
-						// 相手の名前をもう一方に送信
-						System.out.println("GameThread[" + RoomID + "]:対戦相手の情報を送信します");
-						dos_p1.writeUTF(P2_name);// 先攻に後攻の名前を伝える
-						dos_p2.writeUTF(P1_name);// 後攻に先攻の名前を伝える
-
-						// 先攻/後攻を送信
-						dos_p1.writeInt(1);// 先攻に自身が先攻であることを伝える
-						dos_p2.writeInt(0);// 後攻に自身が先攻であることを伝える
-
-						// ハートビート起動
-						P1_rmt.start();
-						P2_rmt.start();
-						P1_ct = new ConnectThread(RoomID, true, P1_num, P1_rmt);
-						P1_ct.start();
-						P2_ct = new ConnectThread(RoomID, false, P2_num, P2_rmt);
-						P2_ct.start();
-
-						// 前の入力を定義
-						int P1_commandBefore[] = new int[3];
-						P1_commandBefore = new int[] { -1, -1, -1 };
-						int P2_commandBefore[] = new int[3];
-						P2_commandBefore = new int[] { -1, -1, -1 };
-						// 試合終了まで無限ループ
-						while (running) {
-							// 先攻の番 盤面が変わるまで無限ループ
-							while (P1_commandBefore[0] == P1_rmt.last_command[0]
-									&& P1_commandBefore[1] == P1_rmt.last_command[1]) {
-								Thread.sleep(50);
-								if (running == false) { // 外部からstopRuningメソッドが呼び出されていた時はrunningがfalseとなる
-														// このときは試合のwhileループを強制的に抜ける
-									break;
-								}
-							}
-
-							// 外部からstopRuningメソッドが呼び出されていた時はrunningがfalseとなる このときは試合のwhileループを強制的に抜ける
-							if (running == false) {
-								break;
-							}
-							// commandBeforeを更新
-							P1_commandBefore[0] = P1_rmt.last_command[0];
-							P1_commandBefore[1] = P1_rmt.last_command[1];
-
-							// 後攻に情報を送信
-							for (int i = 0; i < 3; i++) {
-								dos_p2.writeInt(P1_rmt.last_command[i]);
-							}
-
-							// 試合終了判定 if分内がtrueなら試合終了なのでwhileループを抜ける
-							if (P1_rmt.last_command[0] > 7) {
-								break;
-							}
-
-							// 後攻の番 盤面が変わるまで無限ループ
-							while (P2_commandBefore[0] == P2_rmt.last_command[0]
-									&& P2_commandBefore[1] == P2_rmt.last_command[1]) {
-								Thread.sleep(50);
-								if (running == false) {
-									break;
-								}
-							}
-							if (running == false) {
-								break;
-							}
-							// commandBeforeを更新
-							P2_commandBefore[0] = P2_rmt.last_command[0];
-							P2_commandBefore[1] = P2_rmt.last_command[1];
-
-							// 先攻に情報を送信
-							for (int i = 0; i < 3; i++) {
-								dos_p1.writeInt(P2_rmt.last_command[i]);
-							}
-							// 試合終了判定
-							if (P2_rmt.last_command[0] > 7) {
-								break;
-							}
-						}
-						// 試合終了後
-
-						// 接続確認メソッドを停止
-						P1_ct.stopRunning();
-						P2_ct.stopRunning();
-					}
-					/*
-					 * catch (SocketTimeoutException es){
-					 * //★残っている側のプレイヤーに対戦相手がタイムアウトしたことを伝え試合を終了する
-					 * }
-					 * catch (LeaveGameException el) {
-					 * //★切断希望が出たことをプレイヤーに伝える
-					 * }
-					 */
-					catch (InterruptedException e) {
-						e.printStackTrace();
-					} catch (IOException eio) {
-						eio.printStackTrace();
-					}
-					System.out.println("closeGame()メソッドを呼び出します");
-					closeGame();
-					// ここでGameThread[i]は初期状態に戻り、無限ループへ
-				}
 		}
 	}
 
@@ -949,19 +803,9 @@ public class Server {
 				e1.printStackTrace();
 			}
 			while (running) {
-				DataInputStream dis_rmt = null;
-				try {
-					dis_rmt = new DataInputStream(sockets[num_player].getInputStream());
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-				while (true) {
-					for (int i = 0; i < 3; i++) {
-						try {
-							receive_message[i] = dis_rmt.readInt();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
+				for (int i = 0; i < 3; i++) {
+					try {
+						receive_message[i] = dis_rmt.readInt();
 					}
 					catch(SocketException se) {
 						stopRunning();
