@@ -261,7 +261,7 @@ public class Server {
 		// 待機中のプレイヤがいる部屋を探す
 		private int findWaitingRoom(int time) {
 			int retval = -1;
-			for (int i = 0; i < 1; i++) {
+			for (int i = 0; i < 128; i++) { // 全ての待機中の部屋を調べるためにループ条件を変更
 				if (GameThread[i].isWaiting() && time == GameThread[i].getTime()) {
 					retval = i;
 					break;
@@ -269,7 +269,6 @@ public class Server {
 			}
 			return retval;
 		}
-
 		// 最も番号が若い空き部屋を探す
 		private int findVacantRoom() {
 			int retval = -1;
@@ -691,7 +690,7 @@ public class Server {
 					} catch (SocketException se) {
 						stopRunning();
 					}
-					System.out.println("ConnectThread: ハートビートをnum_playuer:" + num_player + "に送信" + command_send[0] + ","
+					System.out.println("ConnectThread: ハートビートをnum_player:" + num_player + "に送信" + command_send[0] + ","
 							+ command_send[1] + ","
 							+ command_send[2]);
 
