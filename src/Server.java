@@ -19,11 +19,7 @@ public class Server {
 
 	private Socket sockets[]; // ソケット
 	private DataInputStream diss[];
-<<<<<<< HEAD
 
-=======
-	private boolean running;
->>>>>>> b17290091e21270d4be832fdff098fbddb524ce3
 	RoomInfoThread rit;
 
 	// Serverコンストラクタ
@@ -45,11 +41,9 @@ public class Server {
 		}
 
 		diss = new DataInputStream[256];
-		running = false;
 	}
 
 	public void stopRunning() {
-<<<<<<< HEAD
 		try {
 			rit.ri_ss.close();
 		} catch (IOException e) {
@@ -59,10 +53,7 @@ public class Server {
 		for (int i = 0; i < 128; i++) {
 			GameThread[i].closeThread();
 		}
-=======
-		rit.interrupt();
-		//TODO 
->>>>>>> b17290091e21270d4be832fdff098fbddb524ce3
+
 	}
 
 	// 待ちプレイヤ確認応答スレッド
@@ -75,7 +66,6 @@ public class Server {
 		// コンストラクタ
 		RoomInfoThread() {
 			Info_port = port + 1; // port+1番のポートを待ちプレイヤ確認応答スレッドに使用する
-<<<<<<< HEAD
 			running = true;
 		}
 
@@ -87,8 +77,7 @@ public class Server {
 				// TODO 自動生成された catch ブロック
 				e.printStackTrace();
 			}
-=======
->>>>>>> b17290091e21270d4be832fdff098fbddb524ce3
+
 		}
 
 		// run
@@ -156,16 +145,12 @@ public class Server {
 	class MatchThread extends Thread {
 		int port;
 		int player_num; // プレイヤー番号
-<<<<<<< HEAD
 		boolean running;
 		ServerSocket ss_match;
-=======
->>>>>>> b17290091e21270d4be832fdff098fbddb524ce3
 
 		MatchThread(int port) {
 			this.port = port;
 			player_num = 0;
-<<<<<<< HEAD
 			ss_match = null;
 			running = true;
 		}
@@ -178,8 +163,7 @@ public class Server {
 				// TODO 自動生成された catch ブロック
 				e.printStackTrace();
 			}
-=======
->>>>>>> b17290091e21270d4be832fdff098fbddb524ce3
+
 		}
 
 		// runメソッド
@@ -293,10 +277,8 @@ public class Server {
 		private ReceiveMessageThread P1_rmt;
 		private ReceiveMessageThread P2_rmt;
 		private boolean running;
-<<<<<<< HEAD
 		private boolean keeprun; // スレッド終了時にfalseになる
-=======
->>>>>>> b17290091e21270d4be832fdff098fbddb524ce3
+
 		private ConnectThread P1_ct;
 		private ConnectThread P2_ct;
 
@@ -314,15 +296,13 @@ public class Server {
 			command[2] = 0;
 			System.out.println("GameThread[" + RoomID + "]: GameThreadを開始しました");
 		}
-<<<<<<< HEAD
 
 		// スレッドを終了
 		public void closeThread() {
 			keeprun = false;
 			running = false;
 		}
-=======
->>>>>>> b17290091e21270d4be832fdff098fbddb524ce3
+
 
 		// 試合ループを終了
 		public void stopRunning() {
@@ -448,11 +428,8 @@ public class Server {
 					}
 					System.out.println("GameThread[" + RoomID + "]:" + P1_name + "が Room" + RoomID + "に、time:" + time
 							+ "で先攻として入りました");
-<<<<<<< HEAD
 					P1_rmt = new ReceiveMessageThread(P1_num);
-=======
-					ReceiveMessageThread P1_rmt = new ReceiveMessageThread(P1_num);
->>>>>>> b17290091e21270d4be832fdff098fbddb524ce3
+
 
 					// ハートビート起動
 					P1_rmt.start();
@@ -475,11 +452,8 @@ public class Server {
 					}
 					System.out.println("GameThread[" + RoomID + "]:" + P2_name + "が Room" + RoomID + "に、time:" + time
 							+ "後攻として入りました");
-<<<<<<< HEAD
 					P2_rmt = new ReceiveMessageThread(P2_num);
-=======
-					ReceiveMessageThread P2_rmt = new ReceiveMessageThread(P2_num);
->>>>>>> b17290091e21270d4be832fdff098fbddb524ce3
+
 
 					// 後攻が来たら
 					DataOutputStream dos_p1 = new DataOutputStream(sockets[P1_num].getOutputStream());
