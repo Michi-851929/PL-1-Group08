@@ -618,6 +618,9 @@ public class Server {
 						// ハートビート起動
 						P1_ct = new ConnectThread(RoomID, true, P1_num, P1_rmt);
 						P2_ct = new ConnectThread(RoomID, false, P2_num, P2_rmt);
+						P1_ct.run();
+						P2_ct.run();
+						
 
 						// 前の入力を定義
 						int P1_commandBefore[] = new int[3];
@@ -793,7 +796,6 @@ public class Server {
 				try {
 					dis_rmt = new DataInputStream(sockets[num_player].getInputStream());
 				} catch (IOException e1) {
-					// TODO 自動生成された catch ブロック
 					e1.printStackTrace();
 				}
 				while (true) {
@@ -801,7 +803,6 @@ public class Server {
 						try {
 							receive_message[i] = dis_rmt.readInt();
 						} catch (IOException e) {
-							// TODO 自動生成された catch ブロック
 							e.printStackTrace();
 						}
 					}
@@ -911,6 +912,7 @@ public class Server {
 			command_receive = new int[3];
 			rmt = r;
 			running = true;
+			System.out.println("ConnectThread: コンストラクトしました num_player:"+ num_player);
 		}
 
 		public void stopRunning() {
