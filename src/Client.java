@@ -401,9 +401,10 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				return;
 			}
 			else {
+				
 				play[0] -= 8;
 				System.out.println("applyMove: (" + play[0] + ", " + play[1] + ")");
-				boolean[][] change_board = othello.applyMove(play);
+				othello.applyMove(play);
 				int[][] result_board = othello.getBoard();
 				int count_black = 0;
 				int count_white = 0;
@@ -482,7 +483,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		int[] out = new int[3];
 		out[0] = in[0];
 		out[1] = in[1];
-		out[2] = othello.getPlayers()[0].getLeftTime();
+		out[2] = in[0] == 16 && in[1] == 0 ? 0 : othello.getPlayers()[0].getLeftTime();
 		try {
 			if (out[2] <= 0) {// 持ち時間0以下
 				sendCommand(out);
@@ -655,7 +656,9 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 							throw new RuntimeException(ex);
 						}
 						return;
-					} catch (IOException e) {
+					} catch (SocketException se) {
+						
+					}catch (IOException e) {
 						// サーバーからのデータを受け取れなかったらエラー
 						e.printStackTrace();
 						System.err.println("サーバからのデータが読み取れませんでした。");
@@ -665,7 +668,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 							throw new RuntimeException(ex);
 						}
 						return;
-					}
+					} 
 				}
 			}).start();
 		} catch (IOException e) {
