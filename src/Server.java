@@ -659,7 +659,7 @@ public class Server {
 						loss = 0;
 						rmt.last_heartbeat[1] = -1;// -1に書き換える 次も[1]が-1だったら1秒間の間にハートビートが無いことになるのでタイムアウトと判定
 					} else if (rmt.last_heartbeat[1] == -1) {// 前のハートビート確認から1秒後にrmt.last_heartbeat[1]が-1のままのとき
-						System.out.println(--loss);
+						System.out.println("ConnectThread: num_player" + num_player + "の連続接続失敗回数" + --loss);
 						if (loss <= -20) {
 							throw new SocketTimeoutException("ConnectThread:タイムアウトしました");
 						}
