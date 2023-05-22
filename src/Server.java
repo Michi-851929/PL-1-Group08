@@ -43,9 +43,11 @@ public class Server {
 		diss = new DataInputStream[256];
 		running = false;
 	}
+
 	public void stopRunning() {
-		rit.interrupt();;
-		
+		rit.interrupt();
+		;
+
 	}
 
 	// 待ちプレイヤ確認応答スレッド
@@ -54,13 +56,11 @@ public class Server {
 		private BufferedReader Info_in; // データ受信用オブジェクト
 		private DataOutputStream dos;
 		private ServerSocket ri_ss;
+
 		// コンストラクタ
 		RoomInfoThread() {
 			Info_port = port + 1; // port+1番のポートを待ちプレイヤ確認応答スレッドに使用する
 		}
-		
-
-
 
 		// run
 		@Override
@@ -89,7 +89,7 @@ public class Server {
 					ri_socket.close();
 				} catch (Exception e) {
 					System.err.println("RoomInfoThread:スレッドを停止します．");
-				} 
+				}
 			}
 		}
 	}
