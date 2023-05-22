@@ -447,6 +447,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 					break;
 				}
 			}
+			newPlayFlag = false;
 			out[0] = newPlay[0];
 			out[1] = newPlay[1];
 			Thread.sleep(10);
