@@ -413,26 +413,31 @@ public class Server {
 
 		// 新 試合終了メソッド
 		public void closeGame() {
-			running = true;
 			try {
-				sockets[P1_num].close();
-				mt.list_clear(P1_num);
-				sockets[P1_num] = new Socket();
-				try {
-					sockets[P2_num].close();
-					mt.list_clear(P2_num);
-					sockets[P2_num] = new Socket();
-
-				} catch (ArrayIndexOutOfBoundsException e) {
-					System.out.println("P2は未入室");
+				if (sockets[P1_num] != null) {
+					sockets[P1_num].close();
+					sockets[P1_num] = null;
 				}
+				if (sockets[P2_num] != null) {
+					sockets[P2_num].close();
+					sockets[P2_num] = null;
+				}
+				mt.list_clear(P1_num);
+				mt.list_clear(P2_num);
 				System.out.println("GameThread" + RoomID + ": 試合が終了したためソケットを閉じました");
-				P1_rmt.stopRunning();
-				P2_rmt.stopRunning();
+				if (P1_rmt != null) {
+					P1_rmt.stopRunning();
+					P1_rmt.interrupt();
+					P1_rmt = null;
+				}
+				if (P2_rmt != null) {
+					P2_rmt.stopRunning();
+					P2_rmt.interrupt();
+					P2_rmt = null;
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 				System.out.println("GameThread" + RoomID + ": 試合が終了したためソケットを閉じようとしましたが閉じることができませんでした");
-			} catch (NullPointerException npe) {
 			}
 			P1_name = null;
 			P2_name = null;
