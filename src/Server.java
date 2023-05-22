@@ -365,6 +365,15 @@ public class Server {
 			time = t;
 		}
 
+		// 先攻or後攻が投了したときに呼び出す関数
+		public void SetGiveUp(boolean isFirst) {
+			if (isFirst) {// 投了した人が先攻なら
+				P2_ct.command_send[2] = 0;
+			} else {
+				P1_ct.command_send[2] = 0;
+			}
+		}
+
 		// 新 試合終了メソッド
 		public void closeGame() {
 			P1_name = null;
