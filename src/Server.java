@@ -413,21 +413,31 @@ public class Server {
 
 		// 新 試合終了メソッド
 		public void closeGame() {
-
 			try {
-				sockets[P1_num].close();
-				sockets[P2_num].close();
+				if (sockets[P1_num] != null) {
+					sockets[P1_num].close();
+					sockets[P1_num] = null;
+				}
+				if (sockets[P2_num] != null) {
+					sockets[P2_num].close();
+					sockets[P2_num] = null;
+				}
 				mt.list_clear(P1_num);
 				mt.list_clear(P2_num);
-				sockets[P1_num] = new Socket();
-				sockets[P2_num] = new Socket();
 				System.out.println("GameThread" + RoomID + ": 試合が終了したためソケットを閉じました");
-				P1_rmt.stopRunning();
-				P2_rmt.stopRunning();
+				if (P1_rmt != null) {
+					P1_rmt.stopRunning();
+					P1_rmt.interrupt();
+					P1_rmt = null;
+				}
+				if (P2_rmt != null) {
+					P2_rmt.stopRunning();
+					P2_rmt.interrupt();
+					P2_rmt = null;
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 				System.out.println("GameThread" + RoomID + ": 試合が終了したためソケットを閉じようとしましたが閉じることができませんでした");
-			} catch (NullPointerException npe) {
 			}
 			P1_name = null;
 			P2_name = null;
@@ -464,12 +474,15 @@ public class Server {
 									.println("GameThread[" + RoomID + "]:" + P1_name + "が対戦相手を待機中 (time:" + time + ")");
 							if (running == false) {
 								System.out.println("closeGame()メソッドを呼び出します");
-								closeGame();
+								break;
 							}
 
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
+					}
+					if (running == false) {
+						break;
 					}
 					System.out.println("GameThread[" + RoomID + "]:" + P2_name + "が Room" + RoomID + "に、time:" + time
 							+ "後攻として入りました");
