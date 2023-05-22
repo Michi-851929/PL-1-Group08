@@ -435,12 +435,11 @@ public class Server {
 					P2_rmt.interrupt();
 					P2_rmt = null;
 				}
+
 			} catch (IOException e) {
 				e.printStackTrace();
 				System.out.println("GameThread" + RoomID + ": 試合が終了したためソケットを閉じようとしましたが閉じることができませんでした");
 			}
-			P1_name = null;
-			P2_name = null;
 			time = 0;
 			System.out.println("GameThread[" + RoomID + "]: 試合を終了しました");
 		}
@@ -473,6 +472,8 @@ public class Server {
 							System.out
 									.println("GameThread[" + RoomID + "]:" + P1_name + "が対戦相手を待機中 (time:" + time + ")");
 							if (running == false) {
+								P1_name = null;
+								P2_name = null;
 								System.out.println("closeGame()メソッドを呼び出します");
 								break;
 							}
@@ -528,7 +529,7 @@ public class Server {
 								break;
 							}
 						}
-						// 外部からstopRuningメソッドが呼び出されていた時はrunningがfalseとなる このときは試合のwhileループを強制的に抜ける
+						// 外部からstopRunningメソッドが呼び出されていた時はrunningがfalseとなる このときは試合のwhileループを強制的に抜ける
 						if (running == false) {
 							break;
 						}
