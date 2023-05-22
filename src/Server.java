@@ -365,6 +365,15 @@ public class Server {
 			time = t;
 		}
 
+		// 先攻or後攻が投了したときに呼び出す関数
+		public void SetGiveUp(boolean isFirst) {
+			if (isFirst) {// 投了した人が先攻なら
+				P2_ct.command_send[2] = 0;
+			} else {
+				P1_ct.command_send[2] = 0;
+			}
+		}
+
 		// 新 試合終了メソッド
 		public void closeGame() {
 			P1_name = null;
@@ -413,6 +422,10 @@ public class Server {
 							Thread.sleep(2000);
 							System.out
 									.println("GameThread[" + RoomID + "]:" + P1_name + "が対戦相手を待機中 (time:" + time + ")");
+							if (running == false) {
+								System.out.println("closeGame()メソッドを呼び出します");
+								closeGame();
+							}
 							// 以下デバッグ分
 							if (P1_socket.isClosed()) {
 								System.out.println("GameThread.run(): P1's socket ->" + sockets[P1_num].toString());
@@ -562,7 +575,6 @@ public class Server {
 			try {
 				dis_rmt = new DataInputStream(sockets[num_player].getInputStream());
 			} catch (IOException e1) {
-				// TODO 自動生成された catch ブロック
 				e1.printStackTrace();
 			}
 			while (running) {
@@ -572,7 +584,6 @@ public class Server {
 					} catch (SocketException se) {
 						stopRunning();
 					} catch (IOException e) {
-						// TODO 自動生成された catch ブロック
 						e.printStackTrace();
 					}
 				}
@@ -595,6 +606,7 @@ public class Server {
 		int id; // 部屋番号
 		int command_send[];
 		int command_receive[];
+		int loss; // 連続応答なし回数
 		Boolean isFirst; // 先攻か
 		Boolean running;
 		int num_player;
@@ -611,6 +623,7 @@ public class Server {
 			command_receive = new int[3];
 			rmt = r;
 			running = true;
+			loss = 0;
 			System.out.println("ConnectThread: コンストラクトしました num_player:" + num_player);
 		}
 
@@ -631,6 +644,9 @@ public class Server {
 					try {
 						dos_ct.writeInt(command_send[0]);
 						dos_ct.writeInt(command_send[1]);
+						if (command_send[2] == 0) {
+							System.out.printf("相手が投了した旨をクライアントに送信します");
+						}
 						dos_ct.writeInt(command_send[2]);
 					} catch (SocketException se) {
 						stopRunning();
@@ -640,11 +656,16 @@ public class Server {
 							+ command_send[2]);
 
 					if (rmt.last_heartbeat[1] == 0) {
-						// ok
+						loss = 0;
 						rmt.last_heartbeat[1] = -1;// -1に書き換える 次も[1]が-1だったら1秒間の間にハートビートが無いことになるのでタイムアウトと判定
 					} else if (rmt.last_heartbeat[1] == -1) {// 前のハートビート確認から1秒後にrmt.last_heartbeat[1]が-1のままのとき
-						// throw new SocketTimeoutException("ConnectThread:タイムアウトしました");
-					} else {
+						System.out.println(--loss);
+						if (loss <= -20) {
+							throw new SocketTimeoutException("ConnectThread:タイムアウトしました");
+						}
+					} else if (rmt.last_heartbeat[2] == 0) { // 棟梁ボタンが押されたら
+						GameThread[id].SetGiveUp(isFirst);
+						Thread.sleep(1000);
 						if (isFirst) {
 							throw new LeaveGameException("ConnectThread:先攻がゲーム退出希望");
 						} else {
