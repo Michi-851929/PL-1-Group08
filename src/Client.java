@@ -845,6 +845,9 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			while (connectFlag) {
 				Thread.sleep(1000);
 				client.checkVacantRoom();
+				client.ui_jl_5min.setText((client.vacantRoom[0] == 1 ? "○" : "×"));
+				client.ui_jl_10min.setText((client.vacantRoom[1] == 1 ? "○" : "×"));
+				client.ui_jl_20min.setText((client.vacantRoom[2] == 1 ? "○" : "×"));
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
