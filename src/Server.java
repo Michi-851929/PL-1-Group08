@@ -19,7 +19,7 @@ public class Server {
 
 	private Socket sockets[]; // ソケット
 	private DataInputStream diss[];
-	private boolean running;
+	
 	RoomInfoThread rit;
 
 	// Serverコンストラクタ
@@ -41,12 +41,18 @@ public class Server {
 		}
 
 		diss = new DataInputStream[256];
-		running = false;
 	}
 
 	public void stopRunning() {
-		rit.interrupt();
-		//TODO 
+		try {
+			rit.ri_ss.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		rit.closeThread();
+		for(int i = 0; i<128;i++) {
+			GameThread[i].closeThread();
+		}
 	}
 
 	// 待ちプレイヤ確認応答スレッド
@@ -55,12 +61,22 @@ public class Server {
 		private BufferedReader Info_in; // データ受信用オブジェクト
 		private DataOutputStream dos;
 		private ServerSocket ri_ss;
+		private boolean running;
 
 		// コンストラクタ
 		RoomInfoThread() {
 			Info_port = port + 1; // port+1番のポートを待ちプレイヤ確認応答スレッドに使用する
+			running = true;
 		}
-
+		public void closeThread() {
+			try {
+				running = false;
+				ri_ss.close();
+			} catch (IOException e) {
+				// TODO 自動生成された catch ブロック
+				e.printStackTrace();
+			}
+		}
 		// run
 		@Override
 		public void run() {
@@ -127,23 +143,36 @@ public class Server {
 	class MatchThread extends Thread {
 		int port;
 		int player_num; // プレイヤー番号
-
+		boolean running;
+		ServerSocket ss_match;
 		MatchThread(int port) {
 			this.port = port;
 			player_num = 0;
+			ss_match = null;
+			running = true;
+		}
+		
+		public void closeThread() {
+			try {
+				running = false;
+				ss_match.close();
+			} catch (IOException e) {
+				// TODO 自動生成された catch ブロック
+				e.printStackTrace();
+			}
 		}
 
 		// runメソッド
 		@Override
 		public void run() {
-			ServerSocket ss_match = null;
+
 			try {
 				ss_match = new ServerSocket(port);
 			} catch (IOException e) {
 				// TODO 自動生成された catch ブロック
 				e.printStackTrace();
 			}
-			while (true) { // 無限ループ
+			while (running) { // 無限ループ
 				try {
 					player_num++;
 					System.out.println("MatchThread:プレイヤーを待っています 次のプレイヤーの番号: " + player_num);
@@ -244,8 +273,10 @@ public class Server {
 		private ReceiveMessageThread P1_rmt;
 		private ReceiveMessageThread P2_rmt;
 		private boolean running;
+		private boolean keeprun; //スレッド終了時にfalseになる
 		private ConnectThread P1_ct;
 		private ConnectThread P2_ct;
+
 
 		// コンストラクタ
 		GameThread(int id) {
@@ -255,11 +286,18 @@ public class Server {
 			P2_num = -1;
 			time = 0;
 			RoomID = id;
+			running = true;
+			keeprun = true;
 			command = new int[3];
 			command[0] = 0;
 			command[1] = 0;
 			command[2] = 0;
 			System.out.println("GameThread[" + RoomID + "]: GameThreadを開始しました");
+		}
+		// スレッドを終了
+		public void closeThread() {
+			keeprun = false;
+			running = false;
 		}
 
 		// 試合ループを終了
@@ -375,7 +413,7 @@ public class Server {
 		@Override
 		public void run() {
 			running = true;
-			while (true) {
+			while (keeprun) {
 				try {
 					while (P1_name == null) {
 						try {
@@ -384,9 +422,8 @@ public class Server {
 							e.printStackTrace();
 						}
 					}
-					System.out.println("GameThread[" + RoomID + "]:" + P1_name + "が Room" + RoomID + "に、time:" + time
-							+ "で先攻として入りました");
-					ReceiveMessageThread P1_rmt = new ReceiveMessageThread(P1_num);
+					System.out.println("GameThread[" + RoomID + "]:" + P1_name + "が Room" + RoomID + "に、time:" + time+ "で先攻として入りました");
+					P1_rmt = new ReceiveMessageThread(P1_num);
 
 					// ハートビート起動
 					P1_rmt.start();
@@ -407,9 +444,8 @@ public class Server {
 							e.printStackTrace();
 						}
 					}
-					System.out.println("GameThread[" + RoomID + "]:" + P2_name + "が Room" + RoomID + "に、time:" + time
-							+ "後攻として入りました");
-					ReceiveMessageThread P2_rmt = new ReceiveMessageThread(P2_num);
+					System.out.println("GameThread[" + RoomID + "]:" + P2_name + "が Room" + RoomID + "に、time:" + time+ "後攻として入りました");
+					P2_rmt = new ReceiveMessageThread(P2_num);
 
 					// 後攻が来たら
 					DataOutputStream dos_p1 = new DataOutputStream(sockets[P1_num].getOutputStream());
@@ -504,6 +540,10 @@ public class Server {
 				closeGame();
 				// ここでGameThread[i]は初期状態に戻り、無限ループへ
 			}
+			P1_rmt.stopRunning();
+			P2_rmt.stopRunning();
+			P1_ct.stopRunning();
+			P2_ct.stopRunning();
 		}
 	}
 
