@@ -95,6 +95,16 @@ public class Othello {
     }
 
     public int checkWinner() {
+
+        if (this.players[1].getLeftTime()<=0)
+        {
+            return  3;//自分の時間切れ
+        }
+        if (this.players[0].getLeftTime()<=0)
+        {
+            return -3;//相手の時間切れ
+        }
+
         int blackCount = 0;
         int whiteCount = 0;
         int emptyCount = 0;

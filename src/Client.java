@@ -431,6 +431,11 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		} catch (IOException e) {
 			// サーバーに接続できなかったら終了する
 			e.printStackTrace();
+			try {
+				socket.close();
+			} catch (IOException ex) {
+				throw new RuntimeException(ex);
+			}
 			return;
 		}
 	}
@@ -458,6 +463,11 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			reloadDisplay(out);
 		} catch (Exception e) {
 			e.printStackTrace();
+			try {
+				socket.close();
+			} catch (IOException ex) {
+				throw new RuntimeException(ex);
+			}
 		}
 
 		if (newPlay[2] <= 0) {// 持ち時間0以下
@@ -535,6 +545,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 			} catch (IOException e) {
 				e.printStackTrace();
+				socket.close();
 			}
 
 			connectFlag = false;//画面遷移用フラグ
@@ -553,6 +564,9 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 								// ハートビートを送り返す処理をする
 								sendHeartbeat(1);
 							}
+							else if (response[0] >= 8 && response[0]<16) {
+								// TODO: 投了時の処理を実装する
+							}
 						} else {
 							newPlay = response;
 							newPlayFlag = true;
@@ -560,11 +574,21 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 					} catch (SocketTimeoutException e) {
 						// タイムアウトしたら例外処理を返して終了する
 						System.err.println("接続がタイムアウトしました");
+						try {
+							socket.close();
+						} catch (IOException ex) {
+							throw new RuntimeException(ex);
+						}
 						return;
 					} catch (IOException e) {
 						// サーバーからのデータを受け取れなかったらエラー
 						e.printStackTrace();
 						System.err.println("サーバからのデータが読み取れませんでした。");
+						try {
+							socket.close();
+						} catch (IOException ex) {
+							throw new RuntimeException(ex);
+						}
 						return;
 					}
 				}
@@ -572,25 +596,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		} catch (IOException e) {
 			// サーバーに接続できなかったらエラー
 			e.printStackTrace();
-		}
-	}
-
-	public void sendToServer(int[] command) throws IOException {
-		try {
-
-			if (isEqual(command, new int[] { 16, 0 })) {
-				// 特別な入力があった場合、ハートビートを0に変更して終了
-				sendHeartbeat(0);
-				System.out.println("投了ボタンが押されました。");
-				socket.close();
-				return;
-			}
-			sendCommand(command); // 手を送信するメソッドを呼び出す
-
-		} catch (IOException e) {
-			// サーバーに接続できなかったら終了する
-			e.printStackTrace();
-			return;
 		}
 	}
 
@@ -620,14 +625,10 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	 **/
 	private void sendCommand(int[] command) throws IOException {
 		command[2] = othello.getPlayers()[0].getLeftTime();
-		// OutputStream out = socket.getOutputStream();
-		// ObjectOutputStream oos = new ObjectOutputStream(out);
 		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 		dos.writeInt(command[0]);
 		dos.writeInt(command[1]);
 		dos.writeInt(command[2]);
-
-		// oos.writeObject(command);
 	}
 
 	/**
