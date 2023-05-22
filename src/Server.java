@@ -801,9 +801,19 @@ public class Server {
 				e1.printStackTrace();
 			}
 			while (running) {
-				for (int i = 0; i < 3; i++) {
-					try {
-						receive_message[i] = dis_rmt.readInt();
+				DataInputStream dis_rmt = null;
+				try {
+					dis_rmt = new DataInputStream(sockets[num_player].getInputStream());
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				while (true) {
+					for (int i = 0; i < 3; i++) {
+						try {
+							receive_message[i] = dis_rmt.readInt();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 					}
 					catch(SocketException se) {
 						stopRunning();
@@ -918,6 +928,7 @@ public class Server {
 			command_receive = new int[3];
 			rmt = r;
 			running = true;
+			System.out.println("ConnectThread: コンストラクトしました num_player:"+ num_player);
 		}
 
 		public void stopRunning() {
@@ -943,11 +954,11 @@ public class Server {
 					} 
 					System.out.println("ConnectThread: ハートビートを送信" + command_send[0] + "," + command_send[1] + ","
 							+ command_send[2]);
+					Thread.sleep(1000); //1秒待つ
 
 					if (rmt.last_heartbeat[1] == 1) {
 						// ok
 						rmt.last_heartbeat[1] = -1;// -1に書き換える 次も[1]が-1だったら1秒間の間にハートビートが無いことになるのでタイムアウトと判定
-						Thread.sleep(1000);
 					} else if (rmt.last_heartbeat[1] == -1) {// 前のハートビート確認から1秒後にrmt.last_heartbeat[1]が-1のままのとき
 						throw new SocketTimeoutException("ConnectThread:タイムアウトしました");
 					} else {
