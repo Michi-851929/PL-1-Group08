@@ -690,6 +690,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		for (int i = 0; i < 3; i++) {
 			response[i] = dis.readInt();
 		}
+		System.out.println("response 0,1,2 = "+ response[0]+","+response[1]+","+response[2]);
 
 		return response;
 	}

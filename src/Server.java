@@ -76,7 +76,7 @@ public class Server {
 					}
 					ri_ss.close();
 					ri_socket.close();
-					System.out.println("RoomInfoThread: ソケットを閉じました");
+					//System.out.println("RoomInfoThread: ソケットを閉じました");
 				} catch (IOException e) {
 					System.err.println("RoomInfoThread:クライアントとの接続が切れました．");
 				}
