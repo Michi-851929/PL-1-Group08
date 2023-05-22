@@ -703,24 +703,32 @@ public class Server {
 						if (loss <= -20) {
 							throw new SocketTimeoutException("ConnectThread:タイムアウトしました");
 						}
-					} else if (rmt.last_heartbeat[0] == 16 & rmt.last_heartbeat[2] == 0) { // 棟梁ボタンが押されたら
-						GameThread[id].SetGiveUp(isFirst);
-						Thread.sleep(1000);
-						if (isFirst) {
-							throw new LeaveGameException("ConnectThread:先攻がゲーム退出希望");
-						} else {
-							throw new LeaveGameException("ConnectThread:後攻がゲーム退出希望");
-						}
 					}
+					/*
+					 * else if (rmt.last_heartbeat[0] == 16 & rmt.last_heartbeat[2] == 0) { //
+					 * 棟梁ボタンが押されたら
+					 * GameThread[id].SetGiveUp(isFirst);
+					 * Thread.sleep(1000);
+					 * if (isFirst) {
+					 * throw new LeaveGameException("ConnectThread:先攻がゲーム退出希望");
+					 * } else {
+					 * throw new LeaveGameException("ConnectThread:後攻がゲーム退出希望");
+					 * }
+					 * }
+					 */
 				}
 
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			} catch (SocketTimeoutException es) {
 				es.printStackTrace();
-			} catch (LeaveGameException le) {
-				le.printStackTrace();
-			} catch (IOException ie) {
+			}
+			/*
+			 * catch (LeaveGameException le) {
+			 * le.printStackTrace();
+			 * }
+			 */
+			catch (IOException ie) {
 				ie.printStackTrace();
 			} finally {
 				GameThread[id].stopRunning(); // 試合のループを終了させる
