@@ -63,7 +63,7 @@ public class Server {
 					dos = new DataOutputStream(ri_socket.getOutputStream());
 
 					if (Info_in.read() == '1') {
-						updateRoomInfo();
+						RoomInfo = updateRoomInfo();
 						for (int i = 0; i < 3; i++) {
 							if (RoomInfo[i]) {// 待機している人がいるなら
 								dos.writeInt(1);
@@ -99,13 +99,13 @@ public class Server {
 		for (int i = 0; i < 128; i++) {
 			if (GameThread[i].isWaiting()) {
 				switch (GameThread[i].getTime()) {
-					case 1:
+					case 0:
 						retval[0] = true;
 						break;
-					case 2:
+					case 1:
 						retval[1] = true;
 						break;
-					case 3:
+					case 2:
 						retval[2] = true;
 						break;
 				}
