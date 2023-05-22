@@ -405,7 +405,12 @@ public class Server {
 					System.out.println("GameThread[" + RoomID + "]:" + P1_name + "が Room" + RoomID + "に、time:" + time
 							+ "で先攻として入りました");
 					ReceiveMessageThread P1_rmt = new ReceiveMessageThread(P1_num);
-					//P1_rmt.start();
+					
+					// ハートビート起動
+					P1_rmt.start();
+					P1_ct = new ConnectThread(RoomID, true, P1_num, P1_rmt);
+					P1_ct.start();
+					
 					while (P2_name == null) {// 後攻が来るまで無限ループ
 						try {
 							Thread.sleep(2000);
@@ -425,6 +430,10 @@ public class Server {
 					}
 					System.out.println("GameThread[" + RoomID + "]:" + P2_name + "が Room" + RoomID + "に、time:" + time+ "後攻として入りました");
 					ReceiveMessageThread P2_rmt = new ReceiveMessageThread(P2_num);
+					// ハートビート起動
+					P2_rmt.start();
+					P2_ct = new ConnectThread(RoomID, false, P2_num, P2_rmt);
+					P2_ct.start();
 					
 					// 後攻が来たら
 					DataOutputStream dos_p1 = new DataOutputStream(sockets[P1_num].getOutputStream());
@@ -443,13 +452,7 @@ public class Server {
 					dos_p1.writeInt(1);// 先攻に自身が先攻であることを伝える
 					dos_p2.writeInt(0);// 後攻に自身が先攻であることを伝える
 					
-					// ハートビート起動
-					P1_rmt.start();
-					P2_rmt.start();
-					P1_ct = new ConnectThread(RoomID, true, P1_num, P1_rmt);
-					P1_ct.start();
-					P2_ct = new ConnectThread(RoomID, false, P2_num, P2_rmt);
-					P2_ct.start();
+
 					
 					// 前の入力を定義
 					int P1_commandBefore[] = new int[3];
