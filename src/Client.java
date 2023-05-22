@@ -535,8 +535,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 			connectFlag = false;//画面遷移用フラグ
 
-
-			new Thread(() -> {
 				while (true) {
 					try {
 						// サーバーからのデータを受け取る
@@ -556,15 +554,16 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 					} catch (SocketTimeoutException e) {
 						// タイムアウトしたら例外処理を返して終了する
 						System.err.println("接続がタイムアウトしました");
+							socket.close();
 						return;
 					} catch (IOException e) {
 						// サーバーからのデータを受け取れなかったらエラー
 						e.printStackTrace();
 						System.err.println("サーバからのデータが読み取れませんでした。");
+							socket.close();
 						return;
 					}
 				}
-			}).start();
 		} catch (IOException e) {
 			// サーバーに接続できなかったらエラー
 			e.printStackTrace();
