@@ -310,13 +310,13 @@ public class Server {
 		public void outputRoomInfo() {
 			System.out.println("Room ID: " + RoomID);
 			switch (getTime()) {
-				case 1:
+				case 0:
 					System.out.println("Time: 5min");
 					break;
-				case 2:
+				case 1:
 					System.out.println("Time: 10min");
 					break;
-				case 3:
+				case 2:
 					System.out.println("Time: 20min");
 					break;
 				default:
