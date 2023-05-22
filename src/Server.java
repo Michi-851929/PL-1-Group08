@@ -70,12 +70,12 @@ public class Server {
 					Socket ri_socket = ri_ss.accept();
 					Info_in = new BufferedReader(new InputStreamReader(ri_socket.getInputStream()));
 					dos = new DataOutputStream(ri_socket.getOutputStream());
-
 					if (Info_in.read() == '1') {
 						RoomInfo = updateRoomInfo();
 						for (int i = 0; i < 3; i++) {
 							if (RoomInfo[i]) {// 待機している人がいるなら
 								dos.writeInt(1);
+								System.out.println("aaaaa");
 							} else {// 待機している人がいないなら
 								dos.writeInt(0);
 							}

@@ -234,7 +234,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				ui_jl_time1.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
 				JLabel ui_jl_turn1 = new JLabel(
 						getStoneIcon((othello.getPlayers()[0].isFirstMover() ? Othello.BLACK : Othello.WHITE), -1));
-				System.out.println(othello.getPlayers()[0].isFirstMover() ? Othello.BLACK : Othello.WHITE);
 				p06.add(ui_jl_turn1);
 				p06.add(ui_jl_name1);
 				p06.add(ui_jl_time1);
@@ -251,7 +250,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				ui_jl_time2.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
 				JLabel ui_jl_turn2 = new JLabel(
 						getStoneIcon((othello.getPlayers()[1].isFirstMover() ? Othello.BLACK : Othello.WHITE), -1));
-				System.out.println(othello.getPlayers()[1].isFirstMover() ? Othello.BLACK : Othello.WHITE);
 				p07.add(ui_jl_time2);
 				p07.add(ui_jl_name2);
 				p07.add(ui_jl_turn2);
@@ -377,38 +375,57 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 	public void reloadDisplay(int[] play) {
 		System.out.println("applyMove: (" + play[0] + ", " + play[1] + ")");
-		boolean[][] change_board = othello.applyMove(play);
-		int[][] board = othello.getBoard();
-		int count_black = 0;
-		int count_white = 0;
-		(ui_jb_field[play[0]][play[1]])
-				.setDisabledIcon(getStoneIcon((othello.getCurrentTurn() ? Othello.WHITE : Othello.BLACK), 0));
-		for (int i = 0; i < 8; i++) {
-			for (int j = 0; j < 8; j++) {
-				int di = i;
-				int dj = j;
-				if (change_board[i][j]) {
-					new Thread(() -> {
-						try {
-							for (int k = 0; k <= 360; k += 2) {
-								Thread.sleep(2);
-								ui_jb_field[di][dj].setDisabledIcon(
-										getStoneIcon(othello.getCurrentTurn() ? Othello.BLACK : Othello.WHITE, k));
+		switch(othello.checkWinner()) {
+		case 3:
+			eob_flag = true;
+			break;
+		case -3:
+			eob_flag = true;
+			break;
+		case 1:
+			eob_flag = true;
+			break;
+		case -1:
+			eob_flag = true;
+			break;
+		case 0:
+			eob_flag = true;
+			break;
+		default:
+			boolean[][] change_board = othello.applyMove(play);
+			int[][] board = othello.getBoard();
+			int count_black = 0;
+			int count_white = 0;
+			(ui_jb_field[play[0]][play[1]])
+					.setDisabledIcon(getStoneIcon((othello.getCurrentTurn() ? Othello.WHITE : Othello.BLACK), 0));
+			for (int i = 0; i < 8; i++) {
+				for (int j = 0; j < 8; j++) {
+					int di = i;
+					int dj = j;
+					if (change_board[i][j]) {
+						new Thread(() -> {
+							try {
+								for (int k = 0; k <= 360; k += 2) {
+									Thread.sleep(2);
+									ui_jb_field[di][dj].setDisabledIcon(
+											getStoneIcon(othello.getCurrentTurn() ? Othello.BLACK : Othello.WHITE, k));
+								}
+							} catch (Exception e) {
+								e.printStackTrace();
 							}
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}).start();
-				}
-				if (board[i][j] == Othello.BLACK) {
-					count_black++;
-				} else if (board[i][j] == Othello.WHITE) {
-					count_white++;
+						}).start();
+					}
+					if (board[i][j] == Othello.BLACK) {
+						count_black++;
+					} else if (board[i][j] == Othello.WHITE) {
+						count_white++;
+					}
 				}
 			}
+			ui_jl_nstones1.setText("× " + (count_black >= 10 ? "" : " ") + count_black + " ");
+			ui_jl_nstones2.setText("× " + (count_white >= 10 ? "" : " ") + count_white + " ");
+			break;
 		}
-		ui_jl_nstones1.setText("× " + (count_black >= 10 ? "" : " ") + count_black + " ");
-		ui_jl_nstones2.setText("× " + (count_white >= 10 ? "" : " ") + count_white + " ");
 	}
 
 	public void doMyTurn() {
@@ -420,16 +437,10 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		out[1] = in[1];
 		out[2] = othello.getPlayers()[0].getLeftTime();
 		try {
-			if (out[2] <= 0) {// 持ち時間0以下
-				sendCommand(out);
-				eob_flag = true;
-			} else if (othello.checkWinner() != 2) {// 盤面勝者確定
+			if (othello.checkWinner() != 2) {// 盤面勝者確定
 				out[0] += 8;
-				sendCommand(out);
-				eob_flag = true;
-			} else {
-				sendCommand(out);
 			}
+			sendCommand(out);
 		} catch (IOException e) {
 			// サーバーに接続できなかったら終了する
 			e.printStackTrace();
@@ -459,8 +470,10 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				}
 			}
 			newPlayFlag = false;
-			out[0] = newPlay[0];
-			out[1] = newPlay[1];
+			if (millis > 0) {
+				out[0] = newPlay[0];
+				out[1] = newPlay[1];
+			}
 			Thread.sleep(10);
 			reloadDisplay(out);
 		} catch (Exception e) {
@@ -471,13 +484,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				throw new RuntimeException(ex);
 			}
 		}
-
-		if (newPlay[2] <= 0) {// 持ち時間0以下
-			eob_flag = true;
-		} else if (othello.checkWinner() != 2) {// 盤面勝者確定
-			eob_flag = true;
-		}
-
 	}
 
 	public void connectToServer() {
@@ -552,8 +558,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				me = new Player(name, turn, leftTime);
 				your = new Player(opponentName, !turn, leftTime);
 				othello = new Othello(me, your);
-				System.out.println(me.getPlayerName() + othello.getPlayers()[0].isFirstMover());
-				System.out.println(your.getPlayerName() + othello.getPlayers()[1].isFirstMover());
 
 			} catch (IOException e) {
 				e.printStackTrace();
