@@ -381,16 +381,12 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	}
 
 	public void reloadDisplay(int[] play) {
-		if(play[0] == 18) {
-			return;
-		}
-		else if (play[0] == 16) { // 投了
+		if (play[0] == 16) { // 投了
 			endmsg1 = (othello.getCurrentTurn() == othello.getPlayers()[0].isFirstMover()) ? "あなたが" : "対戦相手が";
 			endmsg2 = "投了しました";
 			eob_flag = true;
 			return;
-		}
-		else if (play[0] >= 8) {
+		} else if (play[0] >= 8 & play[0] <= 15) {
 			if (play[1] == 8) {
 				eob_flag = true;
 				endmsg1 = "時間制限で！";
@@ -405,8 +401,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 						break;
 				}
 				return;
-			}
-			else {
+			} else {
 
 				play[0] -= 8;
 				System.out.println("applyMove: (" + play[0] + ", " + play[1] + ")");
@@ -447,7 +442,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		}
 		System.out.println("applyMove: (" + play[0] + ", " + play[1] + ")");
 		boolean[][] change_board = othello.applyMove(play);
-		if(othello.checkWinner() != 2){
+		if (othello.checkWinner() != 2) {
 			int[][] result_board = othello.getBoard();
 			int count_black = 0;
 			int count_white = 0;
@@ -484,8 +479,10 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		int[][] board = othello.getBoard();
 		int count_black = 0;
 		int count_white = 0;
-		(ui_jb_field[play[0]][play[1]])
-				.setDisabledIcon(getStoneIcon((othello.getCurrentTurn() ? Othello.WHITE : Othello.BLACK), 0));
+		if (play[0] != 18) { // パスでないとき
+			(ui_jb_field[play[0]][play[1]])
+					.setDisabledIcon(getStoneIcon((othello.getCurrentTurn() ? Othello.WHITE : Othello.BLACK), 0));
+		}
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
 				int di = i;
@@ -749,7 +746,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		} else {
 			dos.writeInt(command[2]);
 		}
-		if(command[0] == 18) {
+		if (command[0] == 18) {
 			System.out.println(command[0] + ", " + command[1] + ", " + command[2]);
 		}
 	}
@@ -847,9 +844,9 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	public void checkVacantRoom() {
 		Socket socket1 = null;
 		try {
-				socket1 = new Socket("localhost", SERVER_PORT_2);
-				PrintWriter out = new PrintWriter(socket1.getOutputStream(), true);
-				DataInputStream in = new DataInputStream(socket1.getInputStream());
+			socket1 = new Socket("localhost", SERVER_PORT_2);
+			PrintWriter out = new PrintWriter(socket1.getOutputStream(), true);
+			DataInputStream in = new DataInputStream(socket1.getInputStream());
 			int heartbeat = 1; // ハートビートメッセージ
 
 			out.println(heartbeat); // ハートビートメッセージを送信
@@ -861,7 +858,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 		} catch (IOException e) {
 			System.out.println("Error connecting to server: " + e.getMessage());
-		}finally {
+		} finally {
 			try {
 				socket1.close();
 			} catch (IOException e) {
@@ -915,9 +912,8 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			ui_jb_start.setText("マッチング中止");
 			try {
 				socket.close();
-			}
-			catch(Exception ex) {
-				
+			} catch (Exception ex) {
+
 			}
 			socket = new Socket();
 			try {
@@ -989,7 +985,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 	public static void main(String[] args) {
 		Client client = new Client("Othello Game");
-		while(true) {
+		while (true) {
 			try {
 				while (connectFlag) {
 					Thread.sleep(1000);

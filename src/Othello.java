@@ -96,13 +96,11 @@ public class Othello {
 
     public int checkWinner() {
 
-        if (this.players[1].getLeftTime()<=0)
-        {
-            return  3;//自分の時間切れ
+        if (this.players[1].getLeftTime() <= 0) {
+            return 3;// 自分の時間切れ
         }
-        if (this.players[0].getLeftTime()<=0)
-        {
-            return -3;//相手の時間切れ
+        if (this.players[0].getLeftTime() <= 0) {
+            return -3;// 相手の時間切れ
         }
 
         int blackCount = 0;
@@ -182,12 +180,10 @@ public class Othello {
                         y += dir[1];
                     }
                 }
-            }
-            else if(i==18)
-            {
-                //パスが入力されたのでなにもせずにスキップ
-            }
-            else {
+            } else if (i == 18) {
+                // 何もしない
+                System.out.println("パスのため盤面に変更はありません");
+            } else {
                 throw new Exception("The place has already had a stone." + i + "," + j);
             }
         } catch (Exception ex) {
