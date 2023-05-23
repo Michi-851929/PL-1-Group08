@@ -1,5 +1,5 @@
 public class Player {
-    private String player_name;    //プレイヤ
+    private String player_name;    //プレイヤ名
     private boolean turn;    //先攻か後攻か
     private int time_left;    //残り持ち時間
     
