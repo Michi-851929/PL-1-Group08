@@ -55,7 +55,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 	static {
 		try {
-			hostname = InetAddress.getByName("localhost");
+			hostname = InetAddress.getByName("192.168.1.30");
 		} catch (UnknownHostException e) {
 			throw new RuntimeException(e);
 		}
