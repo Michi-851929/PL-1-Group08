@@ -183,11 +183,6 @@ public class Othello {
                 }
             } else if (i == 18) {
                 // 何もしない
-            	for (int inc1 = 0; inc1 < 8; inc1++) {
-                    for (int inc2 = 0; inc2 < 8; inc2++) {
-                        change[inc1][inc2] = false;
-                    }
-                }
                 System.out.println("パスのため盤面に変更はありません");
             } else {
                 throw new Exception("The place has already had a stone." + i + "," + j);
