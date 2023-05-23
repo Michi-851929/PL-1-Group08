@@ -25,10 +25,10 @@ public class Othello {
                 board[i][j] = EMPTY;
             }
         }
-        board[3][3] = BLACK;
-        board[4][4] = BLACK;
-        board[3][4] = WHITE;
-        board[4][3] = WHITE;
+        board[3][3] = WHITE;
+        board[4][4] = WHITE;
+        board[3][4] = BLACK;
+        board[4][3] = BLACK;
 
         // プレイヤ情報の初期化
         players[0] = me;
