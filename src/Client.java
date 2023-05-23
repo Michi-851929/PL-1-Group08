@@ -495,6 +495,8 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 								ui_jb_field[di][dj].setDisabledIcon(
 										getStoneIcon(othello.getCurrentTurn() ? Othello.BLACK : Othello.WHITE, k));
 							}
+							ui_jb_field[di][dj].setDisabledIcon(
+									getStoneIcon(board[di][dj], 0));
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
