@@ -488,6 +488,11 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				int di = i;
 				int dj = j;
 				if (change_board[i][j]) {
+					System.out.println(i);
+					System.out.println(j);
+					System.out.println(play[0]);
+					System.out.println(play[1]);
+					System.out.println((othello.getCurrentTurn() ? Othello.BLACK : Othello.WHITE));
 					new Thread(() -> {
 						try {
 							for (int k = 0; k <= 360; k += 2) {
