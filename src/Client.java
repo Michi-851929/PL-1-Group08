@@ -389,7 +389,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		} else if (play[0] >= 8 & play[0] <= 15) {
 			if (play[1] == 8) {
 				eob_flag = true;
-				endmsg1 = "時間制限で！";
+				endmsg1 = "時間制限で";
 				switch (othello.checkWinner()) {
 					case 3: // 相手の時間切れ
 						endmsg2 = "あなたの勝ち！";
@@ -523,6 +523,8 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		out[2] = in[0] == 16 && in[1] == 0 ? 0 : othello.getPlayers()[0].getLeftTime();
 		try {
 			if (out[2] <= 0) {// 持ち時間0以下
+				out[0] = 8;
+				out[1] = 8;
 				sendCommand(out);
 				eob_flag = true;
 			} else if (othello.checkWinner() != 2) {// 盤面勝者確定
@@ -556,7 +558,10 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				if (millis <= 0) { // 時間切れ
 					out[0] = 8;
 					out[1] = 8;
-					break;
+					endmsg1 = "時間制限で";
+					endmsg2 = "あなたの勝ち！";
+					eob_flag = true;
+					return;
 				}
 			}
 			newPlayFlag = false;
@@ -564,6 +569,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			out[1] = newPlay[1];
 			othello.getPlayers()[1].setLeftTime(newPlay[2]);
 			Thread.sleep(10);
+			System.out.println(out[0] + " " + out[1]);
 			reloadDisplay(out);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -639,7 +645,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 						leftTime = 5 * 60 * 1000;
 						break;
 					case 1:
-						leftTime = 10 * 60 * 1000;
+						leftTime = 10 * 1000;
 						break;
 					case 2:
 						leftTime = 20 * 60 * 1000;
@@ -669,7 +675,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 						int[] response = receiveResponse();
 
 						if (response[0] == 16) {
-							System.out.println("aaaaa");
 							if (response[2] == 0) {
 								// 投了
 								newPlay = response;
