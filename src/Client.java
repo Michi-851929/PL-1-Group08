@@ -625,6 +625,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 						return;
 					} catch (Exception ex) {
 						ex.printStackTrace();
+						return;
 					}
 				}
 				boolean turn = turnNum != 0;
@@ -675,11 +676,16 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 								// ハートビートを送り返す処理をする
 								sendHeartbeat(1);
 							} else if (response[0] >= 8 && response[0] < 16) {
-								// TODO: 最後の手が打たれたときの処理を実装する
+								newPlay[0] = response[0]-8;
+								newPlay[1] = response[1];
+								newPlay[2] = 0;
+								newPlayFlag = true;
 							}
 						} else {
-							newPlay = response;
-							newPlayFlag = true;
+							if(response[0] <20) {
+								newPlay = response;
+								newPlayFlag = true;
+							}
 						}
 					} catch (SocketTimeoutException e) {
 						// タイムアウトしたら例外処理を返して終了する
@@ -749,6 +755,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		if (command[0] == 18) {
 			System.out.println(command[0] + ", " + command[1] + ", " + command[2]);
 		}
+		dos.flush();
 	}
 
 	/**
@@ -771,8 +778,8 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	 * タイムアウトした場合はSocketTimeoutExceptionを投げる。
 	 **/
 	private int[] receiveResponse() throws IOException {
-		InputStream in = socket.getInputStream();
-		DataInputStream dis = new DataInputStream(in);
+		InputStream in = socket.getInputStream();DataInputStream dis = new DataInputStream(in);
+
 		// socket.setSoTimeout(TIMEOUT_INTERVAL); // タイムアウト時間を設定する
 
 		int[] response = new int[3];
@@ -780,7 +787,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			response[i] = dis.readInt();
 		}
 		System.out.println("response 0,1,2 = " + response[0] + "," + response[1] + "," + response[2]);
-
 		return response;
 	}
 
@@ -941,6 +947,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			command_pressed = false;
 			command_value[0] = 16;
 			command_value[1] = 0;
+			command_value[2] = 0;
 		} else if (s.equals("終了")) {
 			System.exit(0);
 		} else if (s.equals("タイトルへ")) {
