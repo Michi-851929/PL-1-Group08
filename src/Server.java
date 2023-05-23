@@ -743,13 +743,13 @@ public class Server {
 		Scanner scanner = new Scanner(System.in);
 		while (true) {
 			String admin_command = scanner.next();
-			if (admin_command.equals("status")) {
+			if (admin_command.equals("s")) {
 				for (int i = 0; i < 128; i++) {
 					if (!server.GameThread[i].isVacant()) {
 						server.GameThread[i].outputRoomInfo();
 					}
 				}
-			} else if (admin_command.equals("stop")) {
+			} else if (admin_command.equals("e")) {
 				server.stopRunning();
 
 				break;

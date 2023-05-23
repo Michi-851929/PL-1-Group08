@@ -645,7 +645,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 						leftTime = 5 * 60 * 1000;
 						break;
 					case 1:
-						leftTime = 10 * 1000;
+						leftTime = 10 * 60 * 1000;
 						break;
 					case 2:
 						leftTime = 20 * 60 * 1000;
