@@ -511,11 +511,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 						illmatched = true;
 					} catch (Exception ex) {
 						ex.printStackTrace();
-					} finally {
-						if (!illmatched) {
-							break;
-						}
-						illmatched = false;
 					}
 				}
 				int turnNum = dis.readInt();
@@ -534,11 +529,48 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 			// ハートビートを送信するスレッドを起動する
 			new Thread(() -> {
-				try {
-					// 1秒ごとにハートビートを送信する
-					while (true) {
-						sendHeartbeat(socket, 1);
-						Thread.sleep(HEARTBEAT_INTERVAL);
+				while (true) {
+					try {
+						// サーバーからのデータを受け取る
+						int[] response = receiveResponse();
+
+						if (response[0] == 16) {
+							System.out.println("aaaaa");
+							if (response[2] == 0) {
+								// 投了
+								newPlay = response;
+								newPlayFlag = true;
+							} else if (response[2] == 1) {
+								// ハートビートを送り返す処理をする
+								sendHeartbeat(1);
+							} else if (response[0] >= 8 && response[0] < 16) {
+								// TODO: 最後の手が打たれたときの処理を実装する
+							}
+						} else {
+							newPlay = response;
+							newPlayFlag = true;
+						}
+					} catch (SocketTimeoutException e) {
+						// タイムアウトしたら例外処理を返して終了する
+						System.err.println("接続がタイムアウトしました");
+						try {
+							socket.close();
+						} catch (IOException ex) {
+							throw new RuntimeException(ex);
+						}
+						return;
+					} catch (SocketException se) {
+
+					} catch (IOException e) {
+						// サーバーからのデータを受け取れなかったらエラー
+						e.printStackTrace();
+						System.err.println("サーバからのデータが読み取れませんでした。");
+						try {
+							socket.close();
+						} catch (IOException ex) {
+							throw new RuntimeException(ex);
+						}
+						return;
 					}
 				} catch (InterruptedException e) {
 					// スレッドが中断されたら終了する
@@ -574,7 +606,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			while (true) {
 				try {
 					// サーバーからのデータを受け取る
-					int[] response = receiveResponse(socket);
+					int[] response = receiveResponse();
 
 					if (response[0] != 16) {
 						// TODO:配列を受け取り相手の手を実行する
@@ -648,9 +680,18 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	 **/
 	private void sendCommand(Socket socket, int[] command) throws IOException {
 		command[2] = othello.getPlayers()[0].getLeftTime();
-		OutputStream out = socket.getOutputStream();
-		ObjectOutputStream oos = new ObjectOutputStream(out);
-		oos.writeObject(command);
+		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+		dos.writeInt(command[0]);
+		dos.writeInt(command[1]);
+		if (command[0] == 16) {
+			dos.writeInt(0);
+			System.out.println("投了希望を送信しました");
+		} else {
+			dos.writeInt(command[2]);
+		}
+		if (command[0] == 18) {
+			System.out.println(command[0] + ", " + command[1] + ", " + command[2]);
+		}
 	}
 
 	/**
@@ -670,15 +711,16 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	 * サーバーからのレスポンスを受け取る。
 	 * タイムアウトした場合はSocketTimeoutExceptionを投げる。
 	 **/
-	private static int[] receiveResponse(Socket socket) throws IOException {
+	private int[] receiveResponse() throws IOException {
 		InputStream in = socket.getInputStream();
 		DataInputStream dis = new DataInputStream(in);
-		socket.setSoTimeout(TIMEOUT_INTERVAL); // タイムアウト時間を設定する
+		// socket.setSoTimeout(TIMEOUT_INTERVAL); // タイムアウト時間を設定する
 
 		int[] response = new int[3];
 		for (int i = 0; i < 3; i++) {
 			response[i] = dis.readInt();
 		}
+		System.out.println("response 0,1,2 = " + response[0] + "," + response[1] + "," + response[2]);
 
 		return response;
 	}
@@ -814,8 +856,12 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			ui_jb_start.setText("開始");
 		} else if (s.equals("投了")) {
 			command_pressed = false;
-			command_value[0] = 8;
-			command_value[1] = 8;
+			command_value[0] = 16;
+			command_value[1] = 0;
+		} else if (s.equals("終了")) {
+			System.exit(0);
+		} else if (s.equals("タイトルへ")) {
+			changePhase(PHASE_TITLE);
 		}
 
 		else {
