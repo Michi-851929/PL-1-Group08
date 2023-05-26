@@ -569,7 +569,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			out[1] = newPlay[1];
 			othello.getPlayers()[1].setLeftTime(newPlay[2]);
 			Thread.sleep(10);
-			//System.out.println(out[0] + " " + out[1]);
+			// System.out.println(out[0] + " " + out[1]);
 			reloadDisplay(out);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -666,7 +666,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			}
 
 			connectFlag = false;// 画面遷移用フラグ
-			
+
 			new Thread(() -> {
 				System.out.println("Thread:start");
 				while (isRunning) {
@@ -707,7 +707,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 						return;
 					} catch (SocketException se) {
 						isRunning = false;
-					}catch(EOFException ee) {
+					} catch (EOFException ee) {
 						isRunning = false;
 					} catch (IOException e) {
 						// サーバーからのデータを受け取れなかったらエラー

@@ -366,7 +366,8 @@ public class Server {
 			if (isFirst) {
 				P1_name = name;
 				P1_num = pnum;
-				System.out.println("GameThread[" + RoomID + "].setPlayer(): P1's socket ->" + sockets[P1_num].toString());
+				System.out
+						.println("GameThread[" + RoomID + "].setPlayer(): P1's socket ->" + sockets[P1_num].toString());
 				if (sockets[P1_num].isClosed()) {
 					System.out.println("GameThread[" + RoomID + "].setPlayer(): P1's socket is closed!");
 				}
@@ -707,9 +708,9 @@ public class Server {
 					}
 
 					System.out.println("ConnectThread: ハートビートをnum_player:" + num_player + "に送信" +
-					command_send[0] + ","
-					+ command_send[1] + ","
-					+ command_send[2]);
+							command_send[0] + ","
+							+ command_send[1] + ","
+							+ command_send[2]);
 
 					if (rmt.last_heartbeat[1] == 0) {
 						loss = 0;
