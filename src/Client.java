@@ -943,6 +943,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			eob_flag = true;
 			isRunning = false;
 			try {
+				sendHeartbeat(0);
 				socket.close();
 			} catch (IOException e) {
 				// TODO 自動生成された catch ブロック
