@@ -885,13 +885,14 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	}
 
 	public void endBattle() {
-		eob_flag = false;
 		changePhase(PHASE_RESULT);
+		System.out.println("endBattle: eob_flag = " + eob_flag);
 		try {
 			socket.close();// ソケットを閉じる
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+		eob_flag = false;
 	}
 
 	public void actionPerformed(ActionEvent ae) {
