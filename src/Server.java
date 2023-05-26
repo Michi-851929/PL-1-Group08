@@ -484,6 +484,7 @@ public class Server {
 							if (P1_rmt.last_command[2] == 0) {
 								System.out.println("GameThread[" + RoomID + "]:" + P1_name + "(num = " + P1_num
 										+ ")はキャンセル希望");
+								running = false;
 							}
 							if (running == false) {
 								throw new EndGameException("running == false となりました");
@@ -651,12 +652,15 @@ public class Server {
 					}
 				}
 				if (receive_message[0] != 16 || receive_message[2] == 0) {
-					if (receive_message[2] == 0 & receive_message[0] == 16) {
-						System.out.println("投了orキャンセル希望を受信");
-					}
+
 					for (int i = 0; i < 3; i++) {
 						last_command[i] = receive_message[i];
 					}
+					/*
+					 * if (receive_message[2] == 0 & receive_message[0] == 16) {
+					 * System.out.println("投了orキャンセル希望を受信");
+					 * }
+					 */
 				} else {
 					for (int i = 0; i < 3; i++) {
 						last_heartbeat[i] = receive_message[i];
