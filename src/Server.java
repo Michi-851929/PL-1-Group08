@@ -413,6 +413,8 @@ public class Server {
 
 		// 新 試合終了メソッド
 		public void closeGame() {
+			P1_name = null;
+			P2_name = null;
 			try {
 				if (sockets[P1_num] != null) {
 					sockets[P1_num].close();
@@ -447,8 +449,8 @@ public class Server {
 		// runメソッド
 		@Override
 		public void run() {
-			running = true;
 			while (keeprun) {
+				running = true;
 				try {
 					while (P1_name == null) {
 						try {
@@ -506,6 +508,9 @@ public class Server {
 					// 先攻/後攻を送信
 					dos_p1.writeInt(1);// 先攻に自身が先攻であることを伝える
 					dos_p2.writeInt(0);// 後攻に自身が後攻であることを伝える
+
+					dos_p1.flush();
+					dos_p2.flush();
 
 					// ハートビート起動
 					P2_rmt.start();
@@ -689,6 +694,7 @@ public class Server {
 						dos_ct.writeInt(command_send[0]);
 						dos_ct.writeInt(command_send[1]);
 						dos_ct.writeInt(command_send[2]);
+						dos_ct.flush();
 					} catch (SocketException se) {
 						stopRunning();
 					}

@@ -55,7 +55,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 
 	static {
 		try {
-			hostname = InetAddress.getByName("192.168.1.30");
+			hostname = InetAddress.getByName("localhost");
 		} catch (UnknownHostException e) {
 			throw new RuntimeException(e);
 		}
@@ -683,13 +683,13 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 								// ハートビートを送り返す処理をする
 								sendHeartbeat(1);
 							} else if (response[0] >= 8 && response[0] < 16) {
-								newPlay[0] = response[0]-8;
+								newPlay[0] = response[0] - 8;
 								newPlay[1] = response[1];
 								newPlay[2] = 0;
 								newPlayFlag = true;
 							}
 						} else {
-							if(response[0] <20) {
+							if (response[0] < 20) {
 								newPlay = response;
 								newPlayFlag = true;
 							}
@@ -785,7 +785,8 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	 * タイムアウトした場合はSocketTimeoutExceptionを投げる。
 	 **/
 	private int[] receiveResponse() throws IOException {
-		InputStream in = socket.getInputStream();DataInputStream dis = new DataInputStream(in);
+		InputStream in = socket.getInputStream();
+		DataInputStream dis = new DataInputStream(in);
 
 		// socket.setSoTimeout(TIMEOUT_INTERVAL); // タイムアウト時間を設定する
 
