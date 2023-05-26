@@ -662,9 +662,9 @@ public class Server {
 		private int num_player;
 		private ReceiveMessageThread rmt;
 
-		ConnectThread(int id, boolean isFirst, int pnum, ReceiveMessageThread r) {
+		ConnectThread(int id, boolean isFir, int pnum, ReceiveMessageThread r) {
 			this.id = id;
-			this.isFirst = isFirst;
+			this.isFirst = isFir;
 			num_player = pnum;
 			command_send = new int[3];
 			command_send[0] = 16;
