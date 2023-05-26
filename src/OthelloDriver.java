@@ -26,8 +26,8 @@ public class OthelloDriver {
 	
 		//状態を表示する
 	public static void printStatus(Othello game) {
-		System.out.println("getCurrentTurn出力:" + game.getCurrentTurn());
-		System.out.println("checkWinner出力:" + game.checkWinner());
+		System.out.println("getCurrentTurn出力:" + game.getCurrentTurn() + "(trueが黒番falseが白番)");
+		System.out.println("checkWinner出力:" + game.checkWinner() + "(2がゲーム続行、1が黒の勝ち、-1が白の勝ち、0が引き分け)");
 	}
 	
 	//テスト用に盤面を表示する
