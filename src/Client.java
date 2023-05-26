@@ -522,7 +522,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		out[1] = in[1];
 		out[2] = in[0] == 16 && in[1] == 0 ? 0 : othello.getPlayers()[0].getLeftTime();
 		try {
-			if (out[2] <= 0) {// 持ち時間0以下
+			if (out[0] != 16 && out[2] <= 0) {// 持ち時間0以下
 				out[0] = 8;
 				out[1] = 8;
 				sendCommand(out);
@@ -607,7 +607,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				int heartbeat_0;
 				int turnNum = 0;
 
-				System.out.println("マッチング待機中 マッチングしたらプレイヤ名とルーム番号を受信します");
+				System.out.println("マッチング待機中");
 				while (true) {
 					try {
 						heartbeat_0 = dis.readInt();
@@ -668,10 +668,9 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			connectFlag = false;// 画面遷移用フラグ
 
 			new Thread(() -> {
-				System.out.println("Thread:start");
+				//System.out.println("Thread:start");
 				while (isRunning) {
 					try {
-						System.out.println("Thread:isRunning = " + isRunning);
 						// サーバーからのデータを受け取る
 						int[] response = receiveResponse();
 
@@ -722,7 +721,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 						return;
 					}
 				}
-				System.out.println("Thread:stop");
+				//System.out.println("Thread:stop");
 			}).start();
 		} catch (IOException e) {
 			// サーバーに接続できなかったらエラー
@@ -764,7 +763,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		heartbeat[0] = 16;
 		heartbeat[1] = 0;
 		heartbeat[2] = flag;
-		System.out.println("sendHeartBeat:" + heartbeat[0] + ", " + heartbeat[1] + ", " + heartbeat[2]);
+		//System.out.println("sendHeartBeat:" + heartbeat[0] + ", " + heartbeat[1] + ", " + heartbeat[2]);
 
 		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 		dos.writeInt(heartbeat[0]);
@@ -786,7 +785,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		for (int i = 0; i < 3; i++) {
 			response[i] = dis.readInt();
 		}
-		System.out.println("response 0,1,2 = " + response[0] + "," + response[1] + "," + response[2]);
+		//System.out.println("response 0,1,2 = " + response[0] + "," + response[1] + "," + response[2]);
 		return response;
 	}
 
