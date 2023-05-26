@@ -479,7 +479,8 @@ public class Server {
 						try {
 							Thread.sleep(2000);
 							System.out
-									.println("GameThread[" + RoomID + "]:" + P1_name + "が対戦相手を待機中 (time:" + time + ")");
+									.println("GameThread[" + RoomID + "]:" + P1_name + "(num = " + P1_num
+											+ ")が対戦相手を待機中 (time:" + time + ")");
 							if (running == false) {
 								throw new EndGameException("running == false となりました");
 							}
@@ -492,7 +493,8 @@ public class Server {
 						// NR
 					}
 
-					System.out.println("GameThread[" + RoomID + "]:" + P2_name + "が Room" + RoomID + "に、time:" + time
+					System.out.println("GameThread[" + RoomID + "]:" + P2_name + "(num = " + P2_num + ")が Room" + RoomID
+							+ "に、time:" + time
 							+ "後攻として入りました");
 					P2_rmt = new ReceiveMessageThread(P2_num);
 
@@ -707,12 +709,12 @@ public class Server {
 					} catch (SocketException se) {
 						stopRunning();
 					}
-
-					System.out.println("ConnectThread: ハートビートをnum_player:" + num_player + "に送信" +
-							command_send[0] + ","
-							+ command_send[1] + ","
-							+ command_send[2]);
-
+					/*
+					 * System.out.println("ConnectThread: ハートビートをnum_player:" + num_player + "に送信" +
+					 * command_send[0] + ","
+					 * + command_send[1] + ","
+					 * + command_send[2]);
+					 */
 					if (rmt.last_heartbeat[1] == 0) {
 						loss = 0;
 						rmt.last_heartbeat[1] = -1;// -1に書き換える 次も[1]が-1だったら1秒間の間にハートビートが無いことになるのでタイムアウトと判定
@@ -749,7 +751,9 @@ public class Server {
 			catch (IOException ie) {
 				ie.printStackTrace();
 			} finally {
-				GameThread[id].stopRunning(); // 試合のループを終了させる
+				if (running) { // ConnectThreadのstopRunningコマンドを外部から使用された以外でここに到達したとき
+					GameThread[id].stopRunning(); // 試合のループを終了させる
+				}
 			}
 		}
 	}
