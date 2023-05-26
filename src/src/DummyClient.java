@@ -152,7 +152,7 @@ public class DummyClient {
 								e.printStackTrace();
 							}
 							Calendar cTime = Calendar.getInstance();
-							dos.writeInt(cTime.get(Calendar.SECOND) / 10);// 1回おきに違うコマンドを送信する必要があるため
+							dos.writeInt((cTime.get(Calendar.SECOND) / 10) + 3);// 1回おきに違うコマンドを送信する必要があるため
 							dos.writeInt(3);
 							dos.writeInt(3);
 							dos.flush();

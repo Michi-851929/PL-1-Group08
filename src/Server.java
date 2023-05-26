@@ -771,9 +771,10 @@ public class Server {
 
 	// mainメソッド
 	public static void main(String[] args) {
+		System.out.println("サーバーを起動しました");
+
 		Server server = new Server(10000); // 待ち受けポート10000番でサーバオブジェクトを準備
 		Scanner scanner = new Scanner(System.in);
-		System.out.println("サーバーを起動しました");
 		while (true) {
 			String admin_command = scanner.next();
 			if (admin_command.equals("s")) {
