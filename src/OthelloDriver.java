@@ -1,5 +1,3 @@
-import java.io.*;
-
 public class OthelloDriver {
     public static void main (String [] args) throws Exception{
 		Player p1 = new Player("test1", true, 600000);
@@ -17,8 +15,8 @@ public class OthelloDriver {
 			printGrids(game);
 			System.out.println("手番を変更します。¥n");
 			game.changeTurn();
-			}
-		}*/
+			}*/
+		}
 		//状態を表示する
 		public static void printStatus(Othello game){
 			System.out.println("getCurrentTurn出力:" + game.getCurrentTurn());
