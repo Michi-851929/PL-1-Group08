@@ -481,6 +481,10 @@ public class Server {
 							System.out
 									.println("GameThread[" + RoomID + "]:" + P1_name + "(num = " + P1_num
 											+ ")が対戦相手を待機中 (time:" + time + ")");
+							if (P1_rmt.last_command[2] == 0) {
+								System.out.println("GameThread[" + RoomID + "]:" + P1_name + "(num = " + P1_num
+										+ ")はキャンセル希望");
+							}
 							if (running == false) {
 								throw new EndGameException("running == false となりました");
 							}
@@ -556,7 +560,7 @@ public class Server {
 						System.out.println("GameThread[" + RoomID + "]: 後攻に盤面情報" + P1_rmt.last_command[0] + ","
 								+ P1_rmt.last_command[1] + "," + P1_rmt.last_command[2] + "を送信");
 						// 試合終了判定 if分内がtrueなら試合終了なのでwhileループを抜ける
-						if (P2_rmt.last_command[0] > 7 && P2_rmt.last_command[0] < 18) {
+						if (P1_rmt.last_command[0] > 7 && P1_rmt.last_command[0] < 18) {
 							break;
 						}
 						// 後攻の番 盤面が変わるまで無限ループ
@@ -648,7 +652,7 @@ public class Server {
 				}
 				if (receive_message[0] != 16 || receive_message[2] == 0) {
 					if (receive_message[2] == 0 & receive_message[0] == 16) {
-						System.out.println("投了希望を送信");
+						System.out.println("投了orキャンセル希望を受信");
 					}
 					for (int i = 0; i < 3; i++) {
 						last_command[i] = receive_message[i];
