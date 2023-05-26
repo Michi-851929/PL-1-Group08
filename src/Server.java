@@ -697,8 +697,9 @@ public class Server {
 				DataOutputStream dos_ct = new DataOutputStream(sockets[num_player].getOutputStream());
 				// sockets[num_player].setSoTimeout(100);
 				System.out.println("ConnectThread: 起動");
+				Thread.sleep(1000); // 1秒待つ
+
 				while (running) {
-					Thread.sleep(1000); // 1秒待つ
 
 					// ハートビートをDataOutputStreamで送る
 					try {
@@ -736,6 +737,8 @@ public class Server {
 					 * }
 					 * }
 					 */
+					Thread.sleep(1000); // 1秒待つ
+
 				}
 
 			} catch (InterruptedException e) {
