@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Calendar;
 import java.util.Scanner;
 
 public class DummyClient {
@@ -66,7 +67,6 @@ public class DummyClient {
 			String opponentName = null;
 			int heartbeat_0;
 			int turnNum = 0;
-			heartbeat_0 = dis.readInt();
 
 			while (true) {
 				try {
@@ -110,18 +110,27 @@ public class DummyClient {
 				if (turn) {
 					new Thread(() -> {
 						try {
-							System.out.println("あなたの番です");
-							int cmd = scanner.nextInt();
-							dos.writeInt(cmd);
+							System.out.println("あなたの番です(1手目)");
+							try {
+								Thread.sleep(5000);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							Calendar cTime = Calendar.getInstance();
+							dos.writeInt(cTime.get(Calendar.SECOND) / 10);// 1回おきに違うコマンドを送信する必要があるため
 							dos.writeInt(2);
 							dos.writeInt(2);
 							dos.flush();
+							System.out.println("相手にコマンドを送信しました");
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}).start();
+					turn = !turn;
 				}
+				//
 
 				int[] response = new int[3];
 				for (int i = 0; i < 3; i++) {
@@ -136,11 +145,18 @@ public class DummyClient {
 				} else {
 					new Thread(() -> {
 						try {
-							int cmd = scanner.nextInt();
-							dos.writeInt(cmd);
-							dos.writeInt(2);
-							dos.writeInt(2);
+							System.out.println("あなたの番です");
+							try {
+								Thread.sleep(5000);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+							Calendar cTime = Calendar.getInstance();
+							dos.writeInt(cTime.get(Calendar.SECOND) / 10);// 1回おきに違うコマンドを送信する必要があるため
+							dos.writeInt(3);
+							dos.writeInt(3);
 							dos.flush();
+							System.out.println("相手にコマンドを送信しました");
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

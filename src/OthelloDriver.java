@@ -1,7 +1,7 @@
 import java.io.*;
 
 public class OthelloDriver {
-    public static void main (String [] args) throws Exception{
+	public static void main (String [] args) throws Exception{
 		Player p1 = new Player("test1", true, 600000);
 		Player p2 = new Player("test2", false, 600000);
 		Othello game = new Othello(p1, p2); //初期化
@@ -20,23 +20,23 @@ public class OthelloDriver {
 			}
 		}*/
 		//状態を表示する
-		public static void printStatus(Othello game){
-			System.out.println("getCurrentTurn出力:" + game.getCurrentTurn());
-			System.out.println("checkWinner出力:" + game.checkWinner());
-		}
-		/*
-		//テスト用に盤面を表示する
-		public static void printGrids(Othello game){
-			String [] grids = game.getGrids();
-			int row = game.getRow();
-			System.out.println("getRow出力：" + row);
-			System.out.println("Gridsテスト出力：(8要素ごとに改行)");
-			for(int i = 0 ; i < row * row ; i++){
-				System.out.print(grids[i] + " ");
-				if(i % row == row - 1){
-					System.out.print("¥n");
-				}
-			}
-		}
-		*/
+	public static void printStatus(Othello game) {
+		System.out.println("getCurrentTurn出力:" + game.getCurrentTurn());
+		System.out.println("checkWinner出力:" + game.checkWinner());
+	}
+	/*
+	 * //テスト用に盤面を表示する
+	 * public static void printGrids(Othello game){
+	 * String [] grids = game.getGrids();
+	 * int row = game.getRow();
+	 * System.out.println("getRow出力：" + row);
+	 * System.out.println("Gridsテスト出力：(8要素ごとに改行)");
+	 * for(int i = 0 ; i < row * row ; i++){
+	 * System.out.print(grids[i] + " ");
+	 * if(i % row == row - 1){
+	 * System.out.print("¥n");
+	 * }
+	 * }
+	 * }
+	 */
 }
