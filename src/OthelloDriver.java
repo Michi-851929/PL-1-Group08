@@ -15,8 +15,8 @@ public class OthelloDriver {
 			System.out.println("石を置く場所(数字またはpass)をキーボードで入力してください");
 			String s = r.readLine();//文字列の入力
 			System.out.println(s + " が入力されました。手番は " + game.getCurrentTurn() + " です。(trueが黒番falseが白番)");
-			in[0] = Integer.parseInt(s)/10;
-			in[1] = Integer.parseInt(s)%10;
+			in[0] = Integer.parseInt(s)%10;
+			in[1] = Integer.parseInt(s)/10;
 			game.applyMove(in);
 			printStatus(game);
 			printGrids(game);
