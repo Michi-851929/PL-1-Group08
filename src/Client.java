@@ -44,8 +44,9 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	private Player me;
 	private Player your;
 	private final int[] vacantRoom = { -1, -1, -1 };
-	private boolean eob_flag = false;
-	private static boolean connectFlag = true;
+	private boolean eob_flag = true;
+	private boolean connectFlag = true;
+	
 
 	private int[] newPlay = { -1, -1, -1 };// 最新の相手が指した手
 	private boolean newPlayFlag = false;
@@ -670,7 +671,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			connectFlag = false;// 画面遷移用フラグ
 
 			new Thread(() -> {
-				while (true) {
+				while (!eob_flag) {
 					try {
 						// サーバーからのデータを受け取る
 						int[] response = receiveResponse();
@@ -925,6 +926,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			button_selected = 2;
 		} else if (s.equals("開始")) {
 			ui_jb_start.setText("マッチング中止");
+			eob_flag = false;
 			try {
 				socket.close();
 			} catch (Exception ex) {
@@ -945,6 +947,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			}
 		} else if (s.equals("マッチング中止")) {
 			matching = false;
+			eob_flag = true;
 			try {
 				socket.close();
 			} catch (IOException e) {
@@ -1003,7 +1006,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		Client client = new Client("Othello Game");
 		while (true) {
 			try {
-				while (connectFlag) {
+				while (client.connectFlag) {
 					Thread.sleep(1000);
 					client.checkVacantRoom();
 					client.ui_jl_5min.setText((client.vacantRoom[0] == 1 ? "○" : "×"));
@@ -1013,7 +1016,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
-			connectFlag = true;
+			client.connectFlag = true;
 			client.changePhase(PHASE_BATTLE);
 
 			if (othello.getPlayers()[1].isFirstMover()) {

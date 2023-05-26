@@ -758,7 +758,6 @@ public class Server {
 				}
 			} else if (admin_command.equals("e")) {
 				server.stopRunning();
-
 				break;
 			} else {
 				System.out.printf("未定義のコマンドです");
