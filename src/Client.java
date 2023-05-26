@@ -13,6 +13,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -46,11 +47,11 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	private final int[] vacantRoom = { -1, -1, -1 };
 	private boolean eob_flag = true;
 	private boolean connectFlag = true;
-	
 
 	private int[] newPlay = { -1, -1, -1 };// 最新の相手が指した手
 	private boolean newPlayFlag = false;
 	private boolean matching = false;
+	private boolean isRunning = false;
 
 	private final static InetAddress hostname;
 
@@ -236,7 +237,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				ui_jl_time1.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
 				JLabel ui_jl_turn1 = new JLabel(
 						getStoneIcon((othello.getPlayers()[0].isFirstMover() ? Othello.BLACK : Othello.WHITE), -1));
-				System.out.println(othello.getPlayers()[0].isFirstMover() ? Othello.BLACK : Othello.WHITE);
 				p06.add(ui_jl_turn1);
 				p06.add(ui_jl_name1);
 				p06.add(ui_jl_time1);
@@ -255,7 +255,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				ui_jl_time2.setFont(new Font("ＭＳ ゴシック", Font.PLAIN, 24));
 				JLabel ui_jl_turn2 = new JLabel(
 						getStoneIcon((othello.getPlayers()[1].isFirstMover() ? Othello.BLACK : Othello.WHITE), -1));
-				System.out.println(othello.getPlayers()[1].isFirstMover() ? Othello.BLACK : Othello.WHITE);
 				p07.add(ui_jl_time2);
 				p07.add(ui_jl_name2);
 				p07.add(ui_jl_turn2);
@@ -523,7 +522,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		out[1] = in[1];
 		out[2] = in[0] == 16 && in[1] == 0 ? 0 : othello.getPlayers()[0].getLeftTime();
 		try {
-			if (out[2] <= 0) {// 持ち時間0以下
+			if (out[0] != 16 && out[2] <= 0) {// 持ち時間0以下
 				out[0] = 8;
 				out[1] = 8;
 				sendCommand(out);
@@ -570,7 +569,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			out[1] = newPlay[1];
 			othello.getPlayers()[1].setLeftTime(newPlay[2]);
 			Thread.sleep(10);
-			System.out.println(out[0] + " " + out[1]);
+			// System.out.println(out[0] + " " + out[1]);
 			reloadDisplay(out);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -608,7 +607,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				int heartbeat_0;
 				int turnNum = 0;
 
-				System.out.println("マッチング待機中 マッチングしたらプレイヤ名とルーム番号を受信します");
+				System.out.println("マッチング待機中");
 				while (true) {
 					try {
 						heartbeat_0 = dis.readInt();
@@ -660,8 +659,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				me = new Player(name, turn, leftTime);
 				your = new Player(opponentName, !turn, leftTime);
 				othello = new Othello(me, your);
-				System.out.println(me.getPlayerName() + othello.getPlayers()[0].isFirstMover());
-				System.out.println(your.getPlayerName() + othello.getPlayers()[1].isFirstMover());
 
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -671,7 +668,8 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			connectFlag = false;// 画面遷移用フラグ
 
 			new Thread(() -> {
-				while (!eob_flag) {
+				//System.out.println("Thread:start");
+				while (isRunning) {
 					try {
 						// サーバーからのデータを受け取る
 						int[] response = receiveResponse();
@@ -701,41 +699,34 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 						System.err.println("接続がタイムアウトしました");
 						try {
 							socket.close();
+							isRunning = false;
 						} catch (IOException ex) {
 							throw new RuntimeException(ex);
 						}
 						return;
 					} catch (SocketException se) {
-
+						isRunning = false;
+					} catch (EOFException ee) {
+						isRunning = false;
 					} catch (IOException e) {
 						// サーバーからのデータを受け取れなかったらエラー
 						e.printStackTrace();
 						System.err.println("サーバからのデータが読み取れませんでした。");
 						try {
 							socket.close();
+							isRunning = false;
 						} catch (IOException ex) {
 							throw new RuntimeException(ex);
 						}
 						return;
 					}
 				}
+				//System.out.println("Thread:stop");
 			}).start();
 		} catch (IOException e) {
 			// サーバーに接続できなかったらエラー
 			e.printStackTrace();
 		}
-	}
-
-	/**
-	 * 2つのint配列が等しいかどうかを判定する。
-	 **/
-	private static boolean isEqual(int[] a, int[] b) {
-		for (int i = 0; i < 2; i++) {
-			if (a[i] != b[i]) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	private void sendPlayerInfo(String name, int roomNumber) throws IOException {
@@ -761,9 +752,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		} else {
 			dos.writeInt(command[2]);
 		}
-		if (command[0] == 18) {
-			System.out.println(command[0] + ", " + command[1] + ", " + command[2]);
-		}
 		dos.flush();
 	}
 
@@ -775,6 +763,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		heartbeat[0] = 16;
 		heartbeat[1] = 0;
 		heartbeat[2] = flag;
+		//System.out.println("sendHeartBeat:" + heartbeat[0] + ", " + heartbeat[1] + ", " + heartbeat[2]);
 
 		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 		dos.writeInt(heartbeat[0]);
@@ -796,7 +785,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		for (int i = 0; i < 3; i++) {
 			response[i] = dis.readInt();
 		}
-		System.out.println("response 0,1,2 = " + response[0] + "," + response[1] + "," + response[2]);
+		//System.out.println("response 0,1,2 = " + response[0] + "," + response[1] + "," + response[2]);
 		return response;
 	}
 
@@ -893,6 +882,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			throw new RuntimeException(e);
 		}
 		eob_flag = false;
+		isRunning = false;
 	}
 
 	public void actionPerformed(ActionEvent ae) {
@@ -928,6 +918,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		} else if (s.equals("開始")) {
 			ui_jb_start.setText("マッチング中止");
 			eob_flag = false;
+			isRunning = true;
 			try {
 				socket.close();
 			} catch (Exception ex) {
@@ -949,7 +940,9 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 		} else if (s.equals("マッチング中止")) {
 			matching = false;
 			eob_flag = true;
+			isRunning = false;
 			try {
+				sendHeartbeat(0);
 				socket.close();
 			} catch (IOException e) {
 				// TODO 自動生成された catch ブロック
@@ -1021,10 +1014,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 			client.changePhase(PHASE_BATTLE);
 
 			if (othello.getPlayers()[1].isFirstMover()) {
-				System.out.println("doYourTurnから呼び出します"); // debug
 				client.doYourTurn();
-			} else {
-				System.out.println("doMyTurnから呼び出します"); // debug
 			}
 			while (!client.eob_flag) {
 				client.doMyTurn();
