@@ -414,7 +414,6 @@ public class Server {
 
 		// 新 試合終了メソッド
 		public void closeGame() {
-			System.out.println("ここだよおおおおおおおおおおお");
 			P1_name = null;
 			P2_name = null;
 			try {
@@ -422,12 +421,14 @@ public class Server {
 					sockets[P1_num].close();
 					sockets[P1_num] = null;
 				}
-				if (sockets[P2_num] != null) {
-					sockets[P2_num].close();
-					sockets[P2_num] = null;
-				}
 				mt.list_clear(P1_num);
-				mt.list_clear(P2_num);
+				if (P2_num < 256 && P2_num >= 0) {
+					if (sockets[P2_num] != null) {
+						sockets[P2_num].close();
+						sockets[P2_num] = null;
+					}
+					mt.list_clear(P2_num);
+				}
 				System.out.println("GameThread[" + RoomID + "]: 試合が終了したためソケットを閉じました");
 				if (P1_rmt != null) {
 					P1_rmt.stopRunning();
@@ -441,8 +442,9 @@ public class Server {
 				}
 				// 接続確認メソッドを停止
 				P1_ct.stopRunning();
-				P2_ct.stopRunning();
-
+				if (P2_ct != null) {
+					P2_ct.stopRunning();
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 				System.out.println("GameThread[" + RoomID + "]: 試合が終了したためソケットを閉じようとしましたが閉じることができませんでした");
@@ -479,10 +481,7 @@ public class Server {
 							System.out
 									.println("GameThread[" + RoomID + "]:" + P1_name + "が対戦相手を待機中 (time:" + time + ")");
 							if (running == false) {
-								P1_name = null;
-								P2_name = null;
-								System.out.println("GameThread[" + RoomID + "]:closeGame()メソッドを呼び出します");
-								break;
+								throw new EndGameException("running == false となりました");
 							}
 
 						} catch (InterruptedException e) {
@@ -490,8 +489,9 @@ public class Server {
 						}
 					}
 					if (running == false) {
-						break;
+						// NR
 					}
+
 					System.out.println("GameThread[" + RoomID + "]:" + P2_name + "が Room" + RoomID + "に、time:" + time
 							+ "後攻として入りました");
 					P2_rmt = new ReceiveMessageThread(P2_num);
@@ -585,14 +585,15 @@ public class Server {
 					}
 					// 試合終了後
 
+				} catch (EndGameException ee) {
+					ee.printStackTrace();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				} catch (IOException eio) {
 					eio.printStackTrace();
 				}
-				System.out.println("GameThread[" + RoomID + "]:closeGame()メソッドを呼び出します");
+				System.out.println("GameThread[" + RoomID + "]:closeGame()メソッドを呼び出します!!!!!!");
 				closeGame();
-				System.out.println("keeprun");
 				// ここでGameThread[i]は初期状態に戻り、無限ループへ
 			}
 		}
@@ -781,6 +782,12 @@ public class Server {
 // 切断希望受信エラー
 class LeaveGameException extends Exception {
 	LeaveGameException(String msg) {
+		super(msg);
+	}
+}
+
+class EndGameException extends Exception {
+	EndGameException(String msg) {
 		super(msg);
 	}
 }
