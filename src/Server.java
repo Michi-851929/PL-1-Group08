@@ -546,6 +546,8 @@ public class Server {
 							dos_p2.writeInt(P1_rmt.last_command[i]);
 							dos_p2.flush();
 						}
+						System.out.println("GameThread[" + RoomID + "]: 後攻に盤面情報" + P1_rmt.last_command[0] + ","
+								+ P1_rmt.last_command[1] + "," + P1_rmt.last_command[2] + "を送信");
 						// 試合終了判定 if分内がtrueなら試合終了なのでwhileループを抜ける
 						if (P2_rmt.last_command[0] > 7 && P2_rmt.last_command[0] < 18) {
 							break;
@@ -569,6 +571,8 @@ public class Server {
 							dos_p1.writeInt(P2_rmt.last_command[i]);
 							dos_p1.flush();
 						}
+						System.out.println("GameThread[" + RoomID + "]: 先攻に盤面情報" + P2_rmt.last_command[0] + ","
+								+ P2_rmt.last_command[1] + "," + P2_rmt.last_command[2] + "を送信");
 						// 試合終了判定
 						if (P2_rmt.last_command[0] > 7 && P2_rmt.last_command[0] < 18) {
 							break;
@@ -698,9 +702,13 @@ public class Server {
 					} catch (SocketException se) {
 						stopRunning();
 					}
-					System.out.println("ConnectThread: ハートビートをnum_player:" + num_player + "に送信" + command_send[0] + ","
-							+ command_send[1] + ","
-							+ command_send[2]);
+
+					/*
+					 * System.out.println("ConnectThread: ハートビートをnum_player:" + num_player + "に送信" +
+					 * command_send[0] + ","
+					 * + command_send[1] + ","
+					 * + command_send[2]);
+					 */
 
 					if (rmt.last_heartbeat[1] == 0) {
 						loss = 0;
