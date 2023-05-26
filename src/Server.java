@@ -662,9 +662,9 @@ public class Server {
 		private int num_player;
 		private ReceiveMessageThread rmt;
 
-		ConnectThread(int id, boolean isFirst, int pnum, ReceiveMessageThread r) {
+		ConnectThread(int id, boolean isFir, int pnum, ReceiveMessageThread r) {
 			this.id = id;
-			this.isFirst = isFirst;
+			this.isFirst = isFir;
 			num_player = pnum;
 			command_send = new int[3];
 			command_send[0] = 16;
@@ -747,6 +747,7 @@ public class Server {
 	public static void main(String[] args) {
 		Server server = new Server(10000); // 待ち受けポート10000番でサーバオブジェクトを準備
 		Scanner scanner = new Scanner(System.in);
+		System.out.println("サーバーを起動しました");
 		while (true) {
 			String admin_command = scanner.next();
 			if (admin_command.equals("s")) {

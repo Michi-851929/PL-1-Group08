@@ -608,6 +608,7 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 				int heartbeat_0;
 				int turnNum = 0;
 
+				System.out.println("マッチング待機中 マッチングしたらプレイヤ名とルーム番号を受信します");
 				while (true) {
 					try {
 						heartbeat_0 = dis.readInt();
