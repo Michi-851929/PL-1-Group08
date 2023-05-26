@@ -46,7 +46,6 @@ public class Client extends JFrame implements ActionListener, FocusListener {
 	private final int[] vacantRoom = { -1, -1, -1 };
 	private boolean eob_flag = true;
 	private boolean connectFlag = true;
-	
 
 	private int[] newPlay = { -1, -1, -1 };// 最新の相手が指した手
 	private boolean newPlayFlag = false;
