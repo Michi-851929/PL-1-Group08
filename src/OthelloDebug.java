@@ -1,5 +1,3 @@
-import java.util.Scanner;
-
 public class OthelloDebug {
 /*
         public static void main(String[] args) {
